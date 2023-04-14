@@ -1,0 +1,8 @@
+#Add words for generation to stop at in this file.>
+#It's possible to comment out the names by adding a # in front of the line.>
+#If adding a name, add a colon after the name.>
+
+#YellowRoseCx:
+#Me:
+
+You:
