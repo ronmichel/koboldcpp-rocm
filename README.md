@@ -13,7 +13,7 @@ What does it mean? You get llama.cpp with a fancy UI, persistent stories, editin
 ## Usage
 - Download or clone the repo https://github.com/YellowRoseCx/koboldcpp-wordstopper
 - Windows binaries are provided in the form of a few **.dll** files and **koboldcpp.py**. Linux and OSX need built.
-- To run, open command prompt or terminal in the koboldcpp-wordstopper directory then launch with "python koboldcpp.py models/ggml_model_name.bin" and then connect with Kobold or Kobold Lite. Please check `koboldcpp.py --help` for more info
+- To run, open command prompt or terminal in the koboldcpp-wordstopper directory then launch with "python koboldcpp.py models/ggml_model_name.bin" and then connect with Kobold or Kobold Lite. Please check `python koboldcpp.py --help` for more info
 - By default, you can connect to http://localhost:5001 
 - If you are having crashes or issues with OpenBLAS, please try the `--noblas` flag.
 - Add the names or tokens you wish to use as stoppers to the wordstoppers.txt file. If it's a chat name, make sure to add the colon afterwards.
