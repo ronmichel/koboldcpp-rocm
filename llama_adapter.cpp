@@ -163,6 +163,24 @@ generation_outputs llama_generate(const generation_inputs inputs, generation_out
     unsigned int embd_inp_size = embd_inp.size();
     printf("\n");
 
+    std::ifstream config_file("wordstoppers.txt"); // Open config file for reading
+    std::vector<std::string> search_strings;
+
+    if (config_file.is_open()) {
+        // Read search strings from config file
+        std::string search_string;
+        while (std::getline(config_file, search_string)) {
+            if (!search_string.empty() && search_string[0] != '#') {
+                search_strings.push_back(search_string);
+            }
+        }
+        config_file.close(); // Close config file
+    } else {
+        // Handle error if config file cannot be opened
+        std::cerr << "Error: Failed to find wordstoppers.txt file." << std::endl;
+        
+    }
+
     while (remaining_tokens > 0)
     {
         llama_token id = 0;
@@ -231,6 +249,13 @@ generation_outputs llama_generate(const generation_inputs inputs, generation_out
             --remaining_tokens;
             //printf("\nid:%d word:%s\n",id,llama_token_to_str(ctx, id));
             concat_output += llama_token_to_str(ctx, id);
+            // Use find() function with search strings from config file
+            for (const auto& search_string : search_strings) {
+                if (concat_output.find(search_string) != std::string::npos) {
+                    remaining_tokens = 0;
+                    break; // Exit loop early if a search string is found
+                }
+            }
         }
         else
         {
