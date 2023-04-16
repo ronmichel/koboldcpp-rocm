@@ -180,6 +180,7 @@ generation_outputs llama_generate(const generation_inputs inputs, generation_out
         std::cerr << "Error: Failed to find wordstoppers.txt file." << std::endl;
         
     }
+
     while (remaining_tokens > 0)
     {
         llama_token id = 0;
