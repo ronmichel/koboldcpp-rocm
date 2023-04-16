@@ -54,7 +54,10 @@ def init_library():
         elif use_blas:
             libname = "koboldcpp_openblas.dll"
         else:
-            libname = "koboldcpp.dll"
+            if os.path.exists("koboldcpp.dll"):
+                libname = "koboldcpp.dll"
+            else:
+                libname = "koboldcpp.so"
 
     print("Initializing dynamic library: " + libname)
     dir_path = os.path.dirname(os.path.realpath(__file__))  
