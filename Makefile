@@ -137,16 +137,13 @@ OPENBLAS_BUILD =
 CLBLAST_BUILD =
 NOAVX2_BUILD = 
 OPENBLAS_NOAVX2_BUILD =
-OUTPUT_NAME =
 
 ifeq ($(OS),Windows_NT)
-	OUTPUT_NAME = koboldcpp.dll
 	OPENBLAS_BUILD = $(CXX) $(CXXFLAGS) $^ lib/libopenblas.lib -shared -o $@ $(LDFLAGS)	
 	CLBLAST_BUILD = $(CXX) $(CXXFLAGS) $^ lib/OpenCL.lib lib/clblast.lib -shared -o $@ $(LDFLAGS)
 	OPENBLAS_NOAVX2_BUILD = $(CXX) $(CXXFLAGS) $^ lib/libopenblas.lib -shared -o $@ $(LDFLAGS)
 	NOAVX2_BUILD = $(CXX) $(CXXFLAGS) $^ -shared -o $@ $(LDFLAGS)
 else
-	OUTPUT_NAME = koboldcpp.so
 	ifndef LLAMA_OPENBLAS
 	ifndef LLAMA_CLBLAST
 	OPENBLAS_BUILD = @echo 'Your OS $(OS) does not appear to be Windows. For faster speeds, install and link a BLAS library. Set LLAMA_OPENBLAS=1 to compile with OpenBLAS support or LLAMA_CLBLAST=1 to compile with ClBlast support. This is just a reminder, not an error.'
@@ -222,7 +219,7 @@ main: examples/main/main.cpp ggml.o llama.o common.o
 	@echo '====  Run ./main -h for help.  ===='
 	@echo
 
-$(OUTPUT_NAME): ggml.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o
+koboldcpp.dll: ggml.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o
 	$(CXX) $(CXXFLAGS)  $^ -shared -o $@ $(LDFLAGS)
 
 koboldcpp_openblas.dll: ggml_openblas.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o 
