@@ -31,13 +31,17 @@ endif
 #
 
 # keep standard at C11 and C++11
-CFLAGS   = -I.              -O3 -DNDEBUG -std=c11   -fPIC
-CXXFLAGS = -I. -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
+CFLAGS   = -I.              -Ofast -DNDEBUG -std=c11   -fPIC
+CXXFLAGS = -I. -I./examples -Ofast -DNDEBUG -std=c++11 -fPIC
 LDFLAGS  =
 
-# warnings
-CFLAGS   += -Wall -Wextra -Wpedantic -Wcast-qual -Wdouble-promotion -Wshadow -Wstrict-prototypes -Wpointer-arith -Wno-unused-function
-CXXFLAGS += -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wno-multichar
+# these are used on windows, to build some libraries with extra old device compatibility
+BONUSCFLAGS1 =
+BONUSCFLAGS2 =
+
+#lets try enabling everything
+CFLAGS   += -pthread -s 
+CXXFLAGS += -pthread -s -Wno-multichar
 
 # OS specific
 # TODO: support Windows
@@ -71,8 +75,15 @@ endif
 #       feel free to update the Makefile for your architecture and send a pull request or issue
 ifeq ($(UNAME_M),$(filter $(UNAME_M),x86_64 i686))
 	# Use all CPU extensions that are available:
-	CFLAGS += -march=native -mtune=native
-	CXXFLAGS += -march=native -mtune=native
+	CFLAGS += -mavx 
+# old library NEEDS mf16c to work. so we must build with it. new one doesnt
+	ifeq ($(OS),Windows_NT)
+		BONUSCFLAGS1 += -mf16c 
+		BONUSCFLAGS2 += -mavx2 -msse3 -mfma 
+	else
+# if not on windows, they are clearly building it themselves, so lets just use whatever is supported
+		CFLAGS += -march=native -mtune=native
+	endif
 endif
 ifneq ($(filter ppc64%,$(UNAME_M)),)
 	POWER9_M := $(shell grep "POWER9" /proc/cpuinfo)
@@ -97,6 +108,10 @@ ifdef LLAMA_OPENBLAS
 	CFLAGS  += -DGGML_USE_OPENBLAS -I/usr/local/include/openblas
 	LDFLAGS += -lopenblas
 endif
+ifdef LLAMA_CLBLAST
+	CFLAGS  += -DGGML_USE_CLBLAST -DGGML_USE_OPENBLAS
+	LDFLAGS += -lclblast -lOpenCL
+endif
 ifdef LLAMA_GPROF
 	CFLAGS   += -pg
 	CXXFLAGS += -pg
@@ -118,6 +133,24 @@ ifneq ($(filter armv8%,$(UNAME_M)),)
 	CFLAGS += -mfp16-format=ieee -mno-unaligned-access
 endif
 
+OPENBLAS_BUILD =
+CLBLAST_BUILD =
+NOAVX2_BUILD = 
+OPENBLAS_NOAVX2_BUILD =
+
+ifeq ($(OS),Windows_NT)
+	OPENBLAS_BUILD = $(CXX) $(CXXFLAGS) $^ lib/libopenblas.lib -shared -o $@ $(LDFLAGS)	
+	CLBLAST_BUILD = $(CXX) $(CXXFLAGS) $^ lib/OpenCL.lib lib/clblast.lib -shared -o $@ $(LDFLAGS)
+	OPENBLAS_NOAVX2_BUILD = $(CXX) $(CXXFLAGS) $^ lib/libopenblas.lib -shared -o $@ $(LDFLAGS)
+	NOAVX2_BUILD = $(CXX) $(CXXFLAGS) $^ -shared -o $@ $(LDFLAGS)
+else
+	ifndef LLAMA_OPENBLAS
+	ifndef LLAMA_CLBLAST
+	OPENBLAS_BUILD = @echo 'Your OS $(OS) does not appear to be Windows. For faster speeds, install and link a BLAS library. Set LLAMA_OPENBLAS=1 to compile with OpenBLAS support or LLAMA_CLBLAST=1 to compile with ClBlast support. This is just a reminder, not an error.'
+	endif
+	endif
+endif
+
 #
 # Print build information
 #
@@ -133,23 +166,52 @@ $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
 $(info )
 
-default: main quantize quantize-stats perplexity embedding
+default: koboldcpp.dll koboldcpp_noavx2.dll koboldcpp_openblas.dll koboldcpp_openblas_noavx2.dll koboldcpp_clblast.dll
+simple: koboldcpp.dll koboldcpp_noavx2.dll
+dev: koboldcpp_openblas.dll
 
 #
 # Build library
 #
 
 ggml.o: ggml.c ggml.h
-	$(CC)  $(CFLAGS)   -c $< -o $@
+	$(CC)  $(CFLAGS) $(BONUSCFLAGS1) $(BONUSCFLAGS2) -c $< -o $@
 
-llama.o: llama.cpp ggml.h llama.h llama_util.h
+ggml_openblas.o: ggml.c ggml.h
+	$(CC)  $(CFLAGS) $(BONUSCFLAGS1) $(BONUSCFLAGS2) -DGGML_USE_OPENBLAS -c $< -o $@
+
+ggml_noavx2.o: ggml.c ggml.h
+	$(CC)  $(CFLAGS) -c $< -o $@
+
+ggml_openblas_noavx2.o: ggml.c ggml.h
+	$(CC)  $(CFLAGS) -DGGML_USE_OPENBLAS -c $< -o $@
+
+ggml_clblast.o: ggml.c ggml.h
+	$(CC)  $(CFLAGS) $(BONUSCFLAGS1) $(BONUSCFLAGS2) -DGGML_USE_OPENBLAS -DGGML_USE_CLBLAST -c $< -o $@
+
+ggml_v1.o: otherarch/ggml_v1.c otherarch/ggml_v1.h
+	$(CC)  $(CFLAGS) $(BONUSCFLAGS1) $(BONUSCFLAGS2) -c $< -o $@
+
+ggml_v1_noavx2.o: otherarch/ggml_v1.c otherarch/ggml_v1.h
+	$(CC)  $(CFLAGS) $(BONUSCFLAGS1) -c $< -o $@
+
+llama.o: llama.cpp llama.h llama_util.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 common.o: examples/common.cpp examples/common.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+expose.o: expose.cpp expose.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+llama_adapter.o: llama_adapter.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+gpttype_adapter.o: gpttype_adapter.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	rm -vf *.o main quantize quantize-stats perplexity embedding benchmark-q4_0-matmult
+	rm -vf *.o main quantize_llama quantize_gpt2 quantize_gptj quantize-stats perplexity embedding benchmark-q4_0-matmult main.exe quantize_llama.exe quantize_gptj.exe quantize_gpt2.exe koboldcpp.dll koboldcpp_openblas.dll koboldcpp_noavx2.dll koboldcpp_openblas_noavx2.dll koboldcpp_clblast.dll gptj.exe gpt2.exe
 
 main: examples/main/main.cpp ggml.o llama.o common.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
@@ -157,10 +219,31 @@ main: examples/main/main.cpp ggml.o llama.o common.o
 	@echo '====  Run ./main -h for help.  ===='
 	@echo
 
-quantize: examples/quantize/quantize.cpp ggml.o llama.o
+koboldcpp.dll: ggml.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o
+	$(CXX) $(CXXFLAGS)  $^ -shared -o $@ $(LDFLAGS)
+
+koboldcpp_openblas.dll: ggml_openblas.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o 
+	$(OPENBLAS_BUILD)
+	
+koboldcpp_noavx2.dll: ggml_noavx2.o ggml_v1_noavx2.o expose.o common.o llama_adapter.o gpttype_adapter.o 
+	$(NOAVX2_BUILD)
+
+koboldcpp_openblas_noavx2.dll: ggml_openblas_noavx2.o ggml_v1_noavx2.o expose.o common.o llama_adapter.o gpttype_adapter.o 
+	$(OPENBLAS_NOAVX2_BUILD)
+
+koboldcpp_clblast.dll: ggml_clblast.o ggml_v1.o expose.o common.o llama_adapter.o gpttype_adapter.o 
+	$(CLBLAST_BUILD)
+	
+quantize_llama: examples/quantize/quantize.cpp ggml.o llama.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 quantize-stats: examples/quantize-stats/quantize-stats.cpp ggml.o llama.o
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+quantize_gptj: ggml.o llama.o otherarch/gptj_quantize.cpp
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+quantize_gpt2: ggml.o llama.o otherarch/gpt2_quantize.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 perplexity: examples/perplexity/perplexity.cpp ggml.o llama.o common.o

@@ -426,7 +426,14 @@ struct llama_file_loader {
     void read_vocab() {
         vocab.id_to_token.resize(hparams.n_vocab);
 
-        for (uint32_t i = 0; i < hparams.n_vocab; i++) {
+        int32_t vocabloops = hparams.n_vocab;
+        if(vocabloops==32001 && file_version == LLAMA_FILE_VERSION_GGML)
+        {
+            printf("---\n!! WARNING: Model appears to be GPT4ALL v1 model, triggering compatibility fix !!\n---\n");
+            vocabloops -= 1;
+        }
+
+        for (uint32_t i = 0; i < vocabloops; i++) {
             uint32_t len = file.read_u32();
             std::string word = file.read_string(len);
 

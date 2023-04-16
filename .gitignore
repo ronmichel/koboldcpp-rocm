@@ -36,5 +36,8 @@ compile_commands.json
 __pycache__
 .swiftpm
 
+dist/
+*.spec
+
 zig-out/
 zig-cache/
