@@ -29,7 +29,7 @@ struct MyModel* create_mymodel(int argc, char ** argv) {
 
     fprintf(stderr, "%s: build = %d (%s)\n", __func__, BUILD_NUMBER, BUILD_COMMIT);
 
-    if (params.seed < 0) {
+    if (params.seed == LLAMA_DEFAULT_SEED) {
         params.seed = time(NULL);
     }
     fprintf(stderr, "%s: seed  = %d\n", __func__, params.seed);
@@ -210,9 +210,12 @@ llama_token sampling_id(struct MyModel* mymodel) {
 const char * sampling(struct MyModel * mymodel) {
     llama_context * ctx = mymodel->ctx;
     int id = sampling_id(mymodel);
-    std::string ret;
-    if (id == llama_token_eos()) ret = "</s>";
-    else ret = llama_token_to_str(ctx, id);
+    static std::string ret;
+    if (id == llama_token_eos()) {
+        ret = "</s>";
+    } else {
+        ret = llama_token_to_str(ctx, id);
+    }
     eval_id(mymodel, id);
     return ret.c_str();
 }
