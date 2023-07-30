@@ -1056,12 +1056,7 @@ def show_new_gui():
 
         gpuchoiceidx = 0
         if gpu_choice_var.get()!="All":
-            if runopts_var.get() == "Use CLBlast": #if CLBlast selected
-                if (gpu_choice_var.get()) in CLdevices:
-                    gpuchoiceidx = CLdevices.index((gpu_choice_var.get())) 
-            elif runopts_var.get() == "Use CuBLAS":
-                if (gpu_choice_var.get()) in CUdevices:
-                    gpuchoiceidx = CUdevices.index((gpu_choice_var.get()))
+            gpuchoiceidx = int(gpu_choice_var.get())-1
         if runopts_var.get() == "Use CLBlast":
             args.useclblast = [[0,0], [1,0], [0,1]][gpuchoiceidx]
         if runopts_var.get() == "Use CuBLAS":
