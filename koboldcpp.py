@@ -882,11 +882,12 @@ def show_new_gui():
 
     runoptbox = ctk.CTkComboBox(quick_tab, values=runopts, width=180,variable=runopts_var, state="readonly")
     runoptbox.grid(row=1, column=1,padx=8, stick="nw")
-    runoptbox.set(runopts[0])
+    runoptbox.set(runopts[0]) # Set to first available option
     # Tell user how many backends are available
     num_backends_built = makelabel(quick_tab, str(len(runopts)) + "/6", 5, 2)
     num_backends_built.grid(row=1, column=2, padx=0, pady=0)
     num_backends_built.configure(text_color="#00ff00")
+    # Bind the backend count label with the tooltip function
     num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available.\nMissing: {', '.join(antirunopts)}"))
     num_backends_built.bind("<Leave>", hide_tooltip)
     # threads
@@ -919,7 +920,7 @@ def show_new_gui():
     makelabel(hardware_tab, "Presets:", 1)
     runoptbox = ctk.CTkComboBox(hardware_tab, values=runopts,  width=180,variable=runopts_var, state="readonly")
     runoptbox.grid(row=1, column=1,padx=8, stick="nw")
-    runoptbox.set(runopts[0])
+    runoptbox.set(runopts[0]) # Set to first available option
     runopts_var.trace('w', changerunmode)
     changerunmode(1,1,1)
 
@@ -927,6 +928,7 @@ def show_new_gui():
     num_backends_built = makelabel(hardware_tab, str(len(runopts)) + "/6", 5, 2)
     num_backends_built.grid(row=1, column=2, padx=0, pady=0)
     num_backends_built.configure(text_color="#00ff00")
+    # Bind the backend count label with the tooltip function
     num_backends_built.bind("<Enter>", show_tooltip)
     num_backends_built.bind("<Leave>", hide_tooltip)
     # threads
