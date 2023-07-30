@@ -689,14 +689,14 @@ def show_new_gui():
         (lib_clblast, "Use CLBlast"),
         (lib_cublas, "Use CuBLAS"),
         (lib_default, "Use No BLAS"),
-        (lib_openblas_noavx2, "Use OpenBLAS (Old CPU, noavx2)"),
-        (lib_failsafe, "Failsafe Mode (Old CPU, noavx)")]
+        (lib_noavx2, "Use NoAVX2 Mode (Old CPU)"),
+        (lib_failsafe, "Failsafe Mode (Old CPU)")]
     openblas_option, clblast_option, cublas_option, default_option, openblas_noavx2_option, failsafe_option = (opt if file_exists(lib) or (os.name == 'nt' and file_exists(opt + ".dll")) else None for lib, opt in lib_option_pairs)
     # slider data
     blasbatchsize_values = ["-1", "32", "64", "128", "256", "512", "1024"]
     blasbatchsize_text = ["Don't Batch BLAS","32","64","128","256","512","1024"]
     contextsize_text = ["512", "1024", "2048", "3072", "4096", "6144", "8192"]
-    runopts = [opt for lib, opt in lib_option_pairs if file_exists(lib) or os.name == 'nt' and file_exists(opt + ".dll")] 
+    runopts = [opt for lib, opt in lib_option_pairs if file_exists(lib) or os.name == 'nt' and file_exists(opt + ".dll")]
     antirunopts = [opt.replace("Use ", "") for lib, opt in lib_option_pairs if not file_exists(lib) or os.name == 'nt' and not file_exists(opt + ".dll")]
     if not any(runopts):
         show_gui_warning("No Backend Available")
@@ -1069,9 +1069,9 @@ def show_new_gui():
             args.gpulayers = int(gpulayers_var.get())
         if runopts_var.get()=="Use No BLAS":
             args.noblas = True
-        if runopts_var.get()=="Use OpenBLAS (Old CPU, noavx2)":
+        if runopts_var.get()=="Use NoAVX2 Mode (Old CPU)":
             args.noavx2 = True
-        if runopts_var.get()=="Failsafe Mode (Old CPU, noavx)":
+        if runopts_var.get()=="Failsafe Mode (Old CPU)":
             args.noavx2 = True
             args.noblas = True
             args.nommap = True
@@ -1287,7 +1287,7 @@ def show_old_gui():
         blaschoice = tk.StringVar()
         blaschoice.set("BLAS = 512")
 
-        runopts = ["Use OpenBLAS","Use CLBLast GPU #1","Use CLBLast GPU #2","Use CLBLast GPU #3","Use CuBLAS GPU","Use No BLAS","Use OpenBLAS (Old CPU, noavx2)","Failsafe Mode (Old CPU, noavx)"]
+        runopts = ["Use OpenBLAS","Use CLBLast GPU #1","Use CLBLast GPU #2","Use CLBLast GPU #3","Use CuBLAS GPU","Use No BLAS","Use NoAVX2 Mode (Old CPU)","Failsafe Mode (Old CPU)"]
         runchoice = tk.StringVar()
         runchoice.set("Use OpenBLAS")
 
