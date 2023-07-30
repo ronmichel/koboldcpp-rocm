@@ -783,6 +783,13 @@ def show_new_gui():
         if hasattr(show_tooltip, "_tooltip"):
             tooltip = show_tooltip._tooltip
             tooltip.withdraw()
+    def setup_backend_tooltip(parent):
+        num_backends_built = makelabel(parent, str(len(runopts)) + "/6", 5, 2)
+        num_backends_built.grid(row=1, column=2, padx=0, pady=0)
+        num_backends_built.configure(text_color="#00ff00")
+        # Bind the backend count label with the tooltip function
+        num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available." + (f"\nMissing: {', '.join(antirunopts)}" if len(runopts) != 6 else "")))
+        num_backends_built.bind("<Leave>", hide_tooltip)
 
     # Vars - should be in scope to be used by multiple widgets
     gpulayers_var = ctk.StringVar(value="0")
@@ -885,13 +892,10 @@ def show_new_gui():
     runoptbox = ctk.CTkComboBox(quick_tab, values=runopts, width=180,variable=runopts_var, state="readonly")
     runoptbox.grid(row=1, column=1,padx=8, stick="nw")
     runoptbox.set(runopts[0]) # Set to first available option
+
     # Tell user how many backends are available
-    num_backends_built = makelabel(quick_tab, str(len(runopts)) + "/6", 5, 2)
-    num_backends_built.grid(row=1, column=2, padx=0, pady=0)
-    num_backends_built.configure(text_color="#00ff00")
-    # Bind the backend count label with the tooltip function
-    num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available." + (f"\nMissing: {', '.join(antirunopts)}" if len(runopts) != 6 else "")))
-    num_backends_built.bind("<Leave>", hide_tooltip)
+    setup_backend_tooltip(quick_tab)
+
     # threads
     makelabelentry(quick_tab, "Threads:" , threads_var, 8, 50)
 
@@ -927,12 +931,8 @@ def show_new_gui():
     changerunmode(1,1,1)
 
     # Tell user how many backends are available
-    num_backends_built = makelabel(hardware_tab, str(len(runopts)) + "/6", 5, 2)
-    num_backends_built.grid(row=1, column=2, padx=0, pady=0)
-    num_backends_built.configure(text_color="#00ff00")
-    # Bind the backend count label with the tooltip function
-    num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available." + (f"\nMissing: {', '.join(antirunopts)}" if len(runopts) != 6 else "")))
-    num_backends_built.bind("<Leave>", hide_tooltip)
+    setup_backend_tooltip(hardware_tab)
+
     # threads
     makelabelentry(hardware_tab, "Threads:" , threads_var, 8, 50)
 
