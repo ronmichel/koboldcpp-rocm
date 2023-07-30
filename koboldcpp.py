@@ -930,7 +930,7 @@ def show_new_gui():
     num_backends_built.grid(row=1, column=2, padx=0, pady=0)
     num_backends_built.configure(text_color="#00ff00")
     # Bind the backend count label with the tooltip function
-    num_backends_built.bind("<Enter>", show_tooltip)
+    num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available." + (f"\nMissing: {', '.join(antirunopts)}" if len(runopts) != 6 else "")))
     num_backends_built.bind("<Leave>", hide_tooltip)
     # threads
     makelabelentry(hardware_tab, "Threads:" , threads_var, 8, 50)
