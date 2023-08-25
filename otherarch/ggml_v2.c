@@ -139,8 +139,7 @@ inline static void* ggml_v2_aligned_malloc(size_t size) {
 #include <Accelerate/Accelerate.h>
 #elif defined(GGML_USE_OPENBLAS)
 #include <cblas.h>
-#endif
-#if defined(GGML_USE_CUBLAS)
+#elif defined(GGML_USE_CUBLAS)
 #include "ggml_v2-cuda.h"
 #include "ggml_v2-cuda-legacy.h"
 #endif
@@ -148,8 +147,6 @@ inline static void* ggml_v2_aligned_malloc(size_t size) {
 #include "ggml_v2-opencl.h"
 #include "ggml_v2-opencl-legacy.h"
 #endif
-
-
 
 #undef MIN
 #undef MAX
