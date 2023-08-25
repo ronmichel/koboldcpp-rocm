@@ -1,6 +1,32 @@
-# koboldcpp
+# koboldcpp-ROCM
+This is mostly for Linux, but with the release of ROCm frameworks on Windows, it might eventually be possible to run this on Windows.
 
-KoboldCpp is an easy-to-use AI text-generation software for GGML models. It's a single self contained distributable from Concedo, that builds off llama.cpp, and adds a versatile Kobold API endpoint, additional format support, backward compatibility, as well as a fancy UI with persistent stories, editing tools, save formats, memory, world info, author's note, characters, scenarios and everything Kobold and Kobold Lite have to offer.
+To install, either use the file "[easy_KCPP-ROCm_install.sh](https://github.com/YellowRoseCx/koboldcpp-rocm/blob/main/easy_KCPP-ROCm_install.sh)" or navigate to the folder you want to download to in Terminal then run
+```
+git clone https://github.com/YellowRoseCx/koboldcpp-rocm.git -b main --depth 1 && \
+cd koboldcpp-rocm && \
+make LLAMA_HIPBLAS=1 -j4 && \
+./koboldcpp.py
+```
+When the KoboldCPP GUI appears, make sure to select "Use CuBLAS/hipBLAS" and set GPU layers 
+
+Original [llama.cpp rocm port](https://github.com/ggerganov/llama.cpp/pull/1087) by SlyEcho, modified and ported to koboldcpp by YellowRoseCx
+
+Comparison with OpenCL using 6800xt
+| Model | Offloading Method | Time Taken - Processing 593 tokens| Time Taken - Generating 200 tokens| Total Time | Perf. Diff.
+|-----------------|----------------------------|--------------------|--------------------|------------|---|
+| Robin 7b q6_K |CLBLAST 6-t, All Layers on GPU | 6.8s (11ms/T) | 12.0s (60ms/T)  | 18.7s (10.7T/s) | 1x
+| Robin 7b q6_K |ROCM 1-t, All Layers on GPU   | 1.4s (2ms/T) | 5.5s (28ms/T)   | 6.9s (29.1T/s)| **2.71x**
+| Robin 13b q5_K_M |CLBLAST 6-t, All Layers on GPU | 10.9s (18ms/T) | 16.7s (83ms/T)  | 27.6s (7.3T/s) | 1x
+| Robin 13b q5_K_M |ROCM 1-t, All Layers on GPU   | 2.4s (4ms/T) | 7.8s (39ms/T)   | 10.2s (19.6T/s)| **2.63x**
+| Robin 33b q4_K_S |CLBLAST 6-t, 46/63 Layers on GPU | 23.2s (39ms/T) | 48.6s (243ms/T)  | 71.9s (2.8T/s) | 1x
+| Robin 33b q4_K_S |CLBLAST 6-t, 50/63 Layers on GPU | 25.5s (43ms/T) | 44.6s (223ms/T)  | 70.0s (2.9T/s) | 1x
+| Robin 33b q4_K_S |ROCM 6-t, 46/63 Layers on GPU   | 14.6s (25ms/T) | 44.1s (221ms/T)   | 58.7s (3.4T/s)| **1.19x**
+
+--------
+A self contained distributable from Concedo that exposes llama.cpp function bindings, allowing it to be used via a simulated Kobold API endpoint.
+
+What does it mean? You get llama.cpp with a fancy UI, persistent stories, editing tools, save formats, memory, world info, author's note, characters, scenarios and everything Kobold and Kobold Lite have to offer. In a tiny package around 20 MB in size, excluding model weights.
 
 ![Preview](media/preview.png)
 
