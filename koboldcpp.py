@@ -855,25 +855,6 @@ def show_new_gui():
         if hasattr(show_tooltip, "_tooltip"):
             tooltip = show_tooltip._tooltip
             tooltip.withdraw()
-
-    def show_tooltip(event, tooltip_text=None):
-        if hasattr(show_tooltip, "_tooltip"):
-            tooltip = show_tooltip._tooltip
-        else:
-            tooltip = ctk.CTkToplevel(root)
-            tooltip.configure(fg_color="#ffffe0")
-            tooltip.withdraw()
-            tooltip.overrideredirect(True)
-            tooltip_label = ctk.CTkLabel(tooltip, text=tooltip_text, text_color="#000000", fg_color="#ffffe0")
-            tooltip_label.pack(expand=True, padx=2, pady=1)
-            show_tooltip._tooltip = tooltip
-        x, y = root.winfo_pointerxy()
-        tooltip.wm_geometry(f"+{x + 10}+{y + 10}")
-        tooltip.deiconify()
-    def hide_tooltip(event):
-        if hasattr(show_tooltip, "_tooltip"):
-            tooltip = show_tooltip._tooltip
-            tooltip.withdraw()
     def setup_backend_tooltip(parent):
         num_backends_built = makelabel(parent, str(len(runopts)) + "/6", 5, 2)
         num_backends_built.grid(row=1, column=2, padx=0, pady=0)
