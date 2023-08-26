@@ -8,10 +8,6 @@
 #include <hip/hip_runtime.h>
 #include <hipblas/hipblas.h>
 #include <hip/hip_fp16.h>
-#ifdef __HIP_PLATFORM_AMD__
-// for rocblas_initialize()
-#include "rocblas/rocblas.h"
-#endif
 #define CUBLAS_COMPUTE_32F HIPBLAS_R_32F
 #define CUBLAS_COMPUTE_32F_FAST_16F HIPBLAS_R_32F
 #define CUBLAS_GEMM_DEFAULT HIPBLAS_GEMM_DEFAULT
@@ -36,7 +32,6 @@
 #define cudaEventDisableTiming hipEventDisableTiming
 #define cudaEventRecord hipEventRecord
 #define cudaEvent_t hipEvent_t
-#define cudaEventDestroy hipEventDestroy
 #define cudaFree hipFree
 #define cudaFreeHost hipHostFree
 #define cudaGetDevice hipGetDevice
@@ -59,7 +54,7 @@
 #define cudaStreamCreateWithFlags hipStreamCreateWithFlags
 #define cudaStreamNonBlocking hipStreamNonBlocking
 #define cudaStreamSynchronize hipStreamSynchronize
-#define cudaStreamWaitEvent(stream, event) hipStreamWaitEvent(stream, event, 0)
+#define cudaStreamWaitEvent hipStreamWaitEvent
 #define cudaStream_t hipStream_t
 #define cudaSuccess hipSuccess
 #else
