@@ -51,9 +51,6 @@ set(LLAMA_CUDA_MMV_Y        "1" CACHE STRING "llama: y block size for mmv CUDA k
 option(LLAMA_CUDA_F16                        "llama: use 16 bit floats for dmmv CUDA kernels"   OFF)
 set(LLAMA_CUDA_KQUANTS_ITER "2" CACHE STRING "llama: iters./thread per block for Q2_K/Q6_K")
 option(LLAMA_HIPBLAS                         "llama: use hipBLAS"                               OFF)
-option(LLAMA_CLBLAST                         "llama: use CLBlast"                               OFF)
-option(LLAMA_METAL                           "llama: use Metal"                                 OFF)
-option(LLAMA_MPI                             "llama: use MPI"                                   OFF)
 option(LLAMA_K_QUANTS                        "llama: use k-quants"                              ON)
 
 

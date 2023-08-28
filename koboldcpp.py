@@ -9,7 +9,6 @@ import ctypes
 import os
 import argparse
 import json, sys, http.server, time, asyncio, socket, threading
-import re
 from concurrent.futures import ThreadPoolExecutor
 
 stop_token_max = 10
@@ -216,19 +215,28 @@ def load_model(model_filename):
     if args.useclblast:
         clblastids = 100 + int(args.useclblast[0])*10 + int(args.useclblast[1])
     inputs.clblast_info = clblastids
-    inputs.cublas_info = 0
-    if (args.usecublas and "0" in args.usecublas):
-        inputs.cublas_info = 0
-    elif (args.usecublas and "1" in args.usecublas):
-        inputs.cublas_info = 1
-    elif (args.usecublas and "2" in args.usecublas):
-        inputs.cublas_info = 2
 
     for n in range(tensor_split_max):
         if args.tensor_split and n < len(args.tensor_split):
             inputs.tensor_split[n] = float(args.tensor_split[n])
         else:
             inputs.tensor_split[n] = 0
+
+    # we must force an explicit tensor split
+    # otherwise the default will divide equally and multigpu crap will slow it down badly
+    inputs.cublas_info = 0
+    if (args.usecublas and "0" in args.usecublas):
+        inputs.cublas_info = 0
+        if not args.tensor_split:
+            inputs.tensor_split[inputs.cublas_info] = 100
+    elif (args.usecublas and "1" in args.usecublas):
+        inputs.cublas_info = 1
+        if not args.tensor_split:
+            inputs.tensor_split[inputs.cublas_info] = 100
+    elif (args.usecublas and "2" in args.usecublas):
+        inputs.cublas_info = 2
+        if not args.tensor_split:
+            inputs.tensor_split[inputs.cublas_info] = 100
 
     inputs.executable_path = (getdirpath()+"/").encode("UTF-8")
     inputs.debugmode = args.debugmode
@@ -728,7 +736,6 @@ def show_new_gui():
     tabcontentframe.grid_propagate(False)
 
     tabcontent = {}
-
     lib_option_pairs = [
         (lib_openblas, "Use OpenBLAS"),
         (lib_clblast, "Use CLBlast"),
@@ -809,33 +816,6 @@ def show_new_gui():
         button = ctk.CTkButton(parent, 50, text="Browse", command= lambda a=var,b=searchtext:getfilename(a,b))
         button.grid(row=row+1, column=1, stick="nw")
         return
-    
-    from subprocess import run, CalledProcessError
-    def get_device_names():
-        CUdevices = []
-        CLdevices = []
-        try: # Get OpenCL GPU names
-            output = run(['clinfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-            CLdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.strip().startswith("Board name:")]
-        except Exception as e:
-            pass
-        try: # Get AMD ROCm GPU names
-            output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-            device_name = None
-            for line in output.splitlines():
-                line = line.strip()
-                if line.startswith("Marketing Name:"): device_name = line.split(":", 1)[1].strip()
-                elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: CUdevices.append(device_name)
-                elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
-        except Exception as e:
-            pass
-        # try: # Get NVIDIA GPU names , Couldn't test so probably not working yet.
-        #     output = run(['nvidia-smi', '-L'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-        #     CUdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.startswith("GPU:")]
-        # except FileNotFoundError: pass
-        CUdevices.append('All') if CUdevices else CUdevices.extend(['1', '2', '3', 'All'])
-        if not CLdevices: CLdevices.extend(['1', '2', '3'])
-        return CUdevices, CLdevices
 
     def show_tooltip(event, tooltip_text=None):
         if hasattr(show_tooltip, "_tooltip"):
@@ -864,11 +844,10 @@ def show_new_gui():
         num_backends_built.bind("<Leave>", hide_tooltip)
 
     # Vars - should be in scope to be used by multiple widgets
-    CUdevices, CLdevices = get_device_names()
     gpulayers_var = ctk.StringVar(value="0")
     threads_var = ctk.StringVar(value=str(default_threads))
     runopts_var = ctk.StringVar()
-    gpu_choice_var = ctk.StringVar(value=CLdevices[0] if not None else CUdevices[0] if not None else "1")
+    gpu_choice_var = ctk.StringVar(value="1")
 
     launchbrowser = ctk.IntVar(value=1)
     highpriority = ctk.IntVar()
@@ -915,13 +894,13 @@ def show_new_gui():
     quick_tab = tabcontent["Quick Launch"]
 
     # gpu options
-
-    quick_gpu_layers_entry, quick_gpu_layers_label = makelabelentry(quick_tab, "GPU Layers:", gpulayers_var, 5, 50)
+    quick_gpu_layers_entry,quick_gpu_layers_label = makelabelentry(quick_tab,"GPU Layers:", gpulayers_var, 5, 50)
     quick_gpu_selector_label = makelabel(quick_tab, "GPU ID:", 3)
-    quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
-    CUDA_quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
-    quick_lowvram_box = makecheckbox(quick_tab, "Low VRAM", lowvram_var, 4,0)
+    quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=["1","2","3"], width=60, variable=gpu_choice_var, state="readonly")
+    CUDA_quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=["1","2","3","All"], width=60, variable=gpu_choice_var, state="readonly")
+    quick_lowvram_box = makecheckbox(quick_tab,  "Low VRAM", lowvram_var, 4,0)
     quick_mmq_box = makecheckbox(quick_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1)
+
 
     def changerunmode(a,b,c):
         index = runopts_var.get()
@@ -931,6 +910,8 @@ def show_new_gui():
             if index == "Use CLBlast":
                 gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
                 quick_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
+                if gpu_choice_var.get()=="All":
+                    gpu_choice_var.set("1")
             elif index == "Use CuBLAS/hipBLAS":
                 CUDA_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
                 CUDA_quick_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
@@ -996,9 +977,9 @@ def show_new_gui():
     # gpu options
     gpu_layers_entry,gpu_layers_label = makelabelentry(hardware_tab,"GPU Layers:", gpulayers_var, 5, 50)
     gpu_selector_label = makelabel(hardware_tab, "GPU ID:", 3)
-    gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
-    CUDA_gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
-    lowvram_box = makecheckbox(hardware_tab, "Low VRAM", lowvram_var, 4,0)
+    gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=["1","2","3"], width=60, variable=gpu_choice_var, state="readonly")
+    CUDA_gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=["1","2","3", "All"], width=60, variable=gpu_choice_var, state="readonly")
+    lowvram_box = makecheckbox(hardware_tab,  "Low VRAM", lowvram_var, 4,0)
     mmq_box = makecheckbox(hardware_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1)
 
     # presets selector
@@ -1133,14 +1114,10 @@ def show_new_gui():
         args.stream = stream.get()==1
         args.smartcontext = smartcontext.get()==1
         args.unbantokens = unbantokens.get()==1
+
         gpuchoiceidx = 0
         if gpu_choice_var.get()!="All":
-            if runopts_var.get() == "Use CLBlast": #if CLBlast selected
-                if (gpu_choice_var.get()) in CLdevices:
-                    gpuchoiceidx = CLdevices.index((gpu_choice_var.get())) 
-            elif runopts_var.get() == "Use CuBLAS/hipBLAS":
-                if (gpu_choice_var.get()) in CUdevices:
-                    gpuchoiceidx = CUdevices.index((gpu_choice_var.get()))
+            gpuchoiceidx = int(gpu_choice_var.get())-1
         if runopts_var.get() == "Use CLBlast":
             args.useclblast = [[0,0], [1,0], [0,1]][gpuchoiceidx]
         if runopts_var.get() == "Use CuBLAS/hipBLAS":
@@ -1202,15 +1179,13 @@ def show_new_gui():
         elif "usecublas" in dict and dict["usecublas"]:
             if cublas_option is not None:
                 runopts_var.set(cublas_option)
-                if len(dict["usecublas"])==1:
-                    lowvram_var.set(1 if dict["usecublas"][0]=="lowvram" else 0)
-                else:
-                    lowvram_var.set(1 if "lowvram" in dict["usecublas"] else 0)
-                    gpu_choice_var.set("1")
-                    for g in range(3):
-                        if str(g) in dict["usecublas"]:
-                            gpu_choice_var.set(str(g+1))
-                            break
+                lowvram_var.set(1 if "lowvram" in dict["usecublas"] else 0)
+                mmq_var.set(1 if "mmq" in dict["usecublas"] else 0)
+                gpu_choice_var.set("All")
+                for g in range(3):
+                    if str(g) in dict["usecublas"]:
+                        gpu_choice_var.set(str(g+1))
+                        break
         elif  "noavx2" in dict and "noblas" in dict and dict["noblas"] and dict["noavx2"]:
             if failsafe_option is not None:
                 runopts_var.set(failsafe_option)
@@ -1274,7 +1249,6 @@ def show_new_gui():
                 horde_workername_var.set(dict["hordeconfig"][4])
                 usehorde_var.set("1")
 
-        
     def save_config():
         file_type = [("KoboldCpp Settings", "*.kcpps")]
         filename = asksaveasfile(filetypes=file_type, defaultextension=file_type)
@@ -1437,7 +1411,7 @@ def show_old_gui():
         #load all the vars
         args.threads = int(threads_var.get())
         args.gpulayers = int(gpu_layers_var.get())
-    
+
         args.stream = (stream.get()==1)
         args.smartcontext = (smartcontext.get()==1)
         args.launch = (launchbrowser.get()==1)
