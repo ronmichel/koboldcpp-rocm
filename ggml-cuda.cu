@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <atomic>
 #include <assert.h>
+
 #if defined(GGML_USE_HIPBLAS)
 #include <hip/hip_runtime.h>
 #include <hipblas/hipblas.h>
@@ -68,6 +69,7 @@
 #include <cublas_v2.h>
 #include <cuda_fp16.h>
 #endif
+
 #include "ggml-cuda.h"
 #include "ggml.h"
 
@@ -304,11 +306,11 @@ typedef struct {
 #define QI4_K (QK_K / (4*QR4_K))
 #ifdef GGML_QKK_64
 typedef struct {
-    half    d[2];              // super-block scales/mins
+    half    dm[2];             // super-block scales/mins
     uint8_t scales[2];         // 4-bit block scales/mins
     uint8_t qs[QK_K/2];        // 4--bit quants
 } block_q4_K;
-static_assert(sizeof(block_q4_K) == 2*sizeof(ggml_fp16_t) + QK_K/2 + 2, "wrong q4_K block size/padding");
+static_assert(sizeof(block_q4_K) == sizeof(half2) + QK_K/2 + 2, "wrong q4_K block size/padding");
 #else
 typedef struct {
     half2 dm;                  // super-block scale for quantized scales/mins
@@ -735,8 +737,8 @@ static __global__ void dequantize_block_q4_K(const void * __restrict__ vx, float
     const int tid = threadIdx.x;
     const uint8_t * q = x[i].qs;
     float * y = yy + i*QK_K;
-    const float d = (float)x[i].d[0];
-    const float m = (float)x[i].d[1];
+    const float d = (float)x[i].dm[0];
+    const float m = (float)x[i].dm[1];
     y[tid+ 0] = d * (x[i].scales[0] & 0xF) * (q[tid] & 0xF) - m * (x[i].scales[0] >> 4);
     y[tid+32] = d * (x[i].scales[1] & 0xF) * (q[tid] >>  4) - m * (x[i].scales[1] >> 4);
 #endif
@@ -1153,8 +1155,8 @@ static __global__ void dequantize_mul_mat_vec_q4_k(const void * __restrict__ vx,
         const uint16_t * a = (const uint16_t *)x[i].scales;
         aux16[0] = a[0] & 0x0f0f;
         aux16[1] = (a[0] >> 4) & 0x0f0f;
-        const float d = (float)x[i].d[0];
-        const float m = (float)x[i].d[1];
+        const float d = (float)x[i].dm[0];
+        const float m = (float)x[i].dm[1];
         float sum = 0.f;
         for (int j = 0; j < K_QUANTS_PER_ITERATION; ++j) {
             sum += y[j+ 0] * (d * s[0] * (q[j+ 0] & 0xF) - m * s[2])
@@ -2843,8 +2845,8 @@ static __device__ __forceinline__ float vec_dot_q4_K_q8_1(
     aux16[0] = a[0] & 0x0f0f;
     aux16[1] = (a[0] >> 4) & 0x0f0f;
 
-    const float dall = bq4_K->d[0];
-    const float dmin = bq4_K->d[1];
+    const float dall = bq4_K->dm[0];
+    const float dmin = bq4_K->dm[1];
 
     const float d8_1 = __low2float(bq8_1[0].ds);
     const float d8_2 = __low2float(bq8_1[1].ds);
@@ -2927,7 +2929,11 @@ template <int mmq_y, int nwarps, bool need_check> static __device__ __forceinlin
 
         const block_q4_K * bxi = bx0 + i*blocks_per_row + kbxd;
 
+#if QK_K == 256
         x_dm[i * (WARP_SIZE/QI4_K) + i / QI4_K + kbxd] = bxi->dm;
+#else
+        x_dm[i * (WARP_SIZE/QI4_K) + i / QI4_K + kbxd] = {bxi->dm[0], bxi->dm[1]};
+#endif
     }
 
 #pragma unroll
@@ -3117,7 +3123,9 @@ template <int mmq_y, int nwarps, bool need_check> static __device__ __forceinlin
 
         const block_q5_K * bxi = bx0 + i*blocks_per_row + kbxd;
 
+#if QK_K == 256
         x_dm[i * (WARP_SIZE/QI5_K) + i / QI5_K + kbxd] = bxi->dm;
+#endif
     }
 
 #pragma unroll
@@ -4006,28 +4014,27 @@ static __global__ void rope_f32(const float * x, float * dst, const int ncols, c
     dst[i + 1] = x0*sin_theta + x1*cos_theta;
 }
 
-// TODO: this implementation is wrong!
-//static __global__ void rope_neox_f32(const float * x, float * dst, const int ncols, const float p0,
-//                                const float p_delta, const int p_delta_rows, const float theta_scale) {
-//    const int col = 2*(blockDim.y*blockIdx.y + threadIdx.y);
-//
-//    if (col >= ncols) {
-//        return;
-//    }
-//
-//    const int row = blockDim.x*blockIdx.x + threadIdx.x;
-//    const int i = row*ncols + col/2;
-//
-//    const float theta = (p0 + p_delta * (row/p_delta_rows))*powf(theta_scale, col/2);
-//    const float sin_theta = sinf(theta);
-//    const float cos_theta = cosf(theta);
-//
-//    const float x0 = x[i + 0];
-//    const float x1 = x[i + ncols/2];
-//
-//    dst[i + 0]       = x0*cos_theta - x1*sin_theta;
-//    dst[i + ncols/2] = x0*sin_theta + x1*cos_theta;
-//}
+static __global__ void rope_neox_f32(const float * x, float * dst, const int ncols, const float p0,
+                                const float p_delta, const int p_delta_rows, const float theta_scale) {
+    const int col = 2*(blockDim.y*blockIdx.y + threadIdx.y);
+
+    if (col >= ncols) {
+        return;
+    }
+
+    const int row = blockDim.x*blockIdx.x + threadIdx.x;
+    const int i = row*ncols + col/2;
+
+    const float theta = (p0 + p_delta * (row/p_delta_rows))*powf(theta_scale, col/2);
+    const float sin_theta = sinf(theta);
+    const float cos_theta = cosf(theta);
+
+    const float x0 = x[i + 0];
+    const float x1 = x[i + ncols/2];
+
+    dst[i + 0]       = x0*cos_theta - x1*sin_theta;
+    dst[i + ncols/2] = x0*sin_theta + x1*cos_theta;
+}
 
 static __global__ void rope_glm_f32(const float * x, float * dst, const int ncols, const float p, const float block_p, const float theta_scale) {
     const int col = blockDim.x*blockIdx.x + threadIdx.x;
@@ -4708,6 +4715,8 @@ static void ggml_mul_mat_q3_K_q8_1_cuda(
     const void * vx, const void * vy, float * dst, const int ncols_x, const int nrows_x,
     const int ncols_y, const int nrows_y, const int nrows_dst, cudaStream_t stream) {
 
+#if QK_K == 256
+
     int id;
     CUDA_CHECK(cudaGetDevice(&id));
     const int compute_capability = g_compute_capabilities[id];
@@ -4739,6 +4748,7 @@ static void ggml_mul_mat_q3_K_q8_1_cuda(
         mul_mat_q3_K<need_check><<<block_nums, block_dims, 0, stream>>>
             (vx, vy, dst, ncols_x, nrows_x, ncols_y, nrows_y, nrows_dst);
     }
+#endif
 }
 
 static void ggml_mul_mat_q4_K_q8_1_cuda(
@@ -4898,11 +4908,19 @@ static void scale_f32_cuda(const float * x, float * dst, const float scale, cons
 
 static void rope_f32_cuda(const float * x, float * dst, const int ncols, const int nrows, const float p0,
                           const float p_delta, const int p_delta_rows, const float theta_scale, cudaStream_t stream) {
-    GGML_ASSERT(nrows % 2 == 0);
+    GGML_ASSERT(nrows % 2 == 0); // GG: is this assert really needed? I don't see why
     const dim3 block_dims(1, 2*CUDA_ROPE_BLOCK_SIZE, 1);
     const int num_blocks_x = (ncols + 2*CUDA_ROPE_BLOCK_SIZE - 1) / (2*CUDA_ROPE_BLOCK_SIZE);
     const dim3 block_nums(nrows, num_blocks_x, 1);
     rope_f32<<<block_nums, block_dims, 0, stream>>>(x, dst, ncols, p0, p_delta, p_delta_rows, theta_scale);
+}
+
+static void rope_neox_f32_cuda(const float * x, float * dst, const int ncols, const int nrows, const float p0,
+                          const float p_delta, const int p_delta_rows, const float theta_scale, cudaStream_t stream) {
+    const dim3 block_dims(1, 2*CUDA_ROPE_BLOCK_SIZE, 1);
+    const int num_blocks_x = (ncols + 2*CUDA_ROPE_BLOCK_SIZE - 1) / (2*CUDA_ROPE_BLOCK_SIZE);
+    const dim3 block_nums(nrows, num_blocks_x, 1);
+    rope_neox_f32<<<block_nums, block_dims, 0, stream>>>(x, dst, ncols, p0, p_delta, p_delta_rows, theta_scale);
 }
 
 static void rope_glm_f32_cuda(const float * x, float * dst, const int ncols, const int nrows, const float p, const float block_p, const float theta_scale, cudaStream_t stream) {
@@ -5651,8 +5669,9 @@ inline void ggml_cuda_op_rope(
         const float block_p = max(p - (n_ctx - 2.f), 0.f);
         rope_glm_f32_cuda(src0_ddf_i, dst_ddf_i, ne00, i01_diff, id_p, block_p, theta_scale, cudaStream_main);
     } else if (is_neox) {
-        GGML_ASSERT(false && "RoPE NeoX not implemented yet");
-#pragma message("TODO: implement RoPE NeoX for CUDA")
+        GGML_ASSERT(ne00 == n_dims && "ne00 != n_dims is not implemented for CUDA yet");
+        const float p0 = (((mode & 1) == 0 ? n_past : 0)) * freq_scale;
+        rope_neox_f32_cuda(src0_ddf_i, dst_ddf_i, ne00, i01_diff, p0, freq_scale, ne01, theta_scale, cudaStream_main);
     } else {
         const float p0 = (((mode & 1) == 0 ? n_past : 0)) * freq_scale;
         rope_f32_cuda(src0_ddf_i, dst_ddf_i, ne00, i01_diff, p0, freq_scale, ne01, theta_scale, cudaStream_main);
@@ -6314,9 +6333,11 @@ void ggml_cuda_soft_max(const ggml_tensor * src0, const ggml_tensor * src1, ggml
 
 void ggml_cuda_rope(const ggml_tensor * src0, const ggml_tensor * src1, ggml_tensor * dst) {
     GGML_ASSERT(src0->type == GGML_TYPE_F32 && dst->type == GGML_TYPE_F32);
+    GGML_ASSERT(ggml_is_contiguous(src0)); // TODO: this restriction is temporary until non-cont support is implemented
 
     const int mode = ((int32_t *) dst->op_params)[2];
     const bool is_glm = mode & 4;
+
     ggml_cuda_op(src0, src1, dst, ggml_cuda_op_rope, true, !is_glm); // flatten support not implemented for glm
 }
 
