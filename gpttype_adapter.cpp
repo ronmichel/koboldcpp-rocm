@@ -550,7 +550,7 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
 
     file_format = in_file_format;
     n_threads = params.n_threads = inputs.threads;
-    n_blasthreads = inputs.blasthreads;
+    n_blasthreads = params.n_threads_batch = inputs.blasthreads;
     n_batch = params.n_batch = inputs.batch_size;
     modelname = params.model = inputs.model_filename;
     useSmartContext = inputs.use_smartcontext;
@@ -562,7 +562,17 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         blasbatchsize = 8;
     }
     params.memory_f16 = inputs.f16_kv;
-    params.n_ctx = inputs.max_context_length;
+
+    auto clamped_max_context_length = inputs.max_context_length;
+
+    if(clamped_max_context_length>16384 &&
+    file_format != FileFormat::GGUF_LLAMA && file_format!=FileFormat::GGUF_FALCON)
+    {
+        printf("Warning: Only GGUF models can use max context above 16k. Max context lowered to 16k.\n");
+        clamped_max_context_length = 16384;
+    }
+
+    params.n_ctx = clamped_max_context_length;
 
     neox_ctx_v2.hparams.n_ctx  = neox_ctx_v3.hparams.n_ctx
     = gptj_ctx_v1.hparams.n_ctx = gptj_ctx_v2.hparams.n_ctx = gptj_ctx_v3.hparams.n_ctx
@@ -594,7 +604,8 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
                 float factor = file_format_meta.n_ctx_train/2048;
                 effectivenctx = effectivenctx/factor;
             }
-            rope_freq_base = (effectivenctx <= 2048 ? 10000.0f : (effectivenctx <= 3072 ? 26000.0f : (effectivenctx <= 4096 ? 32000.0f : (effectivenctx <= 6144 ? 54000.0f : (effectivenctx <= 8192 ? 82684.0f : (effectivenctx <= 12288 ? 140000.0f : 200000.0f))))));
+            rope_freq_base = (effectivenctx <= 2048 ? 10000.0f : (effectivenctx <= 3072 ? 26000.0f : (effectivenctx <= 4096 ? 32000.0f : (effectivenctx <= 6144 ? 54000.0f :
+            (effectivenctx <= 8192 ? 82684.0f : (effectivenctx <= 12288 ? 140000.0f : (effectivenctx <= 16384 ? 200000.0f : (effectivenctx <= 24576 ? 320000.0f : 440000.0f))))))));
 
         }
 
@@ -633,7 +644,7 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         //newer format has bit unshuffling
         SetQuantsUnshuffled(file_format == FileFormat::GGJT_2);
         llama_v2_context_params llama_ctx_params_v2 = llama_v2_context_default_params();
-        llama_ctx_params_v2.n_ctx = inputs.max_context_length;
+        llama_ctx_params_v2.n_ctx = clamped_max_context_length;
         //llama_ctx_params.n_parts = -1;
         llama_ctx_params_v2.seed = -1;
         llama_ctx_params_v2.f16_kv = inputs.f16_kv;
@@ -683,7 +694,7 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
     else if(file_format == FileFormat::GGJT_3)
     {
         llama_v3_context_params llama_ctx_params = llama_v3_context_default_params();
-        llama_ctx_params.n_ctx = inputs.max_context_length;
+        llama_ctx_params.n_ctx = clamped_max_context_length;
         //llama_ctx_paran_parts = -1;
         llama_ctx_params.seed = -1;
         llama_ctx_params.f16_kv = inputs.f16_kv;
@@ -753,25 +764,26 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
     }
     else if(file_format==FileFormat::GGUF_LLAMA || file_format==FileFormat::GGUF_FALCON)
     {
+        llama_model_params model_params = llama_model_default_params();
         llama_context_params llama_ctx_params = llama_context_default_params();
-        llama_ctx_params.n_ctx = inputs.max_context_length;
+        llama_ctx_params.n_ctx = clamped_max_context_length;
         //llama_ctx_paran_parts = -1;
         llama_ctx_params.seed = -1;
         llama_ctx_params.f16_kv = inputs.f16_kv;
-        llama_ctx_params.low_vram = inputs.low_vram;
+        //llama_ctx_params.low_vram = inputs.low_vram;
         llama_ctx_params.mul_mat_q = inputs.use_mmq;
         llama_ctx_params.logits_all = false;
-        llama_ctx_params.use_mmap = inputs.use_mmap;
-        llama_ctx_params.use_mlock = inputs.use_mlock;
-        llama_ctx_params.n_gpu_layers = inputs.gpulayers;
+        model_params.use_mmap = inputs.use_mmap;
+        model_params.use_mlock = inputs.use_mlock;
+        model_params.n_gpu_layers = inputs.gpulayers;
         #if defined(GGML_USE_CLBLAST)
-        if(file_format==FileFormat::GGUF_FALCON && llama_ctx_params.n_gpu_layers>0)
+        if(file_format==FileFormat::GGUF_FALCON && model_params.n_gpu_layers>0)
         {
             printf("\nGPU layer offload for GGUF FALCON on OpenCL is known to have issues, it has been set to 0.\n");
-            llama_ctx_params.n_gpu_layers = 0;
+            model_params.n_gpu_layers = 0;
         }
         #endif
-        llama_ctx_params.main_gpu = cu_parseinfo_maindevice;
+        model_params.main_gpu = cu_parseinfo_maindevice;
         llama_ctx_params.rope_freq_base = rope_freq_base;
         llama_ctx_params.rope_freq_scale = rope_freq_scale;
         llama_ctx_params.n_batch = blasbatchsize;
@@ -786,11 +798,12 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         }
         if(!ts_all_zero)
         {
-            llama_ctx_params.tensor_split = inputs.tensor_split;
+            model_params.tensor_split = inputs.tensor_split;
         }
         #endif
 
-        llama_ctx_v4 = llama_init_from_file(modelname.c_str(), llama_ctx_params);
+        llama_model * llamamodel = llama_load_model_from_file(modelname.c_str(), model_params);
+        llama_ctx_v4 = llama_new_context_with_model(llamamodel, llama_ctx_params);
 
         if (llama_ctx_v4 == NULL)
         {
@@ -809,6 +822,7 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
 
             int err = llama_apply_lora_from_file(llama_ctx_v4,
                                                  lora_filename.c_str(),
+                                                 1.0f,
                                                  lora_base_arg,
                                                  n_threads);
             if (err != 0)
@@ -818,11 +832,11 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
             }
         }
 
-        n_vocab = llama_n_vocab(llama_ctx_v4);
+        n_vocab = llama_n_vocab(llamamodel);
 
         //determine mem per token
-        const std::vector<int> tmp = {1, 2, 3, 4};
-        auto er = llama_eval(llama_ctx_v4, tmp.data(), tmp.size(), 0, params.n_threads);
+        std::vector<int> tmp = {1, 2, 3, 4};
+        auto er = llama_eval(llama_ctx_v4, tmp.data(), tmp.size(), 0);
         if(er!=0)
         {
             printf("\nLLAMA EVAL returned nonzero!\n");
@@ -1261,6 +1275,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     params.n_ctx = inputs.max_context_length;
     params.n_batch = n_batch;
     params.n_threads = n_threads;
+    params.n_threads_batch = n_blasthreads;
     bool stream_sse = inputs.stream_sse;
 
     generation_finished = false; // Set current generation status
@@ -1337,10 +1352,12 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         if(!ggml_cpu_has_gpublas())
         {
             params.n_threads = 1; //do not limit here anymore.
+            params.n_threads_batch = 1;
         }
         else
         {
             params.n_threads = n_blasthreads;
+            params.n_threads_batch = n_blasthreads;
         }
     }
 
@@ -1454,7 +1471,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         ::utreplace(tmp, "\n", "\\n");
         outstr += tmp;
 
-        outstr += "\n\n[Debug: Context Size = " + std::to_string(current_context_tokens.size()) + "]\n";
+        outstr += "\n\n[Debug: n_past="+std::to_string(n_past)+" Context Size = " + std::to_string(current_context_tokens.size()) + "]\n";
         tmp = "";
         for (auto id : current_context_tokens)
         {
@@ -1492,7 +1509,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
             }
             else if(file_format == FileFormat::GGUF_LLAMA || file_format==FileFormat::GGUF_FALCON)
             {
-                evalres = (llama_eval(llama_ctx_v4, embd.data(), embdsize, n_past, params.n_threads)==0);
+                evalres = (llama_eval(llama_ctx_v4, embd.data(), embdsize, n_past)==0);
             }
             else if(file_format==FileFormat::RWKV_1 || file_format==FileFormat::RWKV_2)
             {
