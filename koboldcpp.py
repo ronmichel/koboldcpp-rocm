@@ -366,7 +366,7 @@ maxhordelen = 256
 modelbusy = threading.Lock()
 requestsinqueue = 0
 defaultport = 5001
-KcppVersion = "1.47.2.yr0-ROCm"
+KcppVersion = "1.48.yr0-ROCm"
 showdebug = True
 showsamplerwarning = True
 showmaxctxwarning = True
@@ -528,7 +528,7 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         current_token = 0
         incomplete_token_buffer = bytearray()
-        await asyncio.sleep(0.1) #anti race condition, prevent check from overtaking generate
+        await asyncio.sleep(0.05) #anti race condition, prevent check from overtaking generate
         while True:
             streamDone = handle.has_finished() #exit next loop on done
             tokenStr = ""
@@ -566,9 +566,9 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         # flush buffers, sleep a bit to make sure all data sent, and then force close the connection
         self.wfile.flush()
-        await asyncio.sleep(0.2)
-        self.close_connection = True
         await asyncio.sleep(0.1)
+        self.close_connection = True
+        await asyncio.sleep(0.05)
 
 
     async def handle_request(self, genparams, api_format, stream_flag):
@@ -584,6 +584,10 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
             await asyncio.gather(*tasks)
             generate_result = generate_task.result()
             return generate_result
+        except ConnectionAbortedError as cae: # attempt to abort if connection lost
+            print(cae)
+            handle.abort_generate()
+            time.sleep(0.1) #short delay
         except Exception as e:
             print(e)
 
