@@ -42,8 +42,8 @@ endif
 CFLAGS   = -I.            -I./include -I./include/CL -I./otherarch -I./otherarch/tools -Ofast -DNDEBUG -std=c11   -fPIC -DLOG_DISABLE_LOGS -D_GNU_SOURCE
 CXXFLAGS = -I. -I./common -I./include -I./include/CL -I./otherarch -I./otherarch/tools -Ofast -DNDEBUG -std=c++11 -fPIC -DLOG_DISABLE_LOGS -D_GNU_SOURCE
 LDFLAGS  =
-CC         := gcc-13
-CXX        := g++-13
+#CC         := clang-17
+#CXX        := clang++-17
 
 ifndef LLAMA_NO_K_QUANTS
 CFLAGS   += -DGGML_USE_K_QUANTS
@@ -210,9 +210,13 @@ ifdef LLAMA_HIPBLAS
 	HCXX        := $(ROCM_PATH)/llvm/bin/clang++
 	GPU_TARGETS ?= gfx803 gfx900 gfx906 gfx908 gfx90a gfx1030 gfx1100 $(shell $(ROCM_PATH)/llvm/bin/amdgpu-arch)
 	LLAMA_CUDA_DMMV_X ?= 32
-	LLAMA_CUDA_MMV_Y ?= 2
+	LLAMA_CUDA_MMV_Y ?= 1
 	LLAMA_CUDA_KQUANTS_ITER ?= 2
+	LLAMA_CUDA_FORCE_MMQ ?= True
 	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
+ifdef LLAMA_CUDA_FORCE_MMQ
+	HIPFLAGS += -DGGML_CUDA_FORCE_MMQ
+endif # LLAMA_CUDA_FORCE_MMQ
 ifdef LLAMA_CUDA_FORCE_DMMV
 	HIPFLAGS 	+= -DGGML_CUDA_FORCE_DMMV
 endif # LLAMA_CUDA_FORCE_DMMV

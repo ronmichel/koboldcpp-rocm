@@ -1202,7 +1202,7 @@ static void llama_v3_model_load_internal(
 #if defined(GGML_USE_CUBLAS)
     LLAMA_V3_LOG_INFO("%s: using CUDA for GPU acceleration\n", __func__);
     ggml_cuda_set_main_device(main_gpu);
-    ggml_cuda_set_mul_mat_q(mul_mat_q);
+    //ggml_cuda_set_mul_mat_q(mul_mat_q);
 #define LLAMA_V3_BACKEND_OFFLOAD       GGML_BACKEND_GPU
 #define LLAMA_V3_BACKEND_OFFLOAD_SPLIT GGML_BACKEND_GPU_SPLIT
 #elif defined(GGML_USE_CLBLAST)
