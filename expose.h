@@ -38,7 +38,6 @@ struct load_model_inputs
     const bool use_mmap;
     const bool use_mlock;
     const bool use_smartcontext;
-    const bool unban_tokens;
     const int clblast_info = 0;
     const int cublas_info = 0;
     const int blasbatchsize = 512;
@@ -73,6 +72,7 @@ struct generation_inputs
     const char * stop_sequence[stop_token_max];
     const bool stream_sse;
     const char * grammar;
+    const bool grammar_retain_state;
 };
 struct generation_outputs
 {

@@ -74,12 +74,10 @@ jobs:
           copy "C:\Program Files\AMD\ROCm\5.5\bin\hipblas.dll" .\
           copy "C:\Program Files\AMD\ROCm\5.5\bin\rocblas.dll" .\
           robocopy "C:\Program Files\AMD\ROCm\5.5\bin\rocblas" .\rocblas /MIR
-          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/v1.43.2-ROCm/gfx103132rocblasfiles.7z
-          7z x gfx103132rocblasfiles.7z -o.\rocblas
-          robocopy extracted_files\rocblas  .\rocblas /MIR
           pip install customtkinter
           PyInstaller --noconfirm --onefile --collect-all customtkinter --clean --console --icon ".\niko.ico" --add-data "./klite.embd;." --add-data "D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll;." --add-data "./hipblas.dll;." --add-data "./rocblas.dll;." --add-data "./rwkv_vocab.embd;." --add-data "./rwkv_world_vocab.embd;." --add-data "./rocblas;." --add-data "C:/Windows/System32/msvcp140.dll;." --add-data "C:/Windows/System32/vcruntime140_1.dll;." "./koboldcpp.py" -n "koboldcpp_rocm_only.exe"
-        
+#          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/v1.43.2-ROCm/gfx103132rocblasfiles.7z
+#          7z x gfx103132rocblasfiles.7z 
       - uses: actions/upload-artifact@v3
         with:
           name: koboldcpp_hipblas-${{ inputs.version }}

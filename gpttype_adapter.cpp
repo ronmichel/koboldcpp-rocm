@@ -44,6 +44,7 @@ std::vector<std::string> generated_tokens;
 
 llama_grammar *  grammar = nullptr; //currently used grammar
 grammar_parser::parse_state parsed_grammar;
+static std::string current_grammar = "";
 
 //return val: 0=fail, 1=(original ggml, alpaca), 2=(ggmf), 3=(ggjt)
 static FileFormat file_format = FileFormat::BADFORMAT;
@@ -77,7 +78,6 @@ static int n_threads = 4;
 static int n_blasthreads = 4;
 static int n_batch = 8;
 static bool useSmartContext = false;
-static bool unbanTokens = false;
 static int blasbatchsize = 512;
 static int debugmode = 0; //-1 = hide all, 0 = normal, 1 = showall
 static std::string modelname;
@@ -159,7 +159,7 @@ static void TokenizeString(const std::string & str_to_tokenize, std::vector<int>
         }
         else
         {
-            output_tokens = ::llama_tokenize(llama_ctx_v4, str_to_tokenize, true);
+            output_tokens = ::llama_tokenize(llama_ctx_v4, str_to_tokenize, true, true);
         }
     }
     else
@@ -176,7 +176,7 @@ static int GetEosID(FileFormat file_format, int32_t n_vocab)
     {
         if(file_format == FileFormat::GGUF_LLAMA || file_format==FileFormat::GGUF_FALCON)
         {
-            eosID = llama_token_eos(llama_ctx_v4);
+            eosID = llama_token_eos(&(llama_ctx_v4->model));
         }
         else if(file_format == FileFormat::GGJT_3)
         {
@@ -369,9 +369,35 @@ void sample_top_a(llama_token_data_array * candidates, float a, size_t min_keep)
 void sample_rep_pen(int n_ctx, int rep_pen_range, float rep_pen, llama_token_data_array * candidates_p)
 {
     auto last_n_repeat = std::min(std::min((int)last_n_tokens.size(), rep_pen_range), n_ctx);
-    llama_sample_repetition_penalty(nullptr, candidates_p,
-        last_n_tokens.data() + last_n_tokens.size() - last_n_repeat,
-        last_n_repeat, rep_pen);
+
+    const llama_token * last_tokens =  last_n_tokens.data() + last_n_tokens.size() - last_n_repeat;
+    size_t last_tokens_size = last_n_repeat;
+    llama_token_data_array * candidates = candidates_p;
+    float penalty = rep_pen;
+
+    if (last_tokens_size == 0 || penalty == 1.0f) {
+        return;
+    }
+
+    const int64_t t_start_sample_us = ggml_time_us();
+
+    for (size_t i = 0; i < candidates->size; ++i) {
+        const auto * token_iter = std::find(last_tokens, last_tokens + last_tokens_size, candidates->data[i].id);
+        if (token_iter == last_tokens + last_tokens_size) {
+            continue;
+        }
+
+        // The academic publication that described this technique actually just only divided, but that would cause tokens with negative logits to become more likely, which is obviously wrong.
+        // This is common fix for this problem, which is to multiply by the penalty instead of dividing.
+        if (candidates->data[i].logit <= 0) {
+            candidates->data[i].logit *= penalty;
+        } else {
+            candidates->data[i].logit /= penalty;
+        }
+    }
+
+    candidates->sorted = false;
+
 }
 
 void sample_temperature(llama_token_data_array * candidates_p, float temp)
@@ -544,6 +570,33 @@ static void load_grammar(const std::string & gammarstr)
     }
 }
 
+//given an old GGUF context and a new context that has some middle portion removed,
+//find and remove the middle portion from the old context from the KV. Does not fast forward after this destructive action
+void PurgeMissingTokens(std::vector<int> &current_context_tokens, std::vector<int> &new_context_tokens)
+{
+    //scan from start old and new ctx, until first mismatch found, save as p0
+    //check remaining old and new ctx for longest common subseq, which needs to be at 256 tokens
+    //test: longest common subseq (LCQ) MUST start within 0 tokens from end of memory, otherwise purge fails
+    //if passed, save beginning of LCQ from old ctx as p1
+    //remove all tokens from old ctx between p0 and p1, updating both arrays and kv, then continue as normal
+
+    // int trimstart = 0;
+
+    // const int n_keep = 0;
+    // const int n_left = n_past - n_keep - 1;
+    // const int n_discard = n_left/2;
+
+    // printf("context full, swapping: n_past = %d, n_left = %d, n_ctx = %d, n_keep = %d, n_discard = %d\n",
+    //     n_past, n_left, nctx, n_keep, n_discard);
+
+    // llama_kv_cache_seq_rm   (llama_ctx_v4, 0, n_keep + 1            , n_keep + n_discard + 1);
+    // llama_kv_cache_seq_shift(llama_ctx_v4, 0, n_keep + 1 + n_discard, n_past, -n_discard);
+    // n_past -= n_discard;
+
+    // printf("after swap: n_past = %d\n", n_past);
+
+}
+
 ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in_file_format, FileFormatExtraMeta file_format_meta)
 {
     ggml_time_init();
@@ -555,7 +608,6 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
     modelname = params.model = inputs.model_filename;
     useSmartContext = inputs.use_smartcontext;
     debugmode = inputs.debugmode;
-    unbanTokens = inputs.unban_tokens;
     blasbatchsize = inputs.blasbatchsize;
     if(blasbatchsize<=0)
     {
@@ -607,6 +659,10 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
             rope_freq_base = (effectivenctx <= 2048 ? 10000.0f : (effectivenctx <= 3072 ? 26000.0f : (effectivenctx <= 4096 ? 32000.0f : (effectivenctx <= 6144 ? 54000.0f :
             (effectivenctx <= 8192 ? 82684.0f : (effectivenctx <= 12288 ? 140000.0f : (effectivenctx <= 16384 ? 200000.0f : (effectivenctx <= 24576 ? 320000.0f : 440000.0f))))))));
 
+            if(file_format_meta.freq_base_train > rope_freq_base)
+            {
+                rope_freq_base = file_format_meta.freq_base_train;
+            }
         }
 
         printf("Using automatic RoPE scaling (scale:%.3f, base:%.1f)\n",rope_freq_scale,rope_freq_base);
@@ -787,6 +843,8 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         llama_ctx_params.rope_freq_base = rope_freq_base;
         llama_ctx_params.rope_freq_scale = rope_freq_scale;
         llama_ctx_params.n_batch = blasbatchsize;
+        llama_ctx_params.n_threads = n_threads;
+        llama_ctx_params.n_threads_batch = n_blasthreads;
 
         #if defined(GGML_USE_CUBLAS)
         bool ts_all_zero = true;
@@ -801,6 +859,14 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
             model_params.tensor_split = inputs.tensor_split;
         }
         #endif
+
+        //compat for old falcon
+        if(file_format_meta.fileversion==1)
+        {
+            //apply compat fix
+            printf("\nUsing older tokenizer for GGUFv1...");
+            OldBPETokenizerMode = true;
+        }
 
         llama_model * llamamodel = llama_load_model_from_file(modelname.c_str(), model_params);
         llama_ctx_v4 = llama_new_context_with_model(llamamodel, llama_ctx_params);
@@ -1282,7 +1348,20 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     generated_tokens.clear(); // New Generation, new tokens
 
     std::string grammarstr = inputs.grammar;
-    load_grammar(grammarstr);
+    bool grammar_retain_state = inputs.grammar_retain_state;
+    if(grammar_retain_state)
+    {
+        if(grammarstr=="" || current_grammar!=grammarstr) //if grammar is identical, retain state
+        {
+            load_grammar(grammarstr);
+        }
+    }
+    else
+    {
+        load_grammar(grammarstr);
+    }
+    current_grammar = grammarstr;
+
 
     if (params.repeat_last_n < 1)
     {
@@ -1290,7 +1369,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     }
     if (params.top_k < 1)
     {
-        params.top_k = 120; //to disable top_k we actually need to increase this value to a very high number
+        params.top_k = n_vocab; // all tokens in the vocabulary should be considered if top k is disabled
     }
     if (params.seed <= 0 || params.seed==0xFFFFFFFF)
     {
@@ -1318,6 +1397,8 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
 
     std::fill(last_n_tokens.begin(), last_n_tokens.end(), 0);
     n_past = 0;
+
+    PurgeMissingTokens(current_context_tokens, embd_inp);
 
     if (file_format == FileFormat::RWKV_1 || file_format==FileFormat::RWKV_2)
     {
@@ -1351,7 +1432,9 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         params.n_batch = bbs; //received reports of 1024 and above crashing on some models
         if(!ggml_cpu_has_gpublas())
         {
-            params.n_threads = 1; //do not limit here anymore.
+            //does not limit here for gguf anymore. this is kept for older models.
+            //new models will override threads inside decode fn.
+            params.n_threads = 1;
             params.n_threads_batch = 1;
         }
         else
@@ -1638,7 +1721,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
                 lowestLogit = LowestLogit(logits);
             }
 
-            if (!unbanTokens && !inputs.unban_tokens_rt)
+            if (!inputs.unban_tokens_rt)
             {
                 // set the logit of the eos token to very low to avoid sampling it
                 logitsPtr[eosID] = lowestLogit;
@@ -1703,10 +1786,13 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
                 printf("]\n");
             }
 
-            if((unbanTokens||inputs.unban_tokens_rt) && id==eosID)
+            if(inputs.unban_tokens_rt && id==eosID)
             {
                 stopper_unused_tokens = remaining_tokens;
-                printf("\n(EOS token triggered!)");
+                if(debugmode!=-1)
+                {
+                    printf("\n(EOS token triggered!)");
+                }
                 remaining_tokens = 0;
                 last_stop_reason = stop_reason::EOS_TOKEN;
             }
@@ -1749,7 +1835,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     int realnpredict = params.n_predict-stopper_unused_tokens;
     float pt2 = (time2*1000.0/(realnpredict==0?1:realnpredict));
     float tokens_per_second = (realnpredict == 0 ? 0 : realnpredict / (time1 + time2));
-    printf("\nTime Taken - Processing:%.1fs (%.0fms/T), Generation:%.1fs (%.0fms/T), Total:%.1fs (%.1fT/s)", time1, pt1, time2, pt2, (time1 + time2), tokens_per_second);
+    printf("\nContextLimit: %d/%d, Processing:%.1fs (%.0fms/T), Generation:%.1fs (%.0fms/T), Total:%.1fs (%.1fT/s)",current_context_tokens.size(),nctx, time1, pt1, time2, pt2, (time1 + time2), tokens_per_second);
     fflush(stdout);
     output.status = 1;
     generation_finished = true;

@@ -63,9 +63,8 @@ static void llama_v3_log_callback_default(llama_v3_log_level level, const char *
 #define LLAMA_V3_LOG_WARN(...)  llama_v3_log_internal(LLAMA_V3_LOG_LEVEL_WARN , __VA_ARGS__)
 #define LLAMA_V3_LOG_ERROR(...) llama_v3_log_internal(LLAMA_V3_LOG_LEVEL_ERROR, __VA_ARGS__)
 
-
-#if !defined(GGML_USE_CUBLAS)
 #include "ggml-alloc.h"
+#if !defined(GGML_USE_CUBLAS)
 #define LLAMA_V3_USE_ALLOCATOR
 #else
 #define LLAMA_V3_USE_SCRATCH
@@ -725,7 +724,7 @@ struct llama_v3_model_loader {
         }
     }
 
-    struct ggml_tensor * get_tensor(const std::string & name, const std::vector<uint32_t> & ne, ggml_backend backend) {
+    struct ggml_tensor * get_tensor(const std::string & name, const std::vector<uint32_t> & ne, ggml_backend_type backend) {
         auto it = tensors_map.name_to_idx.find(name);
         if (it == tensors_map.name_to_idx.end()) {
             throw std::runtime_error(std::runtime_error(format_old("llama.cpp: tensor '%s' is missing from model", name.c_str())));
@@ -739,7 +738,7 @@ struct llama_v3_model_loader {
         return get_tensor_for(lt, backend);
     }
 
-    struct ggml_tensor * get_tensor_for(llama_v3_load_tensor & lt, ggml_backend backend) {
+    struct ggml_tensor * get_tensor_for(llama_v3_load_tensor & lt, ggml_backend_type backend) {
         struct ggml_tensor * tensor;
         if (backend != GGML_BACKEND_CPU) {
             ggml_set_no_alloc(ggml_ctx, true);
@@ -1203,7 +1202,7 @@ static void llama_v3_model_load_internal(
 #if defined(GGML_USE_CUBLAS)
     LLAMA_V3_LOG_INFO("%s: using CUDA for GPU acceleration\n", __func__);
     ggml_cuda_set_main_device(main_gpu);
-    ggml_cuda_set_mul_mat_q(mul_mat_q);
+    //ggml_cuda_set_mul_mat_q(mul_mat_q);
 #define LLAMA_V3_BACKEND_OFFLOAD       GGML_BACKEND_GPU
 #define LLAMA_V3_BACKEND_OFFLOAD_SPLIT GGML_BACKEND_GPU_SPLIT
 #elif defined(GGML_USE_CLBLAST)
@@ -1230,8 +1229,8 @@ static void llama_v3_model_load_internal(
 
         // "output" tensor
         {
-            ggml_backend backend_norm;
-            ggml_backend backend_output;
+            ggml_backend_type backend_norm;
+            ggml_backend_type backend_output;
             if (n_gpu_layers > int(n_layer)) { // NOLINT
                 // norm is not performance relevant on its own but keeping it in VRAM reduces data copying
                 // on Windows however this is detrimental unless everything is on the GPU
@@ -1261,8 +1260,8 @@ static void llama_v3_model_load_internal(
 
         model.layers.resize(n_layer);
         for (uint32_t i = 0; i < n_layer; ++i) {
-            const ggml_backend backend = int(i) < i_gpu_start ? GGML_BACKEND_CPU : LLAMA_V3_BACKEND_OFFLOAD; // NOLINT
-            const ggml_backend backend_split = int(i) < i_gpu_start ? GGML_BACKEND_CPU : LLAMA_V3_BACKEND_OFFLOAD_SPLIT; // NOLINT
+            const ggml_backend_type backend = int(i) < i_gpu_start ? GGML_BACKEND_CPU : LLAMA_V3_BACKEND_OFFLOAD; // NOLINT
+            const ggml_backend_type backend_split = int(i) < i_gpu_start ? GGML_BACKEND_CPU : LLAMA_V3_BACKEND_OFFLOAD_SPLIT; // NOLINT
 
             auto & layer = model.layers[i];
 
@@ -3764,14 +3763,17 @@ int llama_v3_apply_lora_from_file_internal(const struct llama_v3_model & model, 
             offload_func_t offload_func = llama_v3_nop;
             offload_func_t offload_func_force_inplace = llama_v3_nop;
 
-#ifdef GGML_USE_CUBLAS
+#if defined(GGML_USE_CUBLAS) || defined(GGML_USE_CLBLAST)
             if (dest_t->backend == GGML_BACKEND_GPU || dest_t->backend == GGML_BACKEND_GPU_SPLIT) {
                 if (dest_t->type != GGML_TYPE_F16) {
+                    printf("\nError: the simultaneous use of LoRAs and GPU acceleration is only supported for f16 models\n");
                     throw std::runtime_error(format_old(
-                        "%s: error: the simultaneous use of LoRAs and GPU acceleration is only supported for f16 models", __func__));
+                        "%s: error: lora failed", __func__));
                 }
+#if defined(GGML_USE_CUBLAS)
                 offload_func = ggml_cuda_assign_buffers;
                 offload_func_force_inplace = ggml_cuda_assign_buffers_force_inplace;
+#endif
             }
 #endif // GGML_USE_CUBLAS
 
