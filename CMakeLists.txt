@@ -174,11 +174,17 @@ endif()
 
 if (LLAMA_HIPBLAS)
     if (MSVC)
-        list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/AMD/ROCm/5.5")
+        execute_process(COMMAND 
+            powershell.exe 
+            "-Command \"Get-ChildItem 'C:/Program Files/AMD/ROCm/' | Sort-Object { version } | Select-Object -Last 1 | ForEach-Object { Write-Output $_.FullName }\""
+            OUTPUT_VARIABLE ROCM_PATH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
+        message("ROCM_PATH: ${ROCM_PATH}") 
     else()
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
-
 
     if (NOT ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
         message(WARNING "Only LLVM is supported for HIP, hint: CC=/opt/rocm/llvm/bin/clang")
