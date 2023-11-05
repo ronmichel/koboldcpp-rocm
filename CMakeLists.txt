@@ -186,6 +186,7 @@ if (LLAMA_HIPBLAS)
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
 
+
     if (NOT ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
         message(WARNING "Only LLVM is supported for HIP, hint: CC=/opt/rocm/llvm/bin/clang")
     endif()
@@ -202,35 +203,35 @@ if (LLAMA_HIPBLAS)
         add_compile_definitions(GGML_USE_HIPBLAS GGML_USE_CUBLAS)
         add_library(ggml-rocm OBJECT ${GGML_SOURCES_CUDA})
         if (LLAMA_CUDA_FORCE_DMMV)
-            target_compile_definitions(ggml-rocm PRIVATE GGML_CUDA_FORCE_DMMV)
+            target_compile_definitions(ggml-rocm PUBLIC GGML_CUDA_FORCE_DMMV)
         endif()
-        target_compile_definitions(ggml-rocm PRIVATE GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
-        target_compile_definitions(ggml-rocm PRIVATE GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
-        target_compile_definitions(ggml-rocm PRIVATE K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
+        target_compile_definitions(ggml-rocm PUBLIC GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        target_compile_definitions(ggml-rocm PUBLIC GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
+        target_compile_definitions(ggml-rocm PUBLIC K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
         set_source_files_properties(ggml-cuda.cu PROPERTIES LANGUAGE CXX)
-        target_link_libraries(ggml-rocm PRIVATE hip::device PUBLIC hip::host roc::rocblas roc::hipblas)
+        target_link_libraries(ggml-rocm PUBLIC hip::device hip::host roc::rocblas roc::hipblas)
 
 
         add_library(ggml-v2-rocm OBJECT ${GGML_V2_CUDA_SOURCES})
         if (LLAMA_CUDA_FORCE_DMMV)
-            target_compile_definitions(ggml-v2-rocm PRIVATE GGML_CUDA_FORCE_DMMV)
+            target_compile_definitions(ggml-v2-rocm PUBLIC GGML_CUDA_FORCE_DMMV)
         endif()
-        target_compile_definitions(ggml-v2-rocm PRIVATE GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
-        target_compile_definitions(ggml-v2-rocm PRIVATE GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
-        target_compile_definitions(ggml-v2-rocm PRIVATE K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
+        target_compile_definitions(ggml-v2-rocm PUBLIC GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        target_compile_definitions(ggml-v2-rocm PUBLIC GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
+        target_compile_definitions(ggml-v2-rocm PUBLIC K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
         set_source_files_properties(otherarch/ggml_v2-cuda.cu PROPERTIES LANGUAGE CXX)
-        target_link_libraries(ggml-v2-rocm PRIVATE hip::device PUBLIC hip::host roc::rocblas roc::hipblas)
+        target_link_libraries(ggml-v2-rocm PUBLIC hip::device hip::host roc::rocblas roc::hipblas)
 
 
         add_library(ggml-v2-legacy-rocm OBJECT ${GGML_V2_LEGACY_CUDA_SOURCES})
         if (LLAMA_CUDA_FORCE_DMMV)
-            target_compile_definitions(ggml-v2-legacy-rocm PRIVATE GGML_CUDA_FORCE_DMMV)
+            target_compile_definitions(ggml-v2-legacy-rocm PUBLIC GGML_CUDA_FORCE_DMMV)
         endif()
-        target_compile_definitions(ggml-v2-legacy-rocm PRIVATE GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
-        target_compile_definitions(ggml-v2-legacy-rocm PRIVATE GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
-        target_compile_definitions(ggml-v2-legacy-rocm PRIVATE K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
+        target_compile_definitions(ggml-v2-legacy-rocm PUBLIC GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        target_compile_definitions(ggml-v2-legacy-rocm PUBLIC GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
+        target_compile_definitions(ggml-v2-legacy-rocm PUBLIC K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
         set_source_files_properties(otherarch/ggml_v2-cuda-legacy.cu PROPERTIES LANGUAGE CXX)
-        target_link_libraries(ggml-v2-legacy-rocm PRIVATE hip::device PUBLIC hip::host roc::rocblas roc::hipblas)
+        target_link_libraries(ggml-v2-legacy-rocm PUBLIC hip::device hip::host roc::rocblas roc::hipblas)
 
 
 
@@ -457,8 +458,8 @@ add_library(ggml OBJECT
             ggml-backend.c
             ggml-backend.h
             ggml-quants.c
-            ggml-quants.h)
-            
+            ggml-quants.h
+            )
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
