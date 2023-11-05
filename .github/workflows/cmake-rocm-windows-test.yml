@@ -1,4 +1,4 @@
-name: Build Koboldcpp-ROCm Windows
+name: Test Build Koboldcpp-ROCm Windows
 
 on:
   workflow_dispatch:
