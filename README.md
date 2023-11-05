@@ -103,9 +103,29 @@ For more information, be sure to run the program with the `--help` flag.
 ## AMD
 - Please check out https://github.com/YellowRoseCx/koboldcpp-rocm (you're already here (:)
 
-## Cloud / Colab
-- KoboldCpp now has an official Colab GPU Notebook! [Try it here](https://colab.research.google.com/github/LostRuins/koboldcpp/blob/concedo/colab.ipynb).
-- Note that KoboldCpp is not responsible for your usage of this Colab Notebook, you should ensure that your own usage complies with Google Colab's terms of use.
+## Docker
+- KoboldCpp has a few unofficial third-party community created docker images. Feel free to try them out, but do not expect up-to-date support:
+  - https://github.com/korewaChino/koboldCppDocker
+  - https://github.com/noneabove1182/koboldcpp-docker
+  
+## Arch Linux Packages
+There are 4 AUR packages available: [CPU-only](https://aur.archlinux.org/packages/koboldcpp-cpu), [CLBlast](https://aur.archlinux.org/packages/koboldcpp-clblast), [CUBLAS](https://aur.archlinux.org/packages/koboldcpp-cuda), and [HIPBLAS](https://aur.archlinux.org/packages/koboldcpp-hipblas). They are, respectively, for users with no GPU, users with a GPU (vendor-agnostic), users with NVIDIA GPUs, and users with a supported AMD GPU.
+
+The recommended installation method is through an AUR helper such as [paru](https://aur.archlinux.org/packages/paru) or [yay](https://aur.archlinux.org/packages/yay):
+
+```sh
+paru -S koboldcpp-cpu
+```
+
+Alternatively, you can manually install, though it's not recommended (since the build depends on [customtkinter](https://aur.archlinux.org/packages/customtkinter)):
+
+```sh
+git clone https://aur.archlinux.org/koboldcpp-cpu.git && cd koboldcpp-cpu
+
+makepkg -si
+```
+
+You can then run koboldcpp anywhere from the terminal by running `koboldcpp` to spawn the GUI, or `koboldcpp --help` to view the list of commands for commandline execution (in case the GUI does not work).
 
 ## Questions and Help
 - **First, please check out [The KoboldCpp FAQ and Knowledgebase](https://github.com/LostRuins/koboldcpp/wiki) which may already have answers to your questions! Also please search through past issues and discussions.**

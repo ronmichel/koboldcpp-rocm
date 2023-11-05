@@ -4,6 +4,7 @@
 .DS_Store
 .build/
 .cache/
+.ccls-cache/
 .direnv/
 .envrc
 .swiftpm
@@ -53,7 +54,7 @@ models-mnt
 /parallel
 /train-text-from-scratch
 /vdot
-build-info.h
+/common/build-info.cpp
 arm_neon.h
 compile_commands.json
 CMakeSettings.json
@@ -95,12 +96,14 @@ tests/test-tokenizer-1-bpe
 /koboldcpp_openblas.so
 /koboldcpp_noavx2.so
 /koboldcpp_clblast.so
+/koboldcpp_clblast_noavx2.so
 /koboldcpp_cublas.so
 /koboldcpp_default.dll
 /koboldcpp_failsafe.dll
 /koboldcpp_openblas.dll
 /koboldcpp_noavx2.dll
 /koboldcpp_clblast.dll
+/koboldcpp_clblast_noavx2.dll
 /koboldcpp_cublas.dll
 /cublas64_11.dll
 /cublasLt64_11.dll

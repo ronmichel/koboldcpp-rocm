@@ -12,7 +12,7 @@ import ctypes
 import os
 import argparse
 import json, sys, http.server, time, asyncio, socket, threading
-import re
+#import re
 from concurrent.futures import ThreadPoolExecutor
 
 sampler_order_max = 7
@@ -35,6 +35,7 @@ class load_model_inputs(ctypes.Structure):
                 ("use_mmap", ctypes.c_bool),
                 ("use_mlock", ctypes.c_bool),
                 ("use_smartcontext", ctypes.c_bool),
+                ("use_contextshift", ctypes.c_bool),
                 ("clblast_info", ctypes.c_int),
                 ("cublas_info", ctypes.c_int),
                 ("blasbatchsize", ctypes.c_int),
@@ -55,6 +56,7 @@ class generation_inputs(ctypes.Structure):
                 ("top_k", ctypes.c_int),
                 ("top_a", ctypes.c_float),
                 ("top_p", ctypes.c_float),
+                ("min_p", ctypes.c_float),
                 ("typical_p", ctypes.c_float),
                 ("tfs", ctypes.c_float),
                 ("rep_pen", ctypes.c_float),
@@ -107,13 +109,14 @@ lib_failsafe = pick_existant_file("koboldcpp_failsafe.dll","koboldcpp_failsafe.s
 lib_openblas = pick_existant_file("koboldcpp_openblas.dll","koboldcpp_openblas.so")
 lib_noavx2 = pick_existant_file("koboldcpp_noavx2.dll","koboldcpp_noavx2.so")
 lib_clblast = pick_existant_file("koboldcpp_clblast.dll","koboldcpp_clblast.so")
+lib_clblast_noavx2 = pick_existant_file("koboldcpp_clblast_noavx2.dll","koboldcpp_clblast_noavx2.so")
 lib_cublas = pick_existant_file("koboldcpp_cublas.dll","koboldcpp_cublas.so")
 lib_hipblas = pick_existant_file("koboldcpp_hipblas.dll","koboldcpp_hipblas.so")
 
 
 def init_library():
     global handle, args
-    global lib_default,lib_failsafe,lib_openblas,lib_noavx2,lib_clblast,lib_cublas
+    global lib_default,lib_failsafe,lib_openblas,lib_noavx2,lib_clblast,lib_clblast_noavx2,lib_cublas,lib_hipblas
 
     libname = ""
     use_openblas = False # if true, uses OpenBLAS for acceleration. libopenblas.dll must exist in the same dir.
@@ -124,13 +127,20 @@ def init_library():
     use_failsafe = False #uses no intrinsics, failsafe mode
     if args.noavx2:
         use_noavx2 = True
-        if not file_exists(lib_noavx2):
-            print("Warning: NoAVX2 library file not found. Failsafe library will be used.")
-        elif (args.noblas and args.nommap):
-            use_failsafe = True
-            print("!!! Attempting to use FAILSAFE MODE !!!")
+        if args.useclblast:
+            if not file_exists(lib_clblast_noavx2) or (os.name=='nt' and not file_exists("clblast.dll")):
+                print("Warning: NoAVX2 CLBlast library file not found. Non-BLAS library will be used.")
+            else:
+                print("Attempting to use NoAVX2 CLBlast library for faster prompt ingestion. A compatible clblast will be required.")
+                use_clblast = True
         else:
-            print("Attempting to use non-avx2 compatibility library.")
+            if not file_exists(lib_noavx2):
+                print("Warning: NoAVX2 library file not found. Failsafe library will be used.")
+            elif (args.noblas and args.nommap):
+                use_failsafe = True
+                print("!!! Attempting to use FAILSAFE MODE !!!")
+            else:
+                print("Attempting to use non-avx2 compatibility library.")
     elif args.useclblast:
         if not file_exists(lib_clblast) or (os.name=='nt' and not file_exists("clblast.dll")):
             print("Warning: CLBlast library file not found. Non-BLAS library will be used.")
@@ -162,6 +172,8 @@ def init_library():
     if use_noavx2:
         if use_failsafe:
             libname = lib_failsafe
+        elif use_clblast:
+            libname = lib_clblast_noavx2
         else:
             libname = lib_noavx2
     else:
@@ -228,6 +240,7 @@ def load_model(model_filename):
         if len(args.lora) > 1:
             inputs.lora_base = args.lora[1].encode("UTF-8")
     inputs.use_smartcontext = args.smartcontext
+    inputs.use_contextshift = (0 if args.noshift else 1)
     inputs.blasbatchsize = args.blasbatchsize
     inputs.forceversion = args.forceversion
     inputs.gpulayers = args.gpulayers
@@ -285,7 +298,7 @@ def load_model(model_filename):
     ret = handle.load_model(inputs)
     return ret
 
-def generate(prompt,max_length=20, max_context_length=512, temperature=0.8, top_k=120, top_a=0.0, top_p=0.85, typical_p=1.0, tfs=1.0, rep_pen=1.1, rep_pen_range=128, mirostat=0, mirostat_tau=5.0, mirostat_eta=0.1, sampler_order=[6,0,1,3,4,2,5], seed=-1, stop_sequence=[], use_default_badwordsids=False, stream_sse=False, grammar='', grammar_retain_state=False, genkey=''):
+def generate(prompt,max_length=32, max_context_length=512, temperature=0.7, top_k=100, top_a=0.0, top_p=0.92, min_p=0.0, typical_p=1.0, tfs=1.0, rep_pen=1.1, rep_pen_range=128, mirostat=0, mirostat_tau=5.0, mirostat_eta=0.1, sampler_order=[6,0,1,3,4,2,5], seed=-1, stop_sequence=[], use_default_badwordsids=False, stream_sse=False, grammar='', grammar_retain_state=False, genkey=''):
     global maxctx, args, currentusergenkey, totalgens
     inputs = generation_inputs()
     outputs = ctypes.create_unicode_buffer(ctypes.sizeof(generation_outputs))
@@ -302,6 +315,7 @@ def generate(prompt,max_length=20, max_context_length=512, temperature=0.8, top_
     inputs.top_k = top_k
     inputs.top_a = top_a
     inputs.top_p = top_p
+    inputs.min_p = min_p
     inputs.typical_p = typical_p
     inputs.tfs = tfs
     inputs.rep_pen = rep_pen
@@ -366,7 +380,7 @@ maxhordelen = 256
 modelbusy = threading.Lock()
 requestsinqueue = 0
 defaultport = 5001
-KcppVersion = "1.48.yr0-ROCm"
+KcppVersion = "1.48.1.yr1-ROCm"
 showdebug = True
 showsamplerwarning = True
 showmaxctxwarning = True
@@ -379,6 +393,7 @@ rewardcounter = 0 #reduces error counts for successful jobs
 totalgens = 0
 currentusergenkey = "" #store a special key so polled streaming works even in multiuser
 args = None #global args
+gui_layers_untouched = True
 
 class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
     sys_version = ""
@@ -462,10 +477,11 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
                 prompt=genparams.get('prompt', ""),
                 max_context_length=genparams.get('max_context_length', maxctx),
                 max_length=genparams.get('max_length', 80),
-                temperature=genparams.get('temperature', 0.8),
-                top_k=genparams.get('top_k', 120),
+                temperature=genparams.get('temperature', 0.7),
+                top_k=genparams.get('top_k', 100),
                 top_a=genparams.get('top_a', 0.0),
-                top_p=genparams.get('top_p', 0.85),
+                top_p=genparams.get('top_p', 0.92),
+                min_p=genparams.get('min_p', 0.0),
                 typical_p=genparams.get('typical', 1.0),
                 tfs=genparams.get('tfs', 1.0),
                 rep_pen=genparams.get('rep_pen', 1.1),
@@ -676,23 +692,22 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers['content-length'])
         body = self.rfile.read(content_length)
         self.path = self.path.rstrip('/')
+        response_body = None
+        response_code = 200
+
         if self.path.endswith(('/api/extra/tokencount')):
             try:
                 genparams = json.loads(body)
                 countprompt = genparams.get('prompt', "")
                 count = handle.token_count(countprompt.encode("UTF-8"))
-                self.send_response(200)
-                self.end_headers(content_type='application/json')
-                self.wfile.write(json.dumps({"value": count}).encode())
+                response_body = (json.dumps({"value": count}).encode())
 
             except Exception as e:
                 utfprint("Count Tokens - Body Error: " + str(e))
-                self.send_response(400)
-                self.end_headers(content_type='application/json')
-                self.wfile.write(json.dumps({"value": -1}).encode())
-            return
+                response_code = 400
+                response_body = (json.dumps({"value": -1}).encode())
 
-        if self.path.endswith('/api/extra/abort'):
+        elif self.path.endswith('/api/extra/abort'):
             multiuserkey = ""
             try:
                 tempbody = json.loads(body)
@@ -705,17 +720,12 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
             if (multiuserkey=="" and requestsinqueue==0) or (multiuserkey!="" and multiuserkey==currentusergenkey):
                 ag = handle.abort_generate()
                 time.sleep(0.1) #short delay before replying
-                self.send_response(200)
-                self.end_headers(content_type='application/json')
-                self.wfile.write(json.dumps({"success": ("true" if ag else "false")}).encode())
+                response_body = (json.dumps({"success": ("true" if ag else "false")}).encode())
                 print("\nGeneration Aborted")
             else:
-                self.send_response(200)
-                self.end_headers(content_type='application/json')
-                self.wfile.write(json.dumps({"success": "false"}).encode())
-            return
+                response_body = (json.dumps({"success": "false"}).encode())
 
-        if self.path.endswith('/api/extra/generate/check'):
+        elif self.path.endswith('/api/extra/generate/check'):
             pendtxtStr = ""
             multiuserkey = ""
             try:
@@ -724,15 +734,18 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
                     multiuserkey = tempbody.get('genkey', "")
             except Exception as e:
                 multiuserkey = ""
-                pass
 
             if totalgens>0:
                 if (multiuserkey=="" and requestsinqueue==0) or (multiuserkey!="" and multiuserkey==currentusergenkey):
                     pendtxt = handle.get_pending_output()
                     pendtxtStr = ctypes.string_at(pendtxt).decode("UTF-8","ignore")
-            self.send_response(200)
+            response_body = (json.dumps({"results": [{"text": pendtxtStr}]}).encode())
+
+        if response_body is not None:
+            self.send_response(response_code)
+            self.send_header('content-length', str(len(response_body)))
             self.end_headers(content_type='application/json')
-            self.wfile.write(json.dumps({"results": [{"text": pendtxtStr}]}).encode())
+            self.wfile.write(response_body)
             return
 
         reqblocking = False
@@ -795,8 +808,10 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
                     # Headers are already sent when streaming
                     if not sse_stream_flag:
                         self.send_response(200)
+                        genresp = (json.dumps(gen).encode())
+                        self.send_header('content-length', str(len(genresp)))
                         self.end_headers(content_type='application/json')
-                        self.wfile.write(json.dumps(gen).encode())
+                        self.wfile.write(genresp)
                 except:
                     print("Generate: The response could not be sent, maybe connection was terminated?")
                 return
@@ -818,7 +833,8 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self, content_type=None):
         self.send_header('access-control-allow-origin', '*')
         self.send_header('access-control-allow-methods', '*')
-        self.send_header('access-control-allow-headers', '*, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Client-Agent, X-Fields, Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override, apikey, genkey')
+        self.send_header('access-control-allow-headers', '*, Accept, Content-Type, Content-Length, Cache-Control, Accept-Encoding, X-CSRF-Token, Client-Agent, X-Fields, Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override, apikey, genkey')
+        self.send_header("cache-control", "no-store")
         if content_type is not None:
             self.send_header('content-type', content_type)
         return super(ServerRequestHandler, self).end_headers()
@@ -867,6 +883,7 @@ def RunServerMultiThreaded(addr, port, embedded_kailite = None, embedded_kcpp_do
         try:
             time.sleep(10)
         except KeyboardInterrupt:
+            global exitcounter
             exitcounter = 999
             for i in range(numThreads):
                 threadArr[i].stop()
@@ -887,6 +904,8 @@ def show_new_gui():
         if args.model_param and args.model_param!="" and args.model_param.lower().endswith('.kcpps'):
             loadconfigfile(args.model_param)
         if not args.model_param:
+            global exitcounter
+            exitcounter = 999
             print("\nNo ggml model or kcpps file was selected. Exiting.")
             time.sleep(3)
             sys.exit(2)
@@ -894,7 +913,7 @@ def show_new_gui():
 
     import customtkinter as ctk
     nextstate = 0 #0=exit, 1=launch
-    windowwidth = 530
+    windowwidth = 540
     windowheight = 500
     ctk.set_appearance_mode("dark")
     root = ctk.CTk()
@@ -914,27 +933,84 @@ def show_new_gui():
     tabcontentframe.grid(row=0, column=1, sticky="nsew", padx=2, pady=2)
     tabcontentframe.grid_propagate(False)
 
-    tabcontent = {}
+    CLDevices = ["1","2","3","4"]
+    CUDevices = ["1","2","3","4","All"]
+    CLDevicesNames = ["","","",""]
+    CUDevicesNames = ["","","","",""]
+    MaxMemory = [0]
 
+    tabcontent = {}
     lib_option_pairs = [
         (lib_openblas, "Use OpenBLAS"),
         (lib_clblast, "Use CLBlast"),
         (lib_cublas, "Use CuBLAS"),
         (lib_hipblas, "Use hipBLAS (ROCm)"),
         (lib_default, "Use No BLAS"),
+        (lib_clblast_noavx2, "CLBlast NoAVX2 (Old CPU)"),
         (lib_noavx2, "NoAVX2 Mode (Old CPU)"),
         (lib_failsafe, "Failsafe Mode (Old CPU)")]
-    openblas_option, clblast_option, cublas_option, hipblas_option, default_option, noavx2_option, failsafe_option = (opt if file_exists(lib) or (os.name == 'nt' and file_exists(opt + ".dll")) else None for lib, opt in lib_option_pairs)
+    openblas_option, clblast_option, cublas_option, hipblas_option, default_option, clblast_noavx2_option, noavx2_option, failsafe_option = (opt if file_exists(lib) or (os.name == 'nt' and file_exists(opt + ".dll")) else None for lib, opt in lib_option_pairs)
     # slider data
     blasbatchsize_values = ["-1", "32", "64", "128", "256", "512", "1024", "2048"]
     blasbatchsize_text = ["Don't Batch BLAS","32","64","128","256","512","1024","2048"]
-    contextsize_text = ["512", "1024", "2048", "3072", "4096", "6144", "8192", "12288", "16384", "24576", "32768", "65536"]
+    contextsize_text = ["256", "512", "1024", "2048", "3072", "4096", "6144", "8192", "12288", "16384", "24576", "32768", "65536"]
     runopts = [opt for lib, opt in lib_option_pairs if file_exists(lib)]
     antirunopts = [opt.replace("Use ", "") for lib, opt in lib_option_pairs if not (opt in runopts)]
+    if os.name != 'nt':
+        if "NoAVX2 Mode (Old CPU)" in antirunopts:
+            antirunopts.remove("NoAVX2 Mode (Old CPU)")
+        if "Failsafe Mode (Old CPU)" in antirunopts:
+            antirunopts.remove("Failsafe Mode (Old CPU)")
+        if "CLBlast NoAVX2 (Old CPU)" in antirunopts:
+            antirunopts.remove("CLBlast NoAVX2 (Old CPU)")
     if not any(runopts):
+        exitcounter = 999
         show_gui_msgbox("No Backends Available!","KoboldCPP couldn't locate any backends to use (i.e Default, OpenBLAS, CLBlast, CuBLAS).\n\nTo use the program, please run the 'make' command from the directory.")
         time.sleep(3)
         sys.exit(2)
+
+    # Vars - should be in scope to be used by multiple widgets
+    gpulayers_var = ctk.StringVar(value="0")
+    threads_var = ctk.StringVar(value=str(default_threads))
+    runopts_var = ctk.StringVar()
+    gpu_choice_var = ctk.StringVar(value="1")
+
+    launchbrowser = ctk.IntVar(value=1)
+    highpriority = ctk.IntVar()
+    disablemmap = ctk.IntVar()
+    usemlock = ctk.IntVar()
+    debugmode = ctk.IntVar()
+    keepforeground = ctk.IntVar()
+
+    lowvram_var = ctk.IntVar()
+    mmq_var = ctk.IntVar(value=1)
+    blas_threads_var = ctk.StringVar()
+    blas_size_var = ctk.IntVar()
+    version_var = ctk.StringVar(value="0")
+    tensor_split_str_vars = ctk.StringVar(value="")
+
+    contextshift = ctk.IntVar(value=1)
+    remotetunnel = ctk.IntVar(value=0)
+    smartcontext = ctk.IntVar()
+    context_var = ctk.IntVar()
+    customrope_var = ctk.IntVar()
+    customrope_scale = ctk.StringVar(value="1.0")
+    customrope_base = ctk.StringVar(value="10000")
+
+    model_var = ctk.StringVar()
+    lora_var = ctk.StringVar()
+    lora_base_var  = ctk.StringVar()
+
+    port_var = ctk.StringVar(value=defaultport)
+    host_var = ctk.StringVar(value="")
+    multiuser_var = ctk.IntVar()
+    horde_name_var = ctk.StringVar(value="koboldcpp")
+    horde_gen_var = ctk.StringVar(value=maxhordelen)
+    horde_context_var = ctk.StringVar(value=maxhordectx)
+    horde_apikey_var = ctk.StringVar(value="")
+    horde_workername_var = ctk.StringVar(value="")
+    usehorde_var = ctk.IntVar()
+
     def tabbuttonaction(name):
         for t in tabcontent:
             if name == t:
@@ -956,6 +1032,8 @@ def show_new_gui():
         navbuttons[name].grid(row=idx)
 
     tabbuttonaction(tabnames[0])
+    # Quick Launch Tab
+    quick_tab = tabcontent["Quick Launch"]
 
     # helper functions
     def makecheckbox(parent, text, variable=None, row=0, column=0, command=None, onvalue=1, offvalue=0):
@@ -990,61 +1068,155 @@ def show_new_gui():
         return entry, label
 
 
-    def makefileentry(parent, text, searchtext, var, row=0, width=250, filetypes=[]):
+    def makefileentry(parent, text, searchtext, var, row=0, width=250, filetypes=[], onchoosefile=None):
         makelabel(parent, text, row)
         def getfilename(var, text):
             var.set(askopenfilename(title=text,filetypes=filetypes))
+            if onchoosefile:
+                onchoosefile(var.get())
         entry = ctk.CTkEntry(parent, width, textvariable=var)
         entry.grid(row=row+1, column=0, padx=8, stick="nw")
         button = ctk.CTkButton(parent, 50, text="Browse", command= lambda a=var,b=searchtext:getfilename(a,b))
         button.grid(row=row+1, column=1, stick="nw")
         return
 
-    from subprocess import run, CalledProcessError
-    def get_device_names():
-        CUdevices = []
-        CLdevices = []
-        try: # Get OpenCL GPU names
-            output = run(['clinfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-            CLdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.strip().startswith("Board name:")]
-        except Exception as e:
-            pass
-        try: # Get AMD ROCm GPU names
-            output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-            device_name = None
-            for line in output.splitlines():
-                line = line.strip()
-                if line.startswith("Marketing Name:"): device_name = line.split(":", 1)[1].strip()
-                elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: CUdevices.append(device_name)
-                elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
-        except Exception as e:
-            pass
-        # try: # Get NVIDIA GPU names , Couldn't test so probably not working yet.
-        #     output = run(['nvidia-smi', '-L'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-        #     CUdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.startswith("GPU:")]
-        # except FileNotFoundError: pass
-        CUdevices.append('All') if CUdevices else CUdevices.extend(['1', '2', '3', 'All'])
-        if not CLdevices: CLdevices.extend(['1', '2', '3'])
-        return CUdevices, CLdevices
+    # from subprocess import run, CalledProcessError
+    # def get_device_names():
+    #     CUdevices = []
+    #     CLdevices = []
+    #     try: # Get OpenCL GPU names
+    #         output = run(['clinfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+    #         CLdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.strip().startswith("Board name:")]
+    #     except Exception as e:
+    #         pass
+    #     try: # Get AMD ROCm GPU names
+    #         output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+    #         device_name = None
+    #         for line in output.splitlines():
+    #             line = line.strip()
+    #             if line.startswith("Marketing Name:"): device_name = line.split(":", 1)[1].strip()
+    #             elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: CUdevices.append(device_name)
+    #             elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
+    #     except Exception as e:
+    #         pass
+    #     # try: # Get NVIDIA GPU names , Couldn't test so probably not working yet.
+    #     #     output = run(['nvidia-smi', '-L'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+    #     #     CUdevices = [line.split(":", 1)[1].strip() for line in output.splitlines() if line.startswith("GPU:")]
+    #     # except FileNotFoundError: pass
+    #     CUdevices.append('All') if CUdevices else CUdevices.extend(['1', '2', '3', 'All'])
+    #     if not CLdevices: CLdevices.extend(['1', '2', '3'])
+    #     return CUdevices, CLdevices
 
-    def show_tooltip(event, tooltip_text=None):
-        if hasattr(show_tooltip, "_tooltip"):
-            tooltip = show_tooltip._tooltip
-        else:
-            tooltip = ctk.CTkToplevel(root)
-            tooltip.configure(fg_color="#ffffe0")
-            tooltip.withdraw()
-            tooltip.overrideredirect(True)
-            tooltip_label = ctk.CTkLabel(tooltip, text=tooltip_text, text_color="#000000", fg_color="#ffffe0")
-            tooltip_label.pack(expand=True, padx=2, pady=1)
-            show_tooltip._tooltip = tooltip
-        x, y = root.winfo_pointerxy()
-        tooltip.wm_geometry(f"+{x + 10}+{y + 10}")
-        tooltip.deiconify()
-    def hide_tooltip(event):
-        if hasattr(show_tooltip, "_tooltip"):
-            tooltip = show_tooltip._tooltip
-            tooltip.withdraw()
+    # def show_tooltip(event, tooltip_text=None):
+    #     if hasattr(show_tooltip, "_tooltip"):
+    #         tooltip = show_tooltip._tooltip
+    #     else:
+    #         tooltip = ctk.CTkToplevel(root)
+    #         tooltip.configure(fg_color="#ffffe0")
+    #         tooltip.withdraw()
+    #         tooltip.overrideredirect(True)
+    #         tooltip_label = ctk.CTkLabel(tooltip, text=tooltip_text, text_color="#000000", fg_color="#ffffe0")
+    #         tooltip_label.pack(expand=True, padx=2, pady=1)
+    #         show_tooltip._tooltip = tooltip
+    #     x, y = root.winfo_pointerxy()
+    #     tooltip.wm_geometry(f"+{x + 10}+{y + 10}")
+    #     tooltip.deiconify()
+    # def hide_tooltip(event):
+    #     if hasattr(show_tooltip, "_tooltip"):
+    #         tooltip = show_tooltip._tooltip
+    #         tooltip.withdraw()
+    # decided to follow yellowrose's and kalomaze's suggestions, this function will automatically try to determine GPU identifiers
+    # todo: autopick the right number of layers when a model is selected.
+    # run in new thread so it doesnt block. does not return anything, instead overwrites specific values and redraws GUI
+    def auto_gpu_heuristics():
+        from subprocess import run, CalledProcessError
+        FetchedCUdevices = []
+        FetchedCUdeviceMem = []
+        AMDgpu = None
+        try: # Get OpenCL GPU names on windows using a special binary. overwrite at known index if found.
+            basepath = os.path.abspath(os.path.dirname(__file__))
+            output = run([((os.path.join(basepath, "winclinfo.exe")) if os.name == 'nt' else "clinfo"),"--json"], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+            data = json.loads(output)
+            plat = 0
+            dev = 0
+            lowestclmem = 0
+            for platform in data["devices"]:
+                dev = 0
+                for device in platform["online"]:
+                    dname = device["CL_DEVICE_NAME"]
+                    dmem = int(device["CL_DEVICE_GLOBAL_MEM_SIZE"])
+                    idx = plat+dev*2
+                    if idx<len(CLDevices):
+                        CLDevicesNames[idx] = dname
+                        lowestclmem = dmem if lowestclmem==0 else (dmem if dmem<lowestclmem else lowestclmem)
+                    dev += 1
+                plat += 1
+            MaxMemory[0] = lowestclmem
+        except Exception as e:
+            pass
+
+        try: # Get NVIDIA GPU names
+            output = run(['nvidia-smi','--query-gpu=name,memory.total','--format=csv,noheader'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+            FetchedCUdevices = [line.split(",")[0].strip() for line in output.splitlines()]
+            FetchedCUdeviceMem = [line.split(",")[1].strip().split(" ")[0].strip() for line in output.splitlines()]
+        except Exception as e:
+            pass
+
+        if len(FetchedCUdevices)==0:
+            try: # Get AMD ROCm GPU names
+                output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+                device_name = None
+                for line in output.splitlines(): # read through the output line by line
+                    line = line.strip()
+                    if line.startswith("Marketing Name:"): device_name = line.split(":", 1)[1].strip() # if we find a named device, temporarily save the name
+                    elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: # if the following Device Type is a GPU (not a CPU) then add it to devices list
+                        FetchedCUdevices.append(device_name)
+                        AMDgpu = True
+                    elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
+                if FetchedCUdevices:
+                    getamdvram = run(['rocm-smi', '--showmeminfo', 'vram', '--csv'], capture_output=True, text=True, check=True, encoding='utf-8').stdout # fetch VRAM of devices
+                    FetchedCUdeviceMem = [line.split(",")[1].strip() for line in getamdvram.splitlines()[1:] if line.strip()]
+            except Exception as e:
+                pass
+
+        for idx in range(0,4):
+            if(len(FetchedCUdevices)>idx):
+                CUDevicesNames[idx] = FetchedCUdevices[idx]
+                if AMDgpu:
+                    MaxMemory[0] = max(int(FetchedCUdeviceMem[idx]),MaxMemory[0])
+                else:
+                    MaxMemory[0] = max(int(FetchedCUdeviceMem[idx])*1024*1024,MaxMemory[0])
+                    pass
+
+        #autopick cublas if suitable
+        global exitcounter
+        if exitcounter < 100 and MaxMemory[0]>3500000000 and CUDevicesNames[0]!="" and "Use CuBLAS" or "Use hipBLAS (ROCM)" in runopts and runopts_var.get()=="Use OpenBLAS":
+            if "Use CuBLAS" in runopts:
+                runopts_var.set("Use CuBLAS")
+                pass
+            elif "Use hipBLAS (ROCM)" in runopts:
+                runopts_var.set("Use hipBLAS (ROCM)")
+
+        changed_gpu_choice_var()
+        return
+
+    def autoset_gpu_layers(filepath): #shitty algo to determine how many layers to use
+        try:
+            global gui_layers_untouched
+            fsize = os.path.getsize(filepath)
+            if fsize>10000000: #dont bother with models < 10mb
+                mem = MaxMemory[0]
+                sizeperlayer = fsize*0.05714
+                layerlimit = int(min(200,mem/sizeperlayer))
+                old_gui_layers_untouched = gui_layers_untouched
+                gui_layers_zeroed = gpulayers_var.get()=="" or gpulayers_var.get()=="0"
+                if (gui_layers_untouched or gui_layers_zeroed) and layerlimit>0:
+                    gpulayers_var.set(str(layerlimit))
+                    gui_layers_untouched = old_gui_layers_untouched
+                    if gui_layers_zeroed:
+                        gui_layers_untouched = True
+        except Exception as ex:
+            pass
 
     def show_tooltip(event, tooltip_text=None):
         if hasattr(show_tooltip, "_tooltip"):
@@ -1067,64 +1239,56 @@ def show_new_gui():
             tooltip.withdraw()
 
     def setup_backend_tooltip(parent):
-        num_backends_built = makelabel(parent, str(len(runopts)) + "/6", 5, 2)
-        num_backends_built.grid(row=1, column=2, padx=0, pady=0)
+        num_backends_built = makelabel(parent, str(len(runopts)) + f"/{7 if os.name == 'nt' else 4}", 5, 2)
+        num_backends_built.grid(row=1, column=1, padx=195, pady=0)
         num_backends_built.configure(text_color="#00ff00")
         # Bind the backend count label with the tooltip function
-        num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"This is the number of backends you have built and available." + (f"\nMissing: {', '.join(antirunopts)}" if len(runopts) != 6 else "")))
+        nl = '\n'
+        num_backends_built.bind("<Enter>", lambda event: show_tooltip(event, f"Number of backends you have built and available." + (f"\n\nMissing Backends: \n\n{nl.join(antirunopts)}" if len(runopts) != 6 else "")))
         num_backends_built.bind("<Leave>", hide_tooltip)
 
-    # Vars - should be in scope to be used by multiple widgets
-    CUdevices, CLdevices = get_device_names()
-    gpulayers_var = ctk.StringVar(value="0")
-    threads_var = ctk.StringVar(value=str(default_threads))
-    runopts_var = ctk.StringVar()
-    gpu_choice_var = ctk.StringVar(value=CLdevices[0] if not None else CUdevices[0] if not None else "1")
+    # # Vars - should be in scope to be used by multiple widgets
+    # CUdevices, CLdevices = get_device_names()
+    # gpulayers_var = ctk.StringVar(value="0")
+    # threads_var = ctk.StringVar(value=str(default_threads))
+    # runopts_var = ctk.StringVar()
+    # gpu_choice_var = ctk.StringVar(value=CLdevices[0] if not None else CUdevices[0] if not None else "1")
+    def changed_gpulayers(*args):
+        global gui_layers_untouched
+        gui_layers_untouched = False
+        pass
 
-    launchbrowser = ctk.IntVar(value=1)
-    highpriority = ctk.IntVar()
-    disablemmap = ctk.IntVar()
-    usemlock = ctk.IntVar()
-    debugmode = ctk.IntVar()
-    keepforeground = ctk.IntVar()
+    def changed_gpu_choice_var(*args):
+        global exitcounter
+        if exitcounter > 100:
+            return
+        if gpu_choice_var.get()!="All":
+            try:
+                s = int(gpu_choice_var.get())-1
+                v = runopts_var.get()
+                if v == "Use CLBlast" or v == "CLBlast NoAVX2 (Old CPU)":
+                    quick_gpuname_label.configure(text=CLDevicesNames[s])
+                    gpuname_label.configure(text=CLDevicesNames[s])
+                else:
+                    quick_gpuname_label.configure(text=CUDevicesNames[s])
+                    gpuname_label.configure(text=CUDevicesNames[s])
+            except Exception as ex:
+                pass
+        else:
+            quick_gpuname_label.configure(text="")
+            gpuname_label.configure(text="")
 
-    lowvram_var = ctk.IntVar()
-    mmq_var = ctk.IntVar(value=1)
-    blas_threads_var = ctk.StringVar()
-    blas_size_var = ctk.IntVar()
-    version_var = ctk.StringVar(value="0")
-    tensor_split_str_vars = ctk.StringVar(value="")
-
-    smartcontext = ctk.IntVar()
-    context_var = ctk.IntVar()
-    customrope_var = ctk.IntVar()
-    customrope_scale = ctk.StringVar(value="1.0")
-    customrope_base = ctk.StringVar(value="10000")
-
-    model_var = ctk.StringVar()
-    lora_var = ctk.StringVar()
-    lora_base_var  = ctk.StringVar()
-
-    port_var = ctk.StringVar(value=defaultport)
-    host_var = ctk.StringVar(value="")
-    multiuser_var = ctk.IntVar()
-    horde_name_var = ctk.StringVar(value="koboldcpp")
-    horde_gen_var = ctk.StringVar(value=maxhordelen)
-    horde_context_var = ctk.StringVar(value=maxhordectx)
-    horde_apikey_var = ctk.StringVar(value="")
-    horde_workername_var = ctk.StringVar(value="")
-    usehorde_var = ctk.IntVar()
-
-    # Quick Launch Tab
-    quick_tab = tabcontent["Quick Launch"]
-
+    gpu_choice_var.trace("w", changed_gpu_choice_var)
+    gpulayers_var.trace("w", changed_gpulayers)
 
     def changerunmode(a,b,c):
         index = runopts_var.get()
-        if index == "Use CLBlast" or index == "Use CuBLAS" or index == "Use hipBLAS (ROCm)":
+        if index == "Use CLBlast" or index == "CLBlast NoAVX2 (Old CPU)" or index == "Use CuBLAS" or index == "Use hipBLAS (ROCm)":
+            quick_gpuname_label.grid(row=3, column=1, padx=75, sticky="W")
+            gpuname_label.grid(row=3, column=1, padx=75, sticky="W")
             gpu_selector_label.grid(row=3, column=0, padx = 8, pady=1, stick="nw")
             quick_gpu_selector_label.grid(row=3, column=0, padx = 8, pady=1, stick="nw")
-            if index == "Use CLBlast":
+            if index == "Use CLBlast" or index == "CLBlast NoAVX2 (Old CPU)":
                 gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
                 quick_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
                 if gpu_choice_var.get()=="All":
@@ -1133,6 +1297,8 @@ def show_new_gui():
                 CUDA_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
                 CUDA_quick_gpu_selector_box.grid(row=3, column=1, padx=8, pady=1, stick="nw")
         else:
+            quick_gpuname_label.grid_forget()
+            gpuname_label.grid_forget()
             gpu_selector_label.grid_forget()
             gpu_selector_box.grid_forget()
             CUDA_gpu_selector_box.grid_forget()
@@ -1155,7 +1321,7 @@ def show_new_gui():
             tensor_split_label.grid_forget()
             tensor_split_entry.grid_forget()
 
-        if index == "Use CLBlast" or index == "Use CuBLAS" or index == "Use hipBLAS (ROCm)":
+        if index == "Use CLBlast" or index == "CLBlast NoAVX2 (Old CPU)" or index == "Use CuBLAS" or index == "Use hipBLAS (ROCm)":
             gpu_layers_label.grid(row=5, column=0, padx = 8, pady=1, stick="nw")
             gpu_layers_entry.grid(row=5, column=1, padx=8, pady=1, stick="nw")
             quick_gpu_layers_label.grid(row=5, column=0, padx = 8, pady=1, stick="nw")
@@ -1165,6 +1331,7 @@ def show_new_gui():
             gpu_layers_entry.grid_forget()
             quick_gpu_layers_label.grid_forget()
             quick_gpu_layers_entry.grid_forget()
+        changed_gpu_choice_var()
 
 
     # presets selector
@@ -1179,11 +1346,18 @@ def show_new_gui():
 
     # gpu options
 
-    quick_gpu_layers_entry, quick_gpu_layers_label = makelabelentry(quick_tab, "GPU Layers:", gpulayers_var, 5, 50)
+    # quick_gpu_layers_entry,quick_gpu_layers_label = makelabelentry(quick_tab, "GPU Layers:", gpulayers_var, 5, 50)
     quick_gpu_selector_label = makelabel(quick_tab, "GPU ID:", 3)
-    quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
-    CUDA_quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
-    quick_lowvram_box = makecheckbox(quick_tab, "Low VRAM", lowvram_var, 4,0)
+    # quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
+    # CUDA_quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
+    # quick_lowvram_box = makecheckbox(quick_tab, "Low VRAM", lowvram_var, 4,0)
+    quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CLDevices, width=60, variable=gpu_choice_var, state="readonly")
+    CUDA_quick_gpu_selector_box = ctk.CTkComboBox(quick_tab, values=CUDevices, width=60, variable=gpu_choice_var, state="readonly")
+    quick_gpuname_label = ctk.CTkLabel(quick_tab, text="")
+    quick_gpuname_label.grid(row=3, column=1, padx=75, sticky="W")
+    quick_gpuname_label.configure(text_color="#ffff00")
+    quick_gpu_layers_entry,quick_gpu_layers_label = makelabelentry(quick_tab,"GPU Layers:", gpulayers_var, 5, 50)
+    quick_lowvram_box = makecheckbox(quick_tab,  "Low VRAM", lowvram_var, 4,0)
     quick_mmq_box = makecheckbox(quick_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1)
 
     # threads
@@ -1193,14 +1367,14 @@ def show_new_gui():
     makeslider(quick_tab, "BLAS Batch Size:", blasbatchsize_text, blas_size_var, 0, 7, 12, set=5)
 
     # quick boxes
-    quick_boxes = {"Launch Browser": launchbrowser , "High Priority" : highpriority, "Use SmartContext":smartcontext, "Disable MMAP":disablemmap,}
+    quick_boxes = {"Launch Browser": launchbrowser , "High Priority" : highpriority, "Use SmartContext":smartcontext, "Disable MMAP":disablemmap,"Use ContextShift":contextshift,"Remote Tunnel":remotetunnel}
     for idx, name, in enumerate(quick_boxes):
         makecheckbox(quick_tab, name, quick_boxes[name], int(idx/2) +20, idx%2)
     # context size
-    makeslider(quick_tab, "Context Size:", contextsize_text, context_var, 0, len(contextsize_text)-1, 30, set=2)
+    makeslider(quick_tab, "Context Size:", contextsize_text, context_var, 0, len(contextsize_text)-1, 30, set=3)
 
     # load model
-    makefileentry(quick_tab, "Model:", "Select GGML Model File", model_var, 40, 170)
+    makefileentry(quick_tab, "Model:", "Select GGML Model File", model_var, 40, 170, onchoosefile=autoset_gpu_layers)
 
     # Hardware Tab
     hardware_tab = tabcontent["Hardware"]
@@ -1215,12 +1389,19 @@ def show_new_gui():
     setup_backend_tooltip(hardware_tab)
 
     # gpu options
-    gpu_layers_entry,gpu_layers_label = makelabelentry(hardware_tab,"GPU Layers:", gpulayers_var, 5, 50)
     gpu_selector_label = makelabel(hardware_tab, "GPU ID:", 3)
-    gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
-    CUDA_gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
-    lowvram_box = makecheckbox(hardware_tab, "Low VRAM", lowvram_var, 4,0)
+    gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CLDevices, width=60, variable=gpu_choice_var, state="readonly")
+    CUDA_gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CUDevices, width=60, variable=gpu_choice_var, state="readonly")
+    gpuname_label = ctk.CTkLabel(hardware_tab, text="")
+    gpuname_label.grid(row=3, column=1, padx=75, sticky="W")
+    gpuname_label.configure(text_color="#ffff00")
+    gpu_layers_entry,gpu_layers_label = makelabelentry(hardware_tab,"GPU Layers:", gpulayers_var, 5, 50)
+    # gpu_selector_label = makelabel(hardware_tab, "GPU ID:", 3)
+    # gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CLdevices, width=180, variable=gpu_choice_var, state="readonly")
+    # CUDA_gpu_selector_box = ctk.CTkComboBox(hardware_tab, values=CUdevices, width=180, variable=gpu_choice_var, state="readonly")
+    # lowvram_box = makecheckbox(hardware_tab, "Low VRAM", lowvram_var, 4,0)
     tensor_split_entry,tensor_split_label = makelabelentry(hardware_tab, "Tensor Split:", tensor_split_str_vars, 6, 80)
+    lowvram_box = makecheckbox(hardware_tab,  "Low VRAM", lowvram_var, 4,0)
     mmq_box = makecheckbox(hardware_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1)
 
     # threads
@@ -1245,12 +1426,12 @@ def show_new_gui():
     # Tokens Tab
     tokens_tab = tabcontent["Tokens"]
     # tokens checkboxes
-    token_boxes = {"Use SmartContext":smartcontext}
+    token_boxes = {"Use SmartContext":smartcontext, "Use ContextShift":contextshift}
     for idx, name, in enumerate(token_boxes):
         makecheckbox(tokens_tab, name, token_boxes[name], idx + 1)
 
     # context size
-    makeslider(tokens_tab, "Context Size:",contextsize_text, context_var, 0, len(contextsize_text)-1, 20, set=2)
+    makeslider(tokens_tab, "Context Size:",contextsize_text, context_var, 0, len(contextsize_text)-1, 20, set=3)
 
 
     customrope_scale_entry, customrope_scale_label = makelabelentry(tokens_tab, "RoPE Scale:", customrope_scale)
@@ -1268,7 +1449,7 @@ def show_new_gui():
     # Model Tab
     model_tab = tabcontent["Model"]
 
-    makefileentry(model_tab, "Model:", "Select GGML Model File", model_var, 1)
+    makefileentry(model_tab, "Model:", "Select GGML Model File", model_var, 1, onchoosefile=autoset_gpu_layers)
     makefileentry(model_tab, "Lora:", "Select Lora File",lora_var, 3)
     makefileentry(model_tab, "Lora Base:", "Select Lora Base File", lora_base_var, 5)
 
@@ -1280,6 +1461,7 @@ def show_new_gui():
     makelabelentry(network_tab, "Host: ", host_var, 2, 150)
 
     makecheckbox(network_tab, "Multiuser Mode", multiuser_var, 3)
+    makecheckbox(network_tab, "Remote Tunnel", remotetunnel, 3, 1)
 
     # horde
     makelabel(network_tab, "Horde:", 5).grid(pady=10)
@@ -1324,18 +1506,24 @@ def show_new_gui():
         args.highpriority = highpriority.get()==1
         args.nommap = disablemmap.get()==1
         args.smartcontext = smartcontext.get()==1
+        args.noshift = contextshift.get()==0
+        args.remotetunnel = remotetunnel.get()==1
         args.foreground = keepforeground.get()==1
 
         gpuchoiceidx = 0
         if gpu_choice_var.get()!="All":
-            if runopts_var.get() == "Use CLBlast": #if CLBlast selected
-                if (gpu_choice_var.get()) in CLdevices:
-                    gpuchoiceidx = CLdevices.index((gpu_choice_var.get()))
-            elif runopts_var.get() == "Use CuBLAS" or runopts_var.get() == "Use hipBLAS (ROCm)":
-                if (gpu_choice_var.get()) in CUdevices:
-                    gpuchoiceidx = CUdevices.index((gpu_choice_var.get()))
-        if runopts_var.get() == "Use CLBlast":
+        #     if runopts_var.get() == "Use CLBlast": #if CLBlast selected
+        #         if (gpu_choice_var.get()) in CLdevices:
+        #             gpuchoiceidx = CLdevices.index((gpu_choice_var.get()))
+        #     elif runopts_var.get() == "Use CuBLAS" or runopts_var.get() == "Use hipBLAS (ROCm)":
+        #         if (gpu_choice_var.get()) in CUdevices:
+        #             gpuchoiceidx = CUdevices.index((gpu_choice_var.get()))
+        # if runopts_var.get() == "Use CLBlast":
+            gpuchoiceidx = int(gpu_choice_var.get())-1
+        if runopts_var.get() == "Use CLBlast" or runopts_var.get() == "CLBlast NoAVX2 (Old CPU)":
             args.useclblast = [[0,0], [1,0], [0,1], [1,1]][gpuchoiceidx]
+            if runopts_var.get() == "CLBlast NoAVX2 (Old CPU)":
+                args.noavx2 = True
         if runopts_var.get() == "Use CuBLAS" or runopts_var.get() == "Use hipBLAS (ROCm)":
             if gpu_choice_var.get()=="All":
                 args.usecublas = ["lowvram"] if lowvram_var.get() == 1 else ["normal"]
@@ -1392,11 +1580,18 @@ def show_new_gui():
         highpriority.set(1 if "highpriority" in dict and dict["highpriority"] else 0)
         disablemmap.set(1 if "nommap" in dict and dict["nommap"] else 0)
         smartcontext.set(1 if "smartcontext" in dict and dict["smartcontext"] else 0)
+        contextshift.set(0 if "noshift" in dict and dict["noshift"] else 1)
+        remotetunnel.set(1 if "remotetunnel" in dict and dict["remotetunnel"] else 0)
         keepforeground.set(1 if "foreground" in dict and dict["foreground"] else 0)
         if "useclblast" in dict and dict["useclblast"]:
-            if clblast_option is not None:
-                runopts_var.set(clblast_option)
-                gpu_choice_var.set(str(["0 0", "1 0", "0 1", "1 1"].index(str(dict["useclblast"][0]) + " " + str(dict["useclblast"][1])) + 1))
+            if "noavx2" in dict and dict["noavx2"]:
+                if clblast_noavx2_option is not None:
+                    runopts_var.set(clblast_noavx2_option)
+                    gpu_choice_var.set(str(["0 0", "1 0", "0 1", "1 1"].index(str(dict["useclblast"][0]) + " " + str(dict["useclblast"][1])) + 1))
+            else:
+                if clblast_option is not None:
+                    runopts_var.set(clblast_option)
+                    gpu_choice_var.set(str(["0 0", "1 0", "0 1", "1 1"].index(str(dict["useclblast"][0]) + " " + str(dict["useclblast"][1])) + 1))
         elif "usecublas" in dict and dict["usecublas"]:
             if cublas_option is not None or hipblas_option is not None:
                 if cublas_option:
@@ -1472,7 +1667,6 @@ def show_new_gui():
                 horde_workername_var.set(dict["hordeconfig"][4])
                 usehorde_var.set("1")
 
-
     def save_config():
         file_type = [("KoboldCpp Settings", "*.kcpps")]
         filename = asksaveasfile(filetypes=file_type, defaultextension=file_type)
@@ -1513,18 +1707,24 @@ def show_new_gui():
     ctk.CTkButton(tabs , text = "Load", fg_color="#084a66", hover_color="#085a88", command = load_config, width=60, height = 35 ).grid(row=1,column=1, stick="sw", padx= 70, pady=5)
     ctk.CTkButton(tabs , text = "Help", fg_color="#992222", hover_color="#bb3333", command = display_help, width=60, height = 35 ).grid(row=1,column=1, stick="sw", padx= 135, pady=5)
 
+    # start a thread that tries to get actual gpu names and layer counts
+    gpuinfo_thread = threading.Thread(target=auto_gpu_heuristics)
+    gpuinfo_thread.start() #submit job in new thread so nothing is waiting
+
     # runs main loop until closed or launch clicked
     root.mainloop()
 
     if nextstate==0:
+        exitcounter = 999
         print("Exiting by user request.")
         time.sleep(3)
-        sys.exit()
+        sys.exit(0)
     else:
         # processing vars
         export_vars()
 
         if not args.model_param:
+            exitcounter = 999
             print("\nNo ggml model file was selected. Exiting.")
             time.sleep(3)
             sys.exit(2)
@@ -1836,11 +2036,65 @@ def run_horde_worker(args, api_key, worker_name):
 
     if exitcounter<100:
         print_with_time(f"Horde Worker Shutdown - Too many errors.")
-        time.sleep(3)
     else:
         print_with_time(f"Horde Worker Shutdown - Server Closing.")
-        time.sleep(3)
+    exitcounter = 999
+    time.sleep(3)
     sys.exit(2)
+
+def setuptunnel():
+    # This script will help setup a cloudflared tunnel for accessing KoboldCpp over the internet
+    # It should work out of the box on both linux and windows
+    try:
+        import subprocess, re
+
+        def run_tunnel():
+            tunnelproc = None
+            tunneloutput = ""
+            tunnelrawlog = ""
+            time.sleep(0.2)
+            if os.name == 'nt':
+                print("Starting Cloudflare Tunnel for Windows, please wait...")
+                tunnelproc = subprocess.Popen(f"cloudflared.exe tunnel --url localhost:{args.port}", text=True, encoding='utf-8', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            else:
+                print("Starting Cloudflare Tunnel for Linux, please wait...")
+                tunnelproc = subprocess.Popen(f"./cloudflared-linux-amd64 tunnel --url http://localhost:{args.port}", text=True, encoding='utf-8', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            time.sleep(10)
+            def tunnel_reader():
+                nonlocal tunnelproc,tunneloutput,tunnelrawlog
+                pattern = r'https://[\w\.-]+\.trycloudflare\.com'
+                while True:
+                    line = tunnelproc.stderr.readline() #cloudflare writes to stderr for some reason
+                    tunnelrawlog += line+"\n"
+                    if not line:
+                        return
+                    found = re.findall(pattern, line)
+                    for x in found:
+                        tunneloutput = x
+                        print(f"Your remote tunnel is ready, please connect to {tunneloutput}")
+                        return
+
+            tunnel_reader_thread = threading.Thread(target=tunnel_reader)
+            tunnel_reader_thread.start()
+            time.sleep(5)
+            if tunneloutput=="":
+                print(f"Error: Could not create cloudflare tunnel!\nMore Info:\n{tunnelrawlog}")
+            time.sleep(0.5)
+            tunnelproc.wait()
+
+        if os.name == 'nt':
+            print("Downloading Cloudflare Tunnel for Windows...")
+            subprocess.run("curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -o cloudflared.exe", shell=True, capture_output=True, text=True, check=True, encoding='utf-8')
+        else:
+            print("Downloading Cloudflare Tunnel for Linux...")
+            subprocess.run("curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared-linux-amd64", shell=True, capture_output=True, text=True, check=True, encoding='utf-8')
+            subprocess.run("chmod +x 'cloudflared-linux-amd64'", shell=True)
+        tunnel_thread = threading.Thread(target=run_tunnel)
+        tunnel_thread.start()
+    except Exception as ex:
+        print("Remote Tunnel Failed!")
+        print(str(ex))
+        return None
 
 def unload_libs():
     global handle
@@ -1931,6 +2185,8 @@ def main(launch_args,start_server=True):
         if isinstance(args.config[0], str) and os.path.exists(args.config[0]):
            loadconfigfile(args.config[0])
         else:
+            global exitcounter
+            exitcounter = 999
             print("Specified kcpp config file invalid or not found.")
             time.sleep(3)
             sys.exit(2)
@@ -1949,6 +2205,7 @@ def main(launch_args,start_server=True):
         try:
             show_new_gui()
         except Exception as ex:
+            exitcounter = 999
             ermsg = "Reason: " + str(ex) + "\nFile selection GUI unsupported.\ncustomtkinter python module required!\nPlease check command line: script.py --help"
             show_gui_msgbox("Warning, GUI failed to start",ermsg)
             time.sleep(3)
@@ -2004,12 +2261,14 @@ def main(launch_args,start_server=True):
     print("==========")
     time.sleep(1)
     if not os.path.exists(args.model_param):
+        exitcounter = 999
         print(f"Cannot find model file: {args.model_param}")
         time.sleep(3)
         sys.exit(2)
 
     if args.lora and args.lora[0]!="":
         if not os.path.exists(args.lora[0]):
+            exitcounter = 999
             print(f"Cannot find lora file: {args.lora[0]}")
             time.sleep(3)
             sys.exit(2)
@@ -2017,6 +2276,7 @@ def main(launch_args,start_server=True):
             args.lora[0] = os.path.abspath(args.lora[0])
             if len(args.lora) > 1:
                 if not os.path.exists(args.lora[1]):
+                    exitcounter = 999
                     print(f"Cannot find lora base: {args.lora[1]}")
                     time.sleep(3)
                     sys.exit(2)
@@ -2028,11 +2288,12 @@ def main(launch_args,start_server=True):
 
     modelname = os.path.abspath(args.model_param)
     print(args)
-    print(f"==========\nLoading model: {modelname} \n[Threads: {args.threads}, BlasThreads: {args.blasthreads}, SmartContext: {args.smartcontext}]")
+    print(f"==========\nLoading model: {modelname} \n[Threads: {args.threads}, BlasThreads: {args.blasthreads}, SmartContext: {args.smartcontext}, ContextShift: {not (args.noshift)}]")
     loadok = load_model(modelname)
     print("Load Model OK: " + str(loadok))
 
     if not loadok:
+        exitcounter = 999
         print("Could not load model: " + modelname)
         time.sleep(3)
         sys.exit(3)
@@ -2082,6 +2343,8 @@ def main(launch_args,start_server=True):
         timer_thread.start()
 
     if start_server:
+        if args.remotetunnel:
+            setuptunnel()
         print(f"Please connect to custom endpoint at {epurl}")
         asyncio.run(RunServerMultiThreaded(args.host, args.port, embedded_kailite, embedded_kcpp_docs))
     else:
@@ -2108,10 +2371,11 @@ if __name__ == '__main__':
     parser.add_argument("--threads", help="Use a custom number of threads if specified. Otherwise, uses an amount based on CPU cores", type=int, default=default_threads)
     parser.add_argument("--blasthreads", help="Use a different number of threads during BLAS if specified. Otherwise, has the same value as --threads",metavar=('[threads]'), type=int, default=0)
     parser.add_argument("--highpriority", help="Experimental flag. If set, increases the process CPU priority, potentially speeding up generation. Use caution.", action='store_true')
-    parser.add_argument("--contextsize", help="Controls the memory allocated for maximum context size, only change if you need more RAM for big contexts. (default 2048)", type=int,choices=[512,1024,2048,3072,4096,6144,8192,12288,16384,24576,32768,65536], default=2048)
+    parser.add_argument("--contextsize", help="Controls the memory allocated for maximum context size, only change if you need more RAM for big contexts. (default 2048)", type=int,choices=[256, 512,1024,2048,3072,4096,6144,8192,12288,16384,24576,32768,65536], default=2048)
     parser.add_argument("--blasbatchsize", help="Sets the batch size used in BLAS processing (default 512). Setting it to -1 disables BLAS mode, but keeps other benefits like GPU offload.", type=int,choices=[-1,32,64,128,256,512,1024,2048], default=512)
     parser.add_argument("--ropeconfig", help="If set, uses customized RoPE scaling from configured frequency scale and frequency base (e.g. --ropeconfig 0.25 10000). Otherwise, uses NTK-Aware scaling set automatically based on context size. For linear rope, simply set the freq-scale and ignore the freq-base",metavar=('[rope-freq-scale]', '[rope-freq-base]'), default=[0.0, 10000.0], type=float, nargs='+')
     parser.add_argument("--smartcontext", help="Reserving a portion of context to try processing less frequently.", action='store_true')
+    parser.add_argument("--noshift", help="If set, do not attempt to Trim and Shift the GGUF context.", action='store_true')
     parser.add_argument("--bantokens", help="You can manually specify a list of token SUBSTRINGS that the AI cannot use. This bans ALL instances of that substring.", metavar=('[token_substrings]'), nargs='+')
     parser.add_argument("--forceversion", help="If the model file format detection fails (e.g. rogue modified model) you can set this to override the detected format (enter desired version, e.g. 401 for GPTNeoX-Type2).",metavar=('[version]'), type=int, default=0)
     parser.add_argument("--nommap", help="If set, do not use mmap to load newer models", action='store_true')
@@ -2128,6 +2392,7 @@ if __name__ == '__main__':
     parser.add_argument("--tensor_split", help="For CUDA with ALL GPU set only, ratio to split tensors across multiple GPUs, space-separated list of proportions, e.g. 7 3", metavar=('[Ratios]'), type=float, nargs='+')
     parser.add_argument("--onready", help="An optional shell command to execute after the model has been loaded.", type=str, default="",nargs=1)
     parser.add_argument("--multiuser", help="Runs in multiuser mode, which queues incoming requests instead of blocking them.", action='store_true')
+    parser.add_argument("--remotetunnel", help="Uses Cloudflare to create a remote tunnel, allowing you to access koboldcpp remotely over the internet even behind a firewall.", action='store_true')
     parser.add_argument("--foreground", help="Windows only. Sends the terminal to the foreground every time a new prompt is generated. This helps avoid some idle slowdown issues.", action='store_true')
 
     # #deprecated hidden args. they do nothing. do not use

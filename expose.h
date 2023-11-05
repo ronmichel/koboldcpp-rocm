@@ -38,6 +38,7 @@ struct load_model_inputs
     const bool use_mmap;
     const bool use_mlock;
     const bool use_smartcontext;
+    const bool use_contextshift;
     const int clblast_info = 0;
     const int cublas_info = 0;
     const int blasbatchsize = 512;
@@ -59,6 +60,7 @@ struct generation_inputs
     const int top_k;
     const float top_a = 0.0f;
     const float top_p;
+    const float min_p = 0.0f;
     const float typical_p;
     const float tfs;
     const float rep_pen;
