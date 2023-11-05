@@ -181,7 +181,7 @@ if (LLAMA_HIPBLAS)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH})
-        message("ROCM_PATH: ${ROCM_PATH}") 
+        message(STATUS "ROCM_PATH: ${ROCM_PATH}") 
     else()
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
@@ -457,8 +457,8 @@ add_library(ggml OBJECT
             ggml-backend.c
             ggml-backend.h
             ggml-quants.c
-            ggml-quants.h
-            ${GGML_SOURCES_CUDA})
+            ggml-quants.h)
+            
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
