@@ -459,7 +459,7 @@ add_library(ggml OBJECT
             ggml-backend.h
             ggml-quants.c
             ggml-quants.h
-            )
+            ${LLAMA_EXTRA_LIBS})
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
