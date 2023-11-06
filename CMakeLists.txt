@@ -11,82 +11,48 @@ message(STATUS "============== ============== ==============")
 cmake_minimum_required(VERSION 3.12) # Don't bump this version for no reason
 project("llama.cpp" C CXX)
 
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(LLAMA_STANDALONE ON)
+set(BUILD_SHARED_LIBS_DEFAULT ON)
+set(LLAMA_STATIC OFF)
+set(LLAMA_NATIVE OFF)
+set(LLAMA_LTO OFF)
+set(LLAMA_ALL_WARNINGS OFF)
+set(LLAMA_ALL_WARNINGS_3RD_PARTY OFF)
+set(LLAMA_GPROF OFF)
+set(LLAMA_SANITIZE_THREAD OFF)
+set(LLAMA_SANITIZE_ADDRESS OFF)
+set(LLAMA_SANITIZE_UNDEFINED OFF)
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(LLAMA_STANDALONE ON)
-else()
-    set(LLAMA_STANDALONE OFF)
-endif()
-
-if (EMSCRIPTEN)
-    set(BUILD_SHARED_LIBS_DEFAULT OFF)
-
-    option(LLAMA_WASM_SINGLE_FILE "llama: embed WASM inside the generated llama.js" ON)
-else()
-    if (MINGW)
-        set(BUILD_SHARED_LIBS_DEFAULT OFF)
-    else()
-        set(BUILD_SHARED_LIBS_DEFAULT ON)
-    endif()
-endif()
-
-
-#
-# Option list
-#
-
-# general
-option(LLAMA_STATIC                     "llama: static link libraries"                          OFF)
-option(LLAMA_NATIVE                     "llama: enable -march=native flag"                      OFF)
-option(LLAMA_LTO                        "llama: enable link time optimization"                  OFF)
-
-# debug
-option(LLAMA_ALL_WARNINGS               "llama: enable all compiler warnings"                   ON)
-option(LLAMA_ALL_WARNINGS_3RD_PARTY     "llama: enable all compiler warnings in 3rd party libs" OFF)
-option(LLAMA_GPROF                      "llama: enable gprof"                                   OFF)
-
-# sanitizers
-option(LLAMA_SANITIZE_THREAD            "llama: enable thread sanitizer"                        OFF)
-option(LLAMA_SANITIZE_ADDRESS           "llama: enable address sanitizer"                       OFF)
-option(LLAMA_SANITIZE_UNDEFINED         "llama: enable undefined sanitizer"                     OFF)
-
-# upstream example files
-option(MAKE_MISC_FILES              "MAKE_MISC_FILES, llama: build examples"                    OFF)
+option(MAKE_MISC_FILES              "MAKE_MISC_FILES"                                       OFF)
 
 # instruction set specific
-option(LLAMA_AVX                        "llama: enable AVX"                                     ON)
-option(LLAMA_AVX2                       "llama: enable AVX2"                                    ON)
-option(LLAMA_AVX512                     "llama: enable AVX512"                                  OFF)
-option(LLAMA_AVX512_VBMI                "llama: enable AVX512-VBMI"                             OFF)
-option(LLAMA_AVX512_VNNI                "llama: enable AVX512-VNNI"                             OFF)
-option(LLAMA_FMA                        "llama: enable FMA"                                     ON)
+option(LLAMA_AVX                    "llama: enable AVX"                                     ON)
+option(LLAMA_AVX2                   "llama: enable AVX2"                                    ON)
+option(LLAMA_AVX512                 "llama: enable AVX512"                                  OFF)
+option(LLAMA_AVX512_VBMI            "llama: enable AVX512-VBMI"                             OFF)
+option(LLAMA_AVX512_VNNI            "llama: enable AVX512-VNNI"                             OFF)
+option(LLAMA_FMA                    "llama: enable FMA"                                     ON)
 # in MSVC F16C is implied with AVX2/AVX512
 if (NOT MSVC)
-    option(LLAMA_F16C                   "llama: enable F16C"                                    ON)
+    option(LLAMA_F16C               "llama: enable F16C"                                    ON)
 endif()
 
 # 3rd party libs
-option(LLAMA_ACCELERATE                      "llama: enable Accelerate framework"               ON)
-option(LLAMA_BLAS                            "llama: use BLAS"                                  OFF)
-set(LLAMA_BLAS_VENDOR "Generic" CACHE STRING "llama: BLAS library vendor")
-option(LLAMA_CUBLAS                          "llama: use CUDA"                                  OFF)
+option(LLAMA_CUBLAS                          "llama: use CUDA"                                ON)
 set(LLAMA_CUDA_MMQ_Y       "64" CACHE STRING "llama: y tile size for mmq CUDA kernels")
-option(LLAMA_CUDA_FORCE_DMMV                 "llama: use dmmv instead of mmvq CUDA kernels"     OFF)
 set(LLAMA_CUDA_DMMV_X      "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
+set(LLAMA_CUDA_DMMV_Y       "1" CACHE STRING "llama: y block size for dmmv CUDA kernels")
 set(LLAMA_CUDA_MMV_Y        "1" CACHE STRING "llama: y block size for mmv CUDA kernels")
-option(LLAMA_CUDA_F16                        "llama: use 16 bit floats for some calculations"   OFF)
+option(LLAMA_CUDA_F16                        "llama: use 16 bit floats for dmmv CUDA kernels"   OFF)
 set(LLAMA_CUDA_KQUANTS_ITER "2" CACHE STRING "llama: iters./thread per block for Q2_K/Q6_K")
 set(LLAMA_CUDA_PEER_MAX_BATCH_SIZE "128" CACHE STRING
                                              "llama: max. batch size for using peer access")
 option(LLAMA_HIPBLAS                         "llama: use hipBLAS"                               ON)
-
-set(LLAMA_CUDA_DMMV_Y       "1" CACHE STRING "llama: y block size for dmmv CUDA kernels")
 
 
 #
@@ -100,23 +66,6 @@ set(CMAKE_C_STANDARD_REQUIRED true)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-if (NOT MSVC)
-    if (LLAMA_SANITIZE_THREAD)
-        add_compile_options(-fsanitize=thread)
-        link_libraries(-fsanitize=thread)
-    endif()
-
-    if (LLAMA_SANITIZE_ADDRESS)
-        add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-        link_libraries(-fsanitize=address)
-    endif()
-
-    if (LLAMA_SANITIZE_UNDEFINED)
-        add_compile_options(-fsanitize=undefined)
-        link_libraries(-fsanitize=undefined)
-    endif()
-endif()
-
 add_compile_definitions(LOG_DISABLE_LOGS)
 
 set(GGML_SOURCES_CUDA ggml-cuda.cu ggml-cuda.h)
@@ -124,6 +73,8 @@ set(GGML_V2_CUDA_SOURCES otherarch/ggml_v2-cuda.cu otherarch/ggml_v2-cuda.h)
 set(GGML_V2_LEGACY_CUDA_SOURCES otherarch/ggml_v2-cuda-legacy.cu otherarch/ggml_v2-cuda-legacy.h)
 
 if (LLAMA_CUBLAS)
+    cmake_minimum_required(VERSION 3.17)
+
     find_package(CUDAToolkit)
     if (CUDAToolkit_FOUND)
         message(STATUS "cuBLAS found")
@@ -131,17 +82,13 @@ if (LLAMA_CUBLAS)
         enable_language(CUDA)
 
         add_compile_definitions(GGML_USE_CUBLAS)
-#        if (LLAMA_CUDA_CUBLAS)
-#            add_compile_definitions(GGML_CUDA_CUBLAS)
-#        endif()
-        if (LLAMA_CUDA_FORCE_DMMV)
-            add_compile_definitions(GGML_CUDA_FORCE_DMMV)
-        endif()
+        #add_compile_definitions(GGML_CUDA_CUBLAS) #remove to not use cublas
+        add_compile_definitions(GGML_CUDA_MMQ_Y=${LLAMA_CUDA_MMQ_Y})
+        #add_compile_definitions(GGML_CUDA_FORCE_DMMV) #non dmmv broken for me
+
         add_compile_definitions(GGML_CUDA_DMMV_X=${LLAMA_CUDA_DMMV_X})
+        add_compile_definitions(GGML_CUDA_DMMV_Y=${LLAMA_CUDA_DMMV_Y})
         add_compile_definitions(GGML_CUDA_MMV_Y=${LLAMA_CUDA_MMV_Y})
-        if (DEFINED LLAMA_CUDA_DMMV_Y)
-            add_compile_definitions(GGML_CUDA_MMV_Y=${LLAMA_CUDA_DMMV_Y}) # for backwards compatibility
-        endif()
         if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
             add_compile_definitions(GGML_CUDA_F16)
         endif()
@@ -158,11 +105,16 @@ if (LLAMA_CUBLAS)
         # 52 == lowest CUDA 12 standard
         # 60 == f16 CUDA intrinsics
         # 61 == integer CUDA intrinsics
-        # 70 == compute capability at which unrolling a loop in mul_mat_q kernels is faster
+        # 70 == (assumed) compute capability at which unrolling a loop in mul_mat_q kernels is faster
         if (LLAMA_CUDA_F16 OR LLAMA_CUDA_DMMV_F16)
             set(CMAKE_CUDA_ARCHITECTURES "60;61;70") # needed for f16 CUDA intrinsics
         else()
-            set(CMAKE_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
+            message("CUDA Toolkit Version: ${CUDAToolkit_VERSION}")
+            if(CUDAToolkit_VERSION VERSION_GREATER 12)
+                 set(CMAKE_CUDA_ARCHITECTURES "52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
+            else()
+                 set(CMAKE_CUDA_ARCHITECTURES "37;52;61;70") # lowest CUDA 12 standard + lowest for integer intrinsics
+            endif()
         endif()
     endif()
     message(STATUS "Using CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
@@ -395,55 +347,6 @@ elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc64")
     #TODO: Add  targets for Power8/Power9 (Altivec/VSX) and Power10(MMA) and query for big endian systems (ppc64/le/be)
 else()
     message(STATUS "Unknown architecture")
-endif()
-
-#
-# POSIX conformance
-#
-
-# clock_gettime came in POSIX.1b (1993)
-# CLOCK_MONOTONIC came in POSIX.1-2001 / SUSv3 as optional
-# posix_memalign came in POSIX.1-2001 / SUSv3
-# M_PI is an XSI extension since POSIX.1-2001 / SUSv3, came in XPG1 (1985)
-add_compile_definitions(_XOPEN_SOURCE=600)
-
-# Somehow in OpenBSD whenever POSIX conformance is specified
-# some string functions rely on locale_t availability,
-# which was introduced in POSIX.1-2008, forcing us to go higher
-if (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-    remove_definitions(-D_XOPEN_SOURCE=600)
-    add_compile_definitions(_XOPEN_SOURCE=700)
-endif()
-
-# Data types, macros and functions related to controlling CPU affinity and
-# some memory allocation are available on Linux through GNU extensions in libc
-if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-    add_compile_definitions(_GNU_SOURCE)
-endif()
-
-# RLIMIT_MEMLOCK came in BSD, is not specified in POSIX.1,
-# and on macOS its availability depends on enabling Darwin extensions
-# similarly on DragonFly, enabling BSD extensions is necessary
-if (
-    CMAKE_SYSTEM_NAME MATCHES "Darwin" OR
-    CMAKE_SYSTEM_NAME MATCHES "iOS" OR
-    CMAKE_SYSTEM_NAME MATCHES "tvOS" OR
-    CMAKE_SYSTEM_NAME MATCHES "DragonFly"
-)
-    add_compile_definitions(_DARWIN_C_SOURCE)
-endif()
-
-# alloca is a non-standard interface that is not visible on BSDs when
-# POSIX conformance is specified, but not all of them provide a clean way
-# to enable it in such cases
-if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-    add_compile_definitions(__BSD_VISIBLE)
-endif()
-if (CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-    add_compile_definitions(_NETBSD_SOURCE)
-endif()
-if (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-    add_compile_definitions(_BSD_SOURCE)
 endif()
 
 #
