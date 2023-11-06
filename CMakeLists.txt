@@ -400,7 +400,7 @@ add_library(gpttype_adapter
             gpttype_adapter.cpp)
 target_include_directories(gpttype_adapter PUBLIC . ./otherarch ./otherarch/tools ./examples ./common)
 target_compile_features(gpttype_adapter PUBLIC cxx_std_11) # don't bump
-target_link_libraries(gpttype_adapter PRIVATE common2 ggml ${LLAMA_EXTRA_LIBS})
+target_link_libraries(gpttype_adapter PRIVATE common2 ggml ${LLAMA_EXTRA_LIBS} ${GGML_SOURCES_CUDA})
 set_target_properties(gpttype_adapter PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if (LLAMA_CUBLAS)
