@@ -459,7 +459,7 @@ add_library(ggml OBJECT
             ggml-backend.h
             ggml-quants.c
             ggml-quants.h
-            ${LLAMA_EXTRA_LIBS})
+            ${GGML_SOURCES_CUDA})
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
@@ -475,7 +475,9 @@ set_target_properties(ggml_v1 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(ggml_v2 OBJECT
             otherarch/ggml_v2.c
-            otherarch/ggml_v2.h)
+            otherarch/ggml_v2.h
+            ${GGML_V2_CUDA_SOURCES}
+            ${GGML_V2_LEGACY_CUDA_SOURCES})
 target_include_directories(ggml_v2 PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml_v2 PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml_v2 PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
