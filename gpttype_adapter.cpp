@@ -39,6 +39,7 @@ bool generation_finished;
 float last_process_time = 0;
 float last_eval_time = 0;
 int last_token_count = 0;
+int total_gens = 0;
 stop_reason last_stop_reason = stop_reason::INVALID;
 std::vector<std::string> generated_tokens;
 
@@ -597,8 +598,8 @@ void PurgeMissingTokens(llama_context * ctx, std::vector<int> &current_context_t
     //if passed, save beginning of LCQ from old ctx as p1
     //remove all tokens from old ctx between p0 and p1, updating both arrays and kv, then continue as normal
 
-    const int ShortfallThreshold = 200 + (nctx/40); //dont trigger shifting if the distance between trimstart and currhead < this
-    const int SlackAllowance = 50 + (nctx/80); //in case the end text is slightly modified, be forgiving
+    const int ShortfallThreshold = 200 + (nctx/20); //dont trigger shifting if the distance between trimstart and currhead < this
+    const int SlackAllowance = 50 + (nctx/60); //in case the end text is slightly modified, be forgiving
 
     int trimstart = 0;
     int new_tokens_len = new_context_tokens.size();
@@ -1388,6 +1389,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
             stop_sequence.push_back(stopper);
         }
     }
+    std::string addedmemory = inputs.memory;
     params.prompt = inputs.prompt;
     params.seed = inputs.seed;
     params.n_predict = inputs.max_length;
@@ -1442,7 +1444,12 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
 
     // tokenize the prompt
     std::vector<int> embd_inp;
+    std::vector<int> embd_inp_mem; //for storing added memory
     TokenizeString(params.prompt, embd_inp, file_format);
+    if(addedmemory!="")
+    {
+        TokenizeString(addedmemory, embd_inp_mem, file_format);
+    }
 
     //truncate to front of the prompt if its too long
     int32_t nctx = params.n_ctx;
@@ -1459,6 +1466,46 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         {
             embd_inp[0] = bos[0];
         }
+    }
+
+    //added special memory, overwrite if needed
+    if(addedmemory!="")
+    {
+        //remove bos token from prompt, it'll be taken from memory
+        std::vector<int> bos;
+        TokenizeString("", bos, file_format);
+        if (bos.size()>0 && !embd_inp.empty() && bos[0]==embd_inp[0]) {
+            embd_inp.erase(embd_inp.begin());
+        }
+
+        //shorten memory if needed
+        if (embd_inp_mem.size() + params.n_predict + 4 > nctx)
+        {
+            int offset = embd_inp_mem.size() - nctx + params.n_predict + 4;
+            embd_inp_mem = std::vector<int>(embd_inp_mem.begin() + offset, embd_inp_mem.end());
+            //replace bos into front if exists
+            if(bos.size()>0 && embd_inp_mem.size()>0)
+            {
+                embd_inp_mem[0] = bos[0];
+            }
+        }
+
+        //shorten main prompt by trimming the front if needed
+        int addmemtokens = embd_inp_mem.size();
+        int totalsize = (addmemtokens + embd_inp.size() + params.n_predict);
+        if(totalsize > nctx)
+        {
+            int excess = totalsize - nctx;
+            if (embd_inp.size() >= excess) {
+                embd_inp.erase(embd_inp.begin(), embd_inp.begin() + excess);
+            } else {
+                embd_inp.clear();
+            }
+        }
+
+        //stick memory to front of prompt
+        embd_inp.insert(embd_inp.begin(), embd_inp_mem.begin(), embd_inp_mem.end());
+
     }
 
     //determine how much npast we have to rewind from the current state
@@ -1909,6 +1956,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     last_eval_time = pt2;
     last_process_time = pt1;
     last_token_count = realnpredict;
+    total_gens += 1;
     snprintf(output.text, sizeof(output.text), "%s", concat_output.c_str());
 
     return output;

@@ -1,5 +1,5 @@
 # DO NOT USE THIS FILE.
-# IT'S ONLY FOR CUBLAS BUILD PURPOSES ON WINDOWS VISUAL STUDIO.
+# IT'S ONLY FOR ROCBLAS BUILD PURPOSES ON WINDOWS VISUAL STUDIO or GITHUB.
 # IT WILL NOT BE UPDATED OR MAINTAINED !!!
 
 message(STATUS "============== ============== ==============")
@@ -137,7 +137,6 @@ if (LLAMA_HIPBLAS)
     else()
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
-
 
     if (NOT ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
         message(WARNING "Only LLVM is supported for HIP, hint: CC=/opt/rocm/llvm/bin/clang")
@@ -362,7 +361,7 @@ add_library(ggml OBJECT
             ggml-backend.h
             ggml-quants.c
             ggml-quants.h
-            ${GGML_SOURCES_CUDA})
+            )
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})

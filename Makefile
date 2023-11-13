@@ -75,6 +75,10 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS   += -pthread
 	CXXFLAGS += -pthread
+	CLANG_VER = $(shell clang -v 2>&1 | head -n 1 | awk 'BEGIN {FS="[. ]"};{print $$1 $$2 $$4}')
+    ifeq ($(CLANG_VER),Appleclang15)
+		LDFLAGS += -ld_classic
+	endif
 endif
 ifeq ($(UNAME_S),FreeBSD)
 	CFLAGS   += -pthread
@@ -116,7 +120,11 @@ ifeq ($(UNAME_M),$(filter $(UNAME_M),x86_64 i686))
 		FULLCFLAGS += -mavx2 -msse3 -mfma -mf16c -mavx
 	else
 # if not on windows, they are clearly building it themselves, so lets just use whatever is supported
+		ifdef LLAMA_PORTABLE
+		CFLAGS += -mavx2 -msse3 -mfma -mf16c -mavx
+		else
 		CFLAGS += -march=native -mtune=native
+		endif
 	endif
 endif
 ifneq ($(filter ppc64%,$(UNAME_M)),)
@@ -146,11 +154,17 @@ ifdef LLAMA_CUBLAS
 	CUBLAS_OBJS = ggml-cuda.o ggml_v2-cuda.o ggml_v2-cuda-legacy.o
 	NVCC      = nvcc
 	NVCCFLAGS = --forward-unknown-to-host-compiler -use_fast_math
+
 ifdef CUDA_DOCKER_ARCH
 	NVCCFLAGS += -Wno-deprecated-gpu-targets -arch=$(CUDA_DOCKER_ARCH)
 else
+ifdef LLAMA_PORTABLE
+	NVCCFLAGS += -Wno-deprecated-gpu-targets -arch=all-major
+else
 	NVCCFLAGS += -arch=native
+endif
 endif # CUDA_DOCKER_ARCH
+
 ifdef LLAMA_CUDA_FORCE_DMMV
 	NVCCFLAGS += -DGGML_CUDA_FORCE_DMMV
 endif # LLAMA_CUDA_FORCE_DMMV
@@ -206,9 +220,6 @@ ifdef LLAMA_HIPBLAS
 	LLAMA_CUDA_KQUANTS_ITER ?= 2
 	LLAMA_CUDA_FORCE_MMQ ?= True
 	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
-# ifdef LLAMA_CUDA_FORCE_DMMV
-# 	HIPFLAGS 	+= -DGGML_CUDA_FORCE_DMMV
-# endif # LLAMA_CUDA_FORCE_DMMV
 	HIPLDFLAGS    += -L$(ROCM_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lhipblas -lamdhip64 -lrocblas
 	HIP_OBJS       += ggml-cuda.o ggml_v2-cuda.o ggml_v2-cuda-legacy.o
 ggml-cuda.o: HIPFLAGS += $(addprefix --offload-arch=,$(GPU_TARGETS)) \
