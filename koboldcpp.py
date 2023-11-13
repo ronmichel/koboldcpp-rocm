@@ -1148,11 +1148,66 @@ def show_new_gui():
     # decided to follow yellowrose's and kalomaze's suggestions, this function will automatically try to determine GPU identifiers
     # todo: autopick the right number of layers when a model is selected.
     # run in new thread so it doesnt block. does not return anything, instead overwrites specific values and redraws GUI
+
+    def get_amd_gpu_info():
+        from subprocess import run, CalledProcessError
+        FetchedCUdevices = []
+        FetchedCUdeviceMem = []
+        try: # Get AMD ROCm GPU names
+            output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+            device_name = None
+            for line in output.splitlines(): # read through the output line by line
+                line = line.strip()
+                if line.startswith("Marketing Name:"): 
+                    device_name = line.split(":", 1)[1].strip() # if we find a named device, temporarily save the name
+                elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: # if the following Device Type is a GPU (not a CPU) then add it to devices list
+                    FetchedCUdevices.append(device_name)
+                elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
+            if FetchedCUdevices:
+                try:
+                    getamdvram = run(['rocm-smi', '--showmeminfo', 'vram', '--csv'], capture_output=True, text=True, check=True, encoding='utf-8').stdout # fetch VRAM of devices
+                    if getamdvram: 
+                        FetchedCUdeviceMem = [str(int(line.split(",")[1].strip()) // 1048576) for line in getamdvram.splitlines()[1:] if line.strip()] #return Mb from Bytes
+                except Exception as e:
+                    pass
+                try:
+                    if not FetchedCUdeviceMem and device_name:
+                        for device_name in FetchedCUdevices:
+                            amd_vram_dict = {# probably on windows, so use hardcoded values:
+                                'W7900':    "49152", # 48 GiB
+                                'W7800':    "32768", # 32 GiB
+                                'W6800':    "32768", # 32 GiB
+                                '7900 XTX': "24560", # 24 GiB
+                                '7900 XT':  "20464", # 20 GiB
+                                '7900 GRE': "16368", # 16 GiB
+                                '7800 XT':  "16368", # 16 GiB
+                                '7600':     "8176",  # 8 GiB
+                                '6950 XT':  "16368", # 16 GiB
+                                '6900 XT':  "16368", # 16 GiB
+                                '6800 XT':  "16368", # 16 GiB
+                                '6800':     "16368"  # 16 GiB
+                            }
+                            for key in amd_vram_dict:
+                                if key in device_name:
+                                    amd_device_vram = amd_vram_dict[key]
+                                    FetchedCUdeviceMem.append(amd_device_vram)
+                                    break 
+                except Exception as e:
+                    pass
+            FetchedCUdevices = [item.replace("AMD Radeon", "AMD") for item in FetchedCUdevices] # Shorten Device Names
+            return FetchedCUdevices, FetchedCUdeviceMem  
+                  
+        except FileNotFoundError:
+            print("The command 'rocminfo' is not available on this system.")
+            return [], [], False
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return [], [], False
+
     def auto_gpu_heuristics():
         from subprocess import run, CalledProcessError
         FetchedCUdevices = []
         FetchedCUdeviceMem = []
-        AMDgpu = None
         try: # Get OpenCL GPU names on windows using a special binary. overwrite at known index if found.
             basepath = os.path.abspath(os.path.dirname(__file__))
             output = run([((os.path.join(basepath, "winclinfo.exe")) if os.name == 'nt' else "clinfo"),"--json"], capture_output=True, text=True, check=True, encoding='utf-8').stdout
@@ -1180,32 +1235,15 @@ def show_new_gui():
             FetchedCUdevices = [line.split(",")[0].strip() for line in output.splitlines()]
             FetchedCUdeviceMem = [line.split(",")[1].strip().split(" ")[0].strip() for line in output.splitlines()]
         except Exception as e:
-            pass
+            print(f"An unexpected error occurred: {e}")
 
-        if len(FetchedCUdevices)==0:
-            try: # Get AMD ROCm GPU names
-                output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
-                device_name = None
-                for line in output.splitlines(): # read through the output line by line
-                    line = line.strip()
-                    if line.startswith("Marketing Name:"): device_name = line.split(":", 1)[1].strip() # if we find a named device, temporarily save the name
-                    elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: # if the following Device Type is a GPU (not a CPU) then add it to devices list
-                        FetchedCUdevices.append(device_name)
-                        AMDgpu = True
-                    elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
-                if FetchedCUdevices:
-                    getamdvram = run(['rocm-smi', '--showmeminfo', 'vram', '--csv'], capture_output=True, text=True, check=True, encoding='utf-8').stdout # fetch VRAM of devices
-                    FetchedCUdeviceMem = [line.split(",")[1].strip() for line in getamdvram.splitlines()[1:] if line.strip()]
-            except Exception as e:
-                pass
+        if len(FetchedCUdevices)==0: # Get AMD GPU names
+            FetchedCUdevices, FetchedCUdeviceMem = get_amd_gpu_info()
 
         for idx in range(0,4):
             if(len(FetchedCUdevices)>idx):
                 CUDevicesNames[idx] = FetchedCUdevices[idx]
-                if AMDgpu:
-                    MaxMemory[0] = max(int(FetchedCUdeviceMem[idx]),MaxMemory[0])
-                else:
-                    MaxMemory[0] = max(int(FetchedCUdeviceMem[idx])*1024*1024,MaxMemory[0])
+                MaxMemory[0] = max(int(FetchedCUdeviceMem[idx])*1024*1024,MaxMemory[0])
 
         #autopick cublas if suitable, requires at least 3.5GB VRAM to auto pick
         global exitcounter
