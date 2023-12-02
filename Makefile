@@ -218,7 +218,6 @@ ifdef LLAMA_HIPBLAS
 	LLAMA_CUDA_DMMV_X ?= 32
 	LLAMA_CUDA_MMV_Y ?= 1
 	LLAMA_CUDA_KQUANTS_ITER ?= 2
-	LLAMA_CUDA_FORCE_MMQ ?= True
 	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
 	HIPLDFLAGS    += -L$(ROCM_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lhipblas -lamdhip64 -lrocblas
 	HIP_OBJS       += ggml-cuda.o ggml_v2-cuda.o ggml_v2-cuda-legacy.o
