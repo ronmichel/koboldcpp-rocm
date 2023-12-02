@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'YellowRoseCx/koboldcpp-rocm'
-          ref: work-main-dev 
+          ref: work-main-dev  
           submodules: 'recursive'
           
       - name: Install ROCm SDK
@@ -58,6 +58,11 @@ jobs:
         run: |                    
           Invoke-WebRequest -Uri "https://github.com/skeeto/w64devkit/releases/download/v1.20.0/w64devkit-1.20.0.zip" -OutFile "w64devkit.zip"          
           Expand-Archive -Path "w64devkit.zip" -DestinationPath "${{ github.workspace }}"          
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
       - name: Build with make          
         run: |                
