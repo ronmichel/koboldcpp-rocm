@@ -25,7 +25,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: bash
+        shell: pwsh
 
     steps:
       - uses: actions/checkout@v3
@@ -34,12 +34,20 @@ jobs:
           ref: work-main-dev  
           submodules: 'recursive'
           
-      - name: Build with make          
-        run: |                              
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+          
+      - name: Build with make
+        run: |
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'          
           Get-Location
           ls
-          make LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1
+          make CC=gcc LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1
           
       - name: Install ROCm SDK
         run: |
