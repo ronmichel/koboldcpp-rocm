@@ -34,6 +34,13 @@ jobs:
           ref: work-main-dev  
           submodules: 'recursive'
           
+      - name: Build with make          
+        run: |                              
+          Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'          
+          Get-Location
+          ls
+          make LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1
+          
       - name: Install ROCm SDK
         run: |
           curl -LO https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q3-Win10-Win11-For-HIP.exe
@@ -54,23 +61,10 @@ jobs:
       - name: Install PyInstaller
         run: pip install pyinstaller psutil
 
-      - name: Setup w64devkit          
-        run: |                    
-          Invoke-WebRequest -Uri "https://github.com/skeeto/w64devkit/releases/download/v1.20.0/w64devkit-1.20.0.zip" -OutFile "w64devkit.zip"          
-          Expand-Archive -Path "w64devkit.zip" -DestinationPath "${{ github.workspace }}"          
-
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
-
-      - name: Build with make          
-        run: |                
-          echo "${{ github.workspace }}\w64devkit\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append                
-          Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'          
-          Get-Location
-          ls
-          make LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1
+      # - name: Setup w64devkit          
+      #   run: |                    
+      #     Invoke-WebRequest -Uri "https://github.com/skeeto/w64devkit/releases/download/v1.20.0/w64devkit-1.20.0.zip" -OutFile "w64devkit.zip"          
+      #     Expand-Archive -Path "w64devkit.zip" -DestinationPath "${{ github.workspace }}"          
         
       - name: Test Build Lib
         run: |
