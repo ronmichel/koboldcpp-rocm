@@ -59,7 +59,7 @@ class Model:
                 from safetensors import safe_open
                 ctx = cast(ContextManager[Any], safe_open(self.dir_model / part_name, framework="pt", device="cpu"))
             else:
-                ctx = contextlib.nullcontext(torch.load(self.dir_model / part_name, map_location="cpu"))
+                ctx = contextlib.nullcontext(torch.load(str(self.dir_model / part_name), map_location="cpu", mmap=True, weights_only=True))
 
             with ctx as model_part:
                 for name in model_part.keys():
@@ -150,8 +150,6 @@ class Model:
 
     @staticmethod
     def from_model_architecture(model_architecture):
-        if model_architecture == "StableLMEpochForCausalLM":
-            return StableLMModel
         if model_architecture == "GPTNeoXForCausalLM":
             return GPTNeoXModel
         if model_architecture == "BloomForCausalLM":
@@ -168,6 +166,8 @@ class Model:
             return RefactModel
         if model_architecture == "PersimmonForCausalLM":
             return PersimmonModel
+        if model_architecture in ("StableLMEpochForCausalLM", "LlavaStableLMEpochForCausalLM"):
+            return StableLMModel
         return Model
 
     def _is_model_safetensors(self) -> bool:
@@ -193,7 +193,7 @@ class Model:
             return gguf.MODEL_ARCH.MPT
         if arch in ("BaichuanForCausalLM", "BaiChuanForCausalLM"):
             return gguf.MODEL_ARCH.BAICHUAN
-        if arch == "FalconForCausalLM":
+        if arch in ("FalconForCausalLM", "RWForCausalLM"):
             return gguf.MODEL_ARCH.FALCON
         if arch == "GPTBigCodeForCausalLM":
             return gguf.MODEL_ARCH.STARCODER
@@ -201,6 +201,8 @@ class Model:
             return gguf.MODEL_ARCH.REFACT
         if arch == "PersimmonForCausalLM":
             return gguf.MODEL_ARCH.PERSIMMON
+        if arch in ("StableLMEpochForCausalLM", "LlavaStableLMEpochForCausalLM"):
+            return gguf.MODEL_ARCH.STABLELM
 
         raise NotImplementedError(f'Architecture "{arch}" not supported!')
 
@@ -292,15 +294,6 @@ class Model:
 
         special_vocab = gguf.SpecialVocab(self.dir_model, n_vocab=len(tokens))
         special_vocab.add_to_gguf(self.gguf_writer)
-
-
-class StableLMModel(Model):
-    def set_gguf_parameters(self):
-        super().set_gguf_parameters()
-        self.gguf_writer.add_rope_dimension_count(
-            int(self.hparams["rope_pct"] * (self.hparams["hidden_size"] // self.hparams["num_attention_heads"])),
-        )
-        self.gguf_writer.add_layer_norm_eps(1e-5)
 
 
 class GPTNeoXModel(Model):
@@ -824,7 +817,23 @@ class PersimmonModel(Model):
             self.gguf_writer.add_tensor(new_name, data)
 
 
+class StableLMModel(Model):
+    def set_gguf_parameters(self):
+        hparams = self.hparams
+        block_count = hparams["num_hidden_layers"]
+
+        self.gguf_writer.add_name(dir_model.name)
+        self.gguf_writer.add_context_length(hparams["max_position_embeddings"])
+        self.gguf_writer.add_embedding_length(hparams["hidden_size"])
+        self.gguf_writer.add_block_count(block_count)
+        self.gguf_writer.add_feed_forward_length(hparams["intermediate_size"])
+        self.gguf_writer.add_rope_dimension_count(int(hparams["rope_pct"] * (hparams["hidden_size"] // hparams["num_attention_heads"])))
+        self.gguf_writer.add_head_count(hparams["num_attention_heads"])
+        self.gguf_writer.add_parallel_residual(hparams["use_parallel_residual"] if "use_parallel_residual" in hparams else True)
+        self.gguf_writer.add_layer_norm_eps(1e-5)
+
 ###### CONVERSION LOGIC ######
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Convert a huggingface model to a GGML compatible file")
@@ -871,20 +880,21 @@ print(f"Loading model: {dir_model.name}")
 
 hparams = Model.load_hparams(dir_model)
 
-model_class = Model.from_model_architecture(hparams["architectures"][0])
-model_instance = model_class(dir_model, ftype_map[args.outtype], fname_out, args.bigendian)
+with torch.inference_mode():
+    model_class = Model.from_model_architecture(hparams["architectures"][0])
+    model_instance = model_class(dir_model, ftype_map[args.outtype], fname_out, args.bigendian)
 
-print("Set model parameters")
-model_instance.set_gguf_parameters()
+    print("Set model parameters")
+    model_instance.set_gguf_parameters()
 
-print("Set model tokenizer")
-model_instance.set_vocab()
+    print("Set model tokenizer")
+    model_instance.set_vocab()
 
-if args.vocab_only:
-    print(f"Exporting model vocab to '{fname_out}'")
-    model_instance.write_vocab()
-else:
-    print(f"Exporting model to '{fname_out}'")
-    model_instance.write()
+    if args.vocab_only:
+        print(f"Exporting model vocab to '{fname_out}'")
+        model_instance.write_vocab()
+    else:
+        print(f"Exporting model to '{fname_out}'")
+        model_instance.write()
 
-print(f"Model successfully exported to '{fname_out}'")
+    print(f"Model successfully exported to '{fname_out}'")

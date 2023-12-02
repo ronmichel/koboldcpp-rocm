@@ -98,6 +98,8 @@ static std::mutex concat_output_mtx;
 static std::string concat_output = "";
 static std::string concat_output_reader_copy = "";
 
+const size_t extra_context_handle_fragmentation = 80;
+
 inline bool IsNanCheck(float f)
 {
     const unsigned int u = *(unsigned int*)&f;
@@ -697,10 +699,12 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
     //determine rope scaling params
     float rope_freq_scale = 1.0f;
     float rope_freq_base = 10000.0f;
+    bool overwriteRope = false;
     if(inputs.rope_freq_scale>0.0f)
     {
         rope_freq_scale = inputs.rope_freq_scale;
         rope_freq_base = inputs.rope_freq_base;
+        overwriteRope = true;
         printf("Using Custom RoPE scaling (scale:%.3f, base:%.1f).\n",rope_freq_scale,rope_freq_base);
     }
     else
@@ -722,13 +726,9 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
             rope_freq_base = (effectivenctx <= 2048 ? 10000.0f : (effectivenctx <= 3072 ? 26000.0f : (effectivenctx <= 4096 ? 32000.0f : (effectivenctx <= 6144 ? 54000.0f :
             (effectivenctx <= 8192 ? 82684.0f : (effectivenctx <= 12288 ? 140000.0f : (effectivenctx <= 16384 ? 200000.0f : (effectivenctx <= 24576 ? 320000.0f : 440000.0f))))))));
 
-            if(file_format_meta.freq_base_train > rope_freq_base)
-            {
-                rope_freq_base = file_format_meta.freq_base_train;
-            }
         }
 
-        printf("Using automatic RoPE scaling (scale:%.3f, base:%.1f)\n",rope_freq_scale,rope_freq_base);
+        printf("Using automatic RoPE scaling. If the model has customized RoPE settings, they will be used directly instead!\n");
     }
     gptj_ctx_v3.hparams.rope_freq_scale = neox_ctx_v3.hparams.rope_freq_scale = rope_freq_scale;
     gptj_ctx_v3.hparams.rope_freq_base = neox_ctx_v3.hparams.rope_freq_base = rope_freq_base;
@@ -903,8 +903,7 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         }
         #endif
         model_params.main_gpu = cu_parseinfo_maindevice;
-        llama_ctx_params.rope_freq_base = rope_freq_base;
-        llama_ctx_params.rope_freq_scale = rope_freq_scale;
+
         llama_ctx_params.n_batch = blasbatchsize;
         llama_ctx_params.n_threads = n_threads;
         llama_ctx_params.n_threads_batch = n_blasthreads;
@@ -932,6 +931,41 @@ ModelLoadResult gpttype_load_model(const load_model_inputs inputs, FileFormat in
         }
 
         llama_model * llamamodel = llama_load_model_from_file(modelname.c_str(), model_params);
+        if(overwriteRope)
+        {
+            llama_ctx_params.rope_freq_base = rope_freq_base;
+            llama_ctx_params.rope_freq_scale = rope_freq_scale;
+        }
+        else
+        {
+            //if the model modifes rope in any way, use the model values. Otherwise, use our automatic ones
+            if(llamamodel->hparams.rope_freq_base_train!=10000.0f ||
+            llamamodel->hparams.rope_freq_scale_train!=1.0f ||
+            llamamodel->hparams.rope_scaling_type_train==2)
+            {
+                float ropemultiplier = 1.0f;
+                if(llamamodel->hparams.rope_scaling_type_train!=2 &&
+                llamamodel->hparams.n_ctx_train > 2048 && clamped_max_context_length > llamamodel->hparams.n_ctx_train &&
+                llamamodel->hparams.rope_freq_scale_train==1.0f)
+                {
+                    ropemultiplier = (float)llamamodel->hparams.n_ctx_train / (float)clamped_max_context_length;
+                    llama_ctx_params.rope_freq_base = rope_freq_base = llamamodel->hparams.rope_freq_base_train;
+                    llama_ctx_params.rope_freq_scale = rope_freq_scale = ropemultiplier * llamamodel->hparams.rope_freq_scale_train;
+                    printf("Automatic RoPE Scaling: Using (scale:%.3f, base:%.1f).\n", rope_freq_scale, rope_freq_base);
+                }
+                else
+                {
+                    printf("Automatic RoPE Scaling: Using model internal value.\n");
+                }
+            }
+            else
+            {
+                llama_ctx_params.rope_freq_base = rope_freq_base;
+                llama_ctx_params.rope_freq_scale = rope_freq_scale;
+                printf("Automatic RoPE Scaling: Using (scale:%.3f, base:%.1f).\n", rope_freq_scale, rope_freq_base);
+            }
+        }
+
         llama_ctx_v4 = llama_new_context_with_model(llamamodel, llama_ctx_params);
 
         if (llama_ctx_v4 == NULL)
@@ -1389,6 +1423,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
             stop_sequence.push_back(stopper);
         }
     }
+
     std::string addedmemory = inputs.memory;
     params.prompt = inputs.prompt;
     params.seed = inputs.seed;
@@ -1409,6 +1444,17 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
     params.n_threads = n_threads;
     params.n_threads_batch = n_blasthreads;
     bool stream_sse = inputs.stream_sse;
+
+    if(params.n_ctx >= 256 && useContextShift && (file_format == FileFormat::GGUF_LLAMA || file_format==FileFormat::GGUF_FALCON))
+    {
+        params.n_ctx -= extra_context_handle_fragmentation; //add some additional buffer to handle KV fragmentation
+        if(debugmode==1)
+        {
+            printf("\nTrue max context permitted: %d\n",params.n_ctx);
+        }
+    }
+
+    bool allow_regular_prints = (debugmode!=-1 && !inputs.quiet) || debugmode >= 1;
 
     generation_finished = false; // Set current generation status
     generated_tokens.clear(); // New Generation, new tokens
@@ -1663,7 +1709,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         printf("\nBanned a total of %zu tokens.\n",banned_token_ids.size());
     }
 
-    if(debugmode!=-1)
+    if(allow_regular_prints)
     {
         printf("\n");
     }
@@ -1684,7 +1730,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
         // predict
         unsigned int embdsize = embd.size();
         //print progress
-        if (!startedsampling && debugmode!=-1)
+        if (!startedsampling && allow_regular_prints)
         {
             printf("\rProcessing Prompt%s (%d / %zu tokens)", (blasmode ? " [BLAS]" : ""), input_consumed, embd_inp.size());
         }
@@ -1774,7 +1820,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
 
             if (!evalres)
             {
-                fprintf(stderr, "\nFailed to predict! Check your context buffer sizes!\n");
+                fprintf(stderr, "\nFailed to predict at %d! Check your context buffer sizes!\n",n_past);
                 snprintf(output.text, sizeof(output.text), "%s", "");
                 output.status = 0;
                 generation_finished = true;
@@ -1803,7 +1849,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
                 params.n_threads = original_threads;
                 time1 = timer_check();
                 timer_start();
-                if(debugmode!=-1)
+                if(allow_regular_prints)
                 {
                     printf("\n");
                 }
@@ -1878,7 +1924,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
                 concat_output_mtx.unlock();
             }
 
-            if (startedsampling && debugmode!=-1)
+            if (startedsampling && allow_regular_prints)
             {
                 printf("\rGenerating (%d / %d tokens)", (params.n_predict - remaining_tokens), params.n_predict);
             }
@@ -1903,7 +1949,7 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
             if(inputs.unban_tokens_rt && id==eosID)
             {
                 stopper_unused_tokens = remaining_tokens;
-                if(debugmode!=-1)
+                if(allow_regular_prints)
                 {
                     printf("\n(EOS token triggered!)");
                 }
@@ -1917,9 +1963,11 @@ generation_outputs gpttype_generate(const generation_inputs inputs, generation_o
                 {
                     stopper_unused_tokens = remaining_tokens;
                     remaining_tokens = 0;
-                    if(debugmode!=-1)
+                    if(allow_regular_prints)
                     {
-                        printf("\n(Stop sequence triggered: <%s>)", matched.c_str());
+                        auto match_clean = matched;
+                        replace_all(match_clean, "\n", "\\n");
+                        printf("\n(Stop sequence triggered: %s)", match_clean.c_str());
                     }
                     last_stop_reason = stop_reason::CUSTOM_STOPPER;
                     break;
