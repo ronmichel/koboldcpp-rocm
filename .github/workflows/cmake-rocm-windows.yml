@@ -5,14 +5,14 @@ on:
     inputs:
       version:
         description: 'Version tag of koboldcpp-rocm to build: v1.51.0.yr1-ROCm'
-        default: v1.51.0.yr1-ROCm
+        default: v1.52.0.yr1.rc1-ROCm
         required: false
         type: string
   workflow_call:
     inputs:
       version:
         description: 'Version tag of koboldcpp-rocm to build: v1.51.0.yr1-ROCm'
-        default: v1.51.0.yr1-ROCm
+        default: v1.52.0.yr1.rc1-ROCm
         required: false
         type: string
 
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'YellowRoseCx/koboldcpp-rocm'
-          ref: main 
+          ref: kcpp-rocm-mixtral 
           submodules: 'recursive'
           
       - name: Setup MSYS2
@@ -100,16 +100,16 @@ jobs:
           
       - uses: actions/upload-artifact@v3
         with:
-          name: koboldcpp_rocm_only-${{ inputs.version }}
-          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
+          name: koboldcpp_rocm_mixtral-FS-${{ inputs.version }}
+          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_mixtral-FS.exe
 
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.6.1
         continue-on-error: true
         with:
-          file: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
-          release_name: KoboldCPP-${{ inputs.version }}
+          file: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_mixtral-FS.exe
+          release_name: Mixtral-KoboldCPP-${{ inputs.version }} FanService Ed.
           tag: ${{ inputs.version }}
           file_glob: false
           make_latest: true
