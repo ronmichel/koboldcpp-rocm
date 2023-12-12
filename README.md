@@ -1,4 +1,4 @@
-# koboldcpp-ROCM for AMD
+# <center>koboldcpp-ROCM MIXTRAL FanService Edition for AMD</center>
 Quick Linux install:              
 To install, either use the file "[easy_KCPP-ROCm_install.sh](https://github.com/YellowRoseCx/koboldcpp-rocm/blob/main/easy_KCPP-ROCm_install.sh)" or navigate to the folder you want to download to in Terminal then run
 ```        
