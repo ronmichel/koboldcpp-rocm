@@ -2162,13 +2162,17 @@ def compare_versions(current_version, latest_version):
     except Exception as e:
         return
 def check_latest_version():
-    from colorama import Fore, Style
+    from colorama import Fore, Style, init, deinit
+    if os.name == "nt":
+        init()
     latest_version = get_latest_release_tag()
     new_version = compare_versions(KcppVersion, latest_version)
     if new_version != KcppVersion:
         print(f"{Fore.CYAN}A new version of KoboldCpp is available: {Fore.GREEN}**{new_version}**{Fore.CYAN}, current version is: {Fore.YELLOW}**{KcppVersion}**{Style.RESET_ALL}")
     else:
         print(f"{Fore.CYAN}You are using the latest version.{Style.RESET_ALL}")
+    if os.name == "nt":
+        deinit()
 
 def main(launch_args,start_server=True):
     global args, friendlymodelname
