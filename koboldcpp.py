@@ -1271,7 +1271,7 @@ def show_new_gui():
         if exitcounter < 100 and MaxMemory[0]>3500000000 and CUDevicesNames[0]!="" and ("Use CuBLAS" in runopts or "Use hipBLAS (ROCm)" in runopts) and (any(CUDevicesNames) or any(CLDevicesNames)):
             if "Use CuBLAS" in runopts:
                 runopts_var.set("Use CuBLAS")
-            if "Use hipBLAS (ROCm)" in runopts:
+            elif "Use hipBLAS (ROCm)" in runopts:
                 runopts_var.set("Use hipBLAS (ROCm)")
 
         changed_gpu_choice_var()
