@@ -1268,11 +1268,11 @@ def show_new_gui():
 
         #autopick cublas if suitable, requires at least 3.5GB VRAM to auto pick
         global exitcounter
-        if exitcounter < 100 and MaxMemory[0]>3500000000 and CUDevicesNames[0]!="" and ("Use CuBLAS" in runopts or "Use hipBLAS (ROCM)" in runopts) and runopts_var.get()=="Use OpenBLAS":
+        if exitcounter < 100 and MaxMemory[0]>3500000000 and CUDevicesNames[0]!="" and ("Use CuBLAS" in runopts or "Use hipBLAS (ROCm)" in runopts) and (any(CUDevicesNames) or any(CLDevicesNames)):
             if "Use CuBLAS" in runopts:
                 runopts_var.set("Use CuBLAS")
-            elif "Use hipBLAS (ROCM)" in runopts:
-                runopts_var.set("Use hipBLAS (ROCM)")
+            if "Use hipBLAS (ROCm)" in runopts:
+                runopts_var.set("Use hipBLAS (ROCm)")
 
         changed_gpu_choice_var()
         return
