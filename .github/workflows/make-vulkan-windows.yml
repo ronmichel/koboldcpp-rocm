@@ -1,4 +1,4 @@
-name: Build Koboldcpp-ROCm Windows
+name: Build Koboldcpp-ROCm Vulkan Windows
 
 on:
   workflow_dispatch:
@@ -127,10 +127,10 @@ jobs:
           name: koboldcpp_rocm_only-${{ inputs.version }}
           path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
 
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: koboldcpp_rocm_zip-${{ inputs.version }}
-      #     path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_files.zip
+      - uses: actions/upload-artifact@v3
+        with:
+          name: koboldcpp_rocm_zip-${{ inputs.version }}
+          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_files.zip
 
       # - name: Upload files to a GitHub release
       #   id: upload-release
