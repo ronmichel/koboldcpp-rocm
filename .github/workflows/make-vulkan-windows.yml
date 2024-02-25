@@ -47,7 +47,8 @@ jobs:
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
           Get-Location
           ls
-          make CC=gcc LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1 LLAMA_VULKAN=1 -j2
+          make CC=gcc LLAMA_VULKAN=1 -j2
+          # make CC=gcc LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1 LLAMA_VULKAN=1 -j2
 
       # - name: Install ROCm SDK
       #   run: |
