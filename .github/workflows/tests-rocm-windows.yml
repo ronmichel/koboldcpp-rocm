@@ -1,18 +1,18 @@
-name: Test Build Koboldcpp-ROCm Windows
+name: DEVELOP Build Koboldcpp-ROCm Windows
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag of koboldcpp-rocm to test: v1.51.0.yr0-ROCm'
-        default: v1.51.0.yr0-ROCm
+        description: 'Version tag of develop-koboldcpp-rocm to build: v1.62.2.yr0-ROCm-dev'
+        default: v1.62.2.yr0-ROCm-dev
         required: false
         type: string
   workflow_call:
     inputs:
       version:
-        description: 'Version tag of koboldcpp-rocm to test: v1.51.0.yr0-ROCm'
-        default: v1.51.0.yr0-ROCm
+        description: 'Version tag of develop-koboldcpp-rocm to build: v1.62.2.yr0-ROCm-dev'
+        default: v1.62.2.yr0-ROCm-dev
         required: false
         type: string
 
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build_libs:
-    name: Test Build ROCm Lib
+    name: Build ROCm Lib
     runs-on: windows-latest
     defaults:
       run:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'YellowRoseCx/koboldcpp-rocm'
-          ref: main
+          ref: develop
           submodules: 'recursive'
 
       - name: Setup MSYS2
@@ -41,13 +41,6 @@ jobs:
           install: >-
             base-devel
             mingw-w64-x86_64-toolchain
-
-      - name: Build CLBLAST & Others with make
-        run: |
-          Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
-          Get-Location
-          ls
-          make CC=gcc LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1 -j2
 
       - name: Install ROCm SDK
         run: |
@@ -67,9 +60,9 @@ jobs:
           python -m pip install cmake ninja
 
       - name: Install PyInstaller
-        run: pip install pyinstaller psutil
+        run: pip install pyinstaller==6.4.0 psutil
 
-      - name: Test Build Lib
+      - name: Build Lib
         run: |
           $env:CC = 'C:\Program Files\AMD\ROCm\5.7\bin\clang.exe'
           $env:CXX = 'C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe'
@@ -80,7 +73,16 @@ jobs:
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm\build'
           Get-Location
           cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLLAMA_HIPBLAS=ON -DHIP_PLATFORM=amd -DCMAKE_C_COMPILER="C:/Program Files/AMD/ROCm/5.7/bin/clang.exe" -DCMAKE_CXX_COMPILER="C:/Program Files/AMD/ROCm/5.7/bin/clang++.exe" -DAMDGPU_TARGETS="gfx803;gfx900;gfx906;gfx908;gfx90a;gfx1010;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102"
-          cmake --build . -j2
+          cmake --build . -j ${env:NUMBER_OF_PROCESSORS}
+
+
+      - name: Build CLBLAST & Others with make
+        run: |
+          Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
+          Get-Location
+          ls
+          make CC=gcc LLAMA_CLBLAST=1 LLAMA_OPENBLAS=1 LLAMA_VULKAN=1 -j ${env:NUMBER_OF_PROCESSORS}
+          
 
       - name: Copy ROCm DLLs and Run PyInstaller
         run: |
@@ -89,37 +91,18 @@ jobs:
           copy "C:\Program Files\AMD\ROCm\5.7\bin\hipblas.dll" .\
           copy "C:\Program Files\AMD\ROCm\5.7\bin\rocblas.dll" .\
           robocopy "C:\Program Files\AMD\ROCm\5.7\bin\rocblas" .\rocblas /MIR
+          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/v1.43.2-ROCm/gfx103132rocblasfiles.zip
+          7z x gfx103132rocblasfiles.zip          
           pip install customtkinter
-          PyInstaller --noconfirm \
-                      --onefile \
-                      --collect-all customtkinter \
-                      --clean \
-                      --console \
-                      --icon ".\niko.ico" \
-                      --add-data "./klite.embd;." \
-                      --add-data "./winclinfo.exe;." \
-                      --add-data "./OpenCL.dll;." \
-                      --add-data "./kcpp_docs.embd;." \
-                      --add-data "./koboldcpp_default.dll;." \
-                      --add-data "./koboldcpp_openblas.dll;." \
-                      --add-data "./koboldcpp_failsafe.dll;." \
-                      --add-data "./koboldcpp_noavx2.dll;." \
-                      --add-data "./libopenblas.dll;." \
-                      --add-data "./koboldcpp_clblast.dll;." \
-                      --add-data "./koboldcpp_clblast_noavx2.dll;." \
-                      --add-data "./clblast.dll;." \
-                      --add-data "D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll;." \
-                      --add-data "./hipblas.dll;." \
-                      --add-data "./rocblas.dll;." \
-                      --add-data "./rwkv_vocab.embd;." \
-                      --add-data "./rwkv_world_vocab.embd;." \
-                      --add-data "./rocblas;." \
-                      --add-data "C:/Windows/System32/msvcp140.dll;." \
-                      --add-data "C:/Windows/System32/vcruntime140_1.dll;." \
-                      "./koboldcpp.py" \
-                      -n "koboldcpp_rocm.exe"
-#          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/v1.43.2-ROCm/gfx103132rocblasfiles.7z
-#          7z x gfx103132rocblasfiles.7z
+          PyInstaller --noconfirm --onefile --collect-all customtkinter --clean --console --icon ".\niko.ico" --add-data "./klite.embd;." --add-data "./winclinfo.exe;." --add-data "./OpenCL.dll;." --add-data "./kcpp_docs.embd;." --add-data "./koboldcpp_default.dll;." --add-data "./koboldcpp_openblas.dll;." --add-data "./koboldcpp_failsafe.dll;." --add-data "./koboldcpp_noavx2.dll;." --add-data "./libopenblas.dll;." --add-data "./koboldcpp_clblast.dll;." --add-data "./koboldcpp_clblast_noavx2.dll;." --add-data "./clblast.dll;." --add-data "./koboldcpp_vulkan.dll;." --add-data "./vulkan-1.dll;." --add-data "D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll;." --add-data "./hipblas.dll;." --add-data "./rocblas.dll;." --add-data "./rwkv_vocab.embd;." --add-data "./rwkv_world_vocab.embd;." --add-data "./rocblas;." --add-data "C:/Windows/System32/msvcp140.dll;." --add-data "C:/Windows/System32/vcruntime140_1.dll;." "./koboldcpp.py" -n "koboldcpp_rocm.exe"
+
+
+      - name: Create ZIP archive
+        run: |
+          Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
+          Compress-Archive -Path  D:\a\koboldcpp-rocm\koboldcpp-rocm\klite.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\winclinfo.exe, D:\a\koboldcpp-rocm\koboldcpp-rocm\OpenCL.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\kcpp_docs.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_default.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_openblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_failsafe.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\libopenblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_vulkan.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_world_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas, D:\a\koboldcpp-rocm\koboldcpp-rocm\msvcp140.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\vcruntime140_1.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp.py -DestinationPath koboldcpp_rocm_files.zip
+          copy "koboldcpp_rocm_files.zip" D:\a\koboldcpp-rocm\koboldcpp-rocm\dist
+
 
       - uses: actions/upload-artifact@v3
         with:
@@ -131,16 +114,82 @@ jobs:
           name: koboldcpp_rocm-${{ inputs.version }}
           path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
 
-      # - name: Upload files to a GitHub release
-      #   id: upload-release
-      #   uses: svenstaro/upload-release-action@2.6.1
-      #   continue-on-error: true
-      #   with:
-      #     file: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_only.exe
-      #     release_name: KoboldCPP-${{ inputs.version }}
-      #     tag: ${{ inputs.version }}
-      #     file_glob: false
-      #     make_latest: true
-      #     overwrite: false
+      - uses: actions/upload-artifact@v3
+        with:
+          name: koboldcpp_rocm_zip-${{ inputs.version }}
+          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_files.zip
+
+      - name: Upload files to a GitHub release
+        id: upload-release
+        uses: svenstaro/upload-release-action@2.6.1
+        continue-on-error: true
+        with:
+          file_glob: true
+          file: D:/a/koboldcpp-rocm/koboldcpp-rocm/dist/*.*
+          release_name: dev-KoboldCPP-${{ inputs.version }}
+          tag: ${{ inputs.version }}
+          make_latest: false
+          prerelease: true
+          overwrite: false
+
+
+
 
 #          Copy-Item 'D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll' '..\..\build'
+#  build_wheel:
+#    name: Build ROCm
+#    runs-on: windows-latest
+#    needs: build_libs
+#    strategy:
+#      matrix:
+#        pyver: ["3.8", "3.9", "3.10", "3.11"]
+#    defaults:
+#      run:
+#        shell: pwsh
+#    env:
+#      PCKGVER: ${{ inputs.version }}
+
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          repository: 'YellowRoseCx/koboldcpp-rocm'
+#          ref: ${{ inputs.version }}
+
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: 'win-rocm-lib'
+#          path: ./koboldcpp-rocm
+
+#      - uses: actions/setup-python@v3
+#        with:
+#          python-version: ${{ matrix.pyver }}
+
+#      - name: Install Dependencies
+#        run: |
+#          python -m pip install build wheel cmake scikit-build ninja
+
+#      - name: Build Wheel
+#        run: |
+#          $packageVersion = [version]$env:PCKGVER.TrimStart('v')
+#          $setup = Get-Content 'setup.py' -raw
+#          if ($packageVersion -lt [version]'0.1.78') {$newsetup = $setup.Replace("packages=[`"llama_cpp`", `"llama_cpp.server`"],","packages=[`"llama_cpp`", `"llama_cpp.server`"],`n    package_data={'llama_cpp': ['llama.dll']},")}
+#          if ($packageVersion -gt [version]'0.1.77') {$newsetup = $setup.Replace('package_data={"llama_cpp": ["py.typed"]},','package_data={"llama_cpp": ["py.typed", "llama.dll"]},')}
+#          New-Item 'setup.py' -itemType File -value $newsetup -force
+#          python setup.py --skip-cmake bdist_wheel egg_info --tag-build=+rocm5.5.1
+
+#      - name: Upload files to a GitHub release
+#        id: upload-release
+#        uses: svenstaro/upload-release-action@2.6.1
+#        continue-on-error: true
+#        with:
+#          file: ./dist/*.whl
+#          tag: rocm
+#          file_glob: true
+#          make_latest: false
+#          overwrite: true
+
+#      - uses: actions/upload-artifact@v3
+#        if: steps.upload-release.outcome == 'failure'
+#        with:
+#          name: 'win-rocm-wheels'
+#          path: ./dist/*.whl
