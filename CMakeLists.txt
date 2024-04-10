@@ -1,4 +1,4 @@
-# THIS FILE IS ONLY INTENDED FOR CUBLAS or HIPBLAS BUILD PURPOSES ON WINDOWS VISUAL STUDIO.
+# THIS FILE IS ONLY INTENDED FOR HIPBLAS BUILD PURPOSES ON WINDOWS VISUAL STUDIO.
 # YOU'RE NOT RECOMMENDED TO USE IT
 
 message(STATUS "============== ============== ==============")
@@ -28,15 +28,15 @@ set(LLAMA_SANITIZE_ADDRESS OFF)
 set(LLAMA_SANITIZE_UNDEFINED OFF)
 
 # instruction set specific
-option(LLAMA_AVX                        "llama: enable AVX"                                     ON)
-option(LLAMA_AVX2                       "llama: enable AVX2"                                    ON)
-option(LLAMA_AVX512                     "llama: enable AVX512"                                  OFF)
-option(LLAMA_AVX512_VBMI                "llama: enable AVX512-VBMI"                             OFF)
-option(LLAMA_AVX512_VNNI                "llama: enable AVX512-VNNI"                             OFF)
-option(LLAMA_FMA                        "llama: enable FMA"                                     ON)
+option(LLAMA_AVX                    "llama: enable AVX"                                     ON)
+option(LLAMA_AVX2                   "llama: enable AVX2"                                    ON)
+option(LLAMA_AVX512                 "llama: enable AVX512"                                  OFF)
+option(LLAMA_AVX512_VBMI            "llama: enable AVX512-VBMI"                             OFF)
+option(LLAMA_AVX512_VNNI            "llama: enable AVX512-VNNI"                             OFF)
+option(LLAMA_FMA                    "llama: enable FMA"                                     ON)
 # in MSVC F16C is implied with AVX2/AVX512
 if (NOT MSVC)
-    option(LLAMA_F16C                   "llama: enable F16C"                                    ON)
+    option(LLAMA_F16C               "llama: enable F16C"                                    ON)
 endif()
 
 # 3rd party libs
@@ -45,7 +45,7 @@ set(LLAMA_CUDA_MMQ_Y       "64" CACHE STRING "llama: y tile size for mmq CUDA ke
 set(LLAMA_CUDA_DMMV_X      "32" CACHE STRING "llama: x stride for dmmv CUDA kernels")
 set(LLAMA_CUDA_DMMV_Y       "1" CACHE STRING "llama: y block size for dmmv CUDA kernels")
 set(LLAMA_CUDA_MMV_Y        "1" CACHE STRING "llama: y block size for mmv CUDA kernels")
-option(LLAMA_CUDA_F16                        "llama: use 16 bit floats for some calculations"   OFF)
+option(LLAMA_CUDA_F16                        "llama: use 16 bit floats for dmmv CUDA kernels"   OFF)
 set(LLAMA_CUDA_KQUANTS_ITER "2" CACHE STRING "llama: iters./thread per block for Q2_K/Q6_K")
 set(LLAMA_CUDA_PEER_MAX_BATCH_SIZE "128" CACHE STRING
                                              "llama: max. batch size for using peer access")
@@ -142,6 +142,7 @@ if (LLAMA_HIPBLAS)
     else()
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
+
 
     if (NOT ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
         message(WARNING "Only LLVM is supported for HIP, hint: CC=/opt/rocm/llvm/bin/clang")
@@ -395,7 +396,7 @@ add_library(ggml OBJECT
             ggml-backend.h
             ggml-quants.c
             ggml-quants.h
-            )
+            ${GGML_SOURCES_CUDA})
 target_include_directories(ggml PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
@@ -411,7 +412,9 @@ set_target_properties(ggml_v1 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(ggml_v2 OBJECT
             otherarch/ggml_v2.c
-            otherarch/ggml_v2.h)
+            otherarch/ggml_v2.h
+            ${GGML_V2_CUDA_SOURCES}
+            ${GGML_V2_LEGACY_CUDA_SOURCES})
 target_include_directories(ggml_v2 PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml_v2 PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml_v2 PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
@@ -480,4 +483,3 @@ if (LLAMA_HIPBLAS)
     target_link_libraries(${TARGET} PUBLIC Threads::Threads ggml ggml_v1 ggml_v2 ggml_v3 common2 gpttype_adapter sdtype_adapter ${LLAMA_EXTRA_LIBS})
     target_compile_features(${TARGET} PRIVATE cxx_std_11)
 endif()
-
