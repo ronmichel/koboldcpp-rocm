@@ -157,7 +157,6 @@ if (LLAMA_HIPBLAS)
 
     if (${hipblas_FOUND} AND ${hip_FOUND})
         message(STATUS "HIP and hipBLAS found")
-        enable_language(HIP)
         
         add_compile_definitions(GGML_USE_HIPBLAS)
         add_compile_definitions(GGML_USE_CUDA)
