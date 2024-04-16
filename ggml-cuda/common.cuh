@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ggml.h"
-#include "ggml-cuda.h"
+#include "../ggml.h"
+#include "../ggml-cuda.h"
 
 #include <memory>
 
