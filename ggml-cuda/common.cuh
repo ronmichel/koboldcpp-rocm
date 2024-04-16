@@ -12,7 +12,7 @@
 #define GGML_COMMON_DECL_CUDA
 #define GGML_COMMON_IMPL_CUDA
 #endif
-#include "ggml-common.h"
+#include "../ggml-common.h"
 
 #include <cstdio>
 #include <array>
