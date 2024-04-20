@@ -143,7 +143,6 @@ if (LLAMA_HIPBLAS)
         list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
     endif()
 
-
     if (NOT ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
         message(WARNING "Only LLVM is supported for HIP, hint: CC=/opt/rocm/llvm/bin/clang")
     endif()
@@ -157,7 +156,7 @@ if (LLAMA_HIPBLAS)
 
     if (${hipblas_FOUND} AND ${hip_FOUND})
         message(STATUS "HIP and hipBLAS found")
-        file(GLOB GGML_SOURCES_CUDA "ggml-cuda/*.cu" "ggml-cuda/*.cuh" "*.h")
+        file(GLOB GGML_SOURCES_CUDA "ggml-cuda/*.cu")
         list(APPEND GGML_SOURCES_CUDA "ggml-cuda.cu")
         add_compile_definitions(GGML_USE_HIPBLAS GGML_USE_CUDA SD_USE_CUBLAS)
         add_library(ggml-rocm OBJECT ${GGML_SOURCES_CUDA})
@@ -169,7 +168,7 @@ if (LLAMA_HIPBLAS)
         target_compile_definitions(ggml-rocm PUBLIC K_QUANTS_PER_ITERATION=${LLAMA_CUDA_KQUANTS_ITER})
         set_source_files_properties(${GGML_SOURCES_CUDA} PROPERTIES LANGUAGE CXX)
         target_link_libraries(ggml-rocm PUBLIC hip::device hip::host roc::rocblas roc::hipblas)
-        target_link_libraries(ggml-rocm PRIVATE ggml)  
+
 
         add_library(ggml-v2-rocm OBJECT ${GGML_V2_CUDA_SOURCES})
         if (LLAMA_CUDA_FORCE_DMMV)
