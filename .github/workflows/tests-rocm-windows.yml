@@ -115,17 +115,17 @@ jobs:
           copy "koboldcpp_rocm_files.zip" D:\a\koboldcpp-rocm\koboldcpp-rocm\dist
 
 
-      - uses: actions/upload-artifact@v4.1.6
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: koboldcpp_hipblas-${{ inputs.version }}
           path: D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll
 
-      - uses: actions/upload-artifact@v4.1.6
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: koboldcpp_rocm-${{ inputs.version }}
           path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
 
-      - uses: actions/upload-artifact@v4.1.6
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: koboldcpp_rocm_zip-${{ inputs.version }}
           path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_files.zip
