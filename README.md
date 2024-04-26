@@ -185,3 +185,5 @@ Comparison with OpenCL using 6800xt (old measurement)
   - GPT-NeoX / Pythia / StableLM / Dolly / RedPajama
   - MPT models
   - Falcon (GGUF only)
+  - [Stable Diffusion and SDXL models](https://github.com/LostRuins/koboldcpp/wiki#can-i-generate-images-with-koboldcpp)
+
