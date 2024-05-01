@@ -80,7 +80,7 @@ jobs:
           Get-Location
           cmake --version
           clang --version
-          cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLLAMA_HIPBLAS=ON -DHIP_PLATFORM=amd -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe" -DAMDGPU_TARGETS="gfx803;gfx900;gfx906;gfx908;gfx90a;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102"
+          cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLLAMA_HIPBLAS=ON -DHIP_PLATFORM=amd -DCMAKE_C_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe" -DAMDGPU_TARGETS="gfx1030"
           cmake --build . --config Release -j ${env:NUMBER_OF_PROCESSORS}
 #          $env:CC = 'C:\Program Files\AMD\ROCm\5.7\bin\clang.exe'
 #          $env:CXX = 'C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe'
