@@ -35,11 +35,11 @@ My typical start command looks like this: ``python koboldcpp.py --threads 6 --bl
 ## Windows Usage
 - **[Download the latest .exe release here](https://github.com/YellowRoseCx/koboldcpp-rocm/releases/latest)** or clone the git repo.
 - Windows binaries are provided in the form of **koboldcpp.exe**, which is a pyinstaller wrapper for a few **.dll** files and **koboldcpp.py**. You can also rebuild it yourself with the provided makefiles and scripts.
-- Weights (models) are not included, you can use the official llama.cpp `quantize.exe` to generate them from your official weight files (or download them from other places such as [TheBloke's Huggingface](https://huggingface.co/TheBloke).
-- To run, execute **koboldcpp.exe** or drag and drop your quantized `ggml_model.bin` file onto the .exe, and then connect with Kobold or Kobold Lite. If you're not on windows, then run the script **KoboldCpp.py** after compiling the libraries.
+- Weights are not included, you can use the official llama.cpp `quantize.exe` to generate them from your official weight files (or download them from other places such as [TheBloke's Huggingface](https://huggingface.co/TheBloke).
+- To run, simply execute **koboldcpp.exe**.
 - Launching with no command line arguments displays a GUI containing a subset of configurable settings. Generally you dont have to change much besides the `Presets` and `GPU Layers`. Read the `--help` for more info about each settings.
 - By default, you can connect to http://localhost:5001
-- You can also run it using the command line `koboldcpp.exe [model.gguf] [port]`. For info, please check `koboldcpp.exe --help`
+- You can also run it using the command line. For info, please check `koboldcpp.exe --help` or `python koboldcpp.py --help`
 
 ## Compiling for AMD on Windows
 - You're encouraged to use the .exe released, but if you want to compile your binaries from source at Windows, the easiest way is:
@@ -81,18 +81,18 @@ My typical start command looks like this: ``python koboldcpp.py --threads 6 --bl
   -
 
 ## Arch Linux Packages
-There are 4 community made AUR packages (Maintained by @AlpinDale) available: [CPU-only](https://aur.archlinux.org/packages/koboldcpp-cpu), [CLBlast](https://aur.archlinux.org/packages/koboldcpp-clblast), [CUBLAS](https://aur.archlinux.org/packages/koboldcpp-cuda), and [HIPBLAS](https://aur.archlinux.org/packages/koboldcpp-hipblas). They are, respectively, for users with no GPU, users with a GPU (vendor-agnostic), users with NVIDIA GPUs, and users with a supported AMD GPU.
+There are some community made AUR packages (Maintained by @AlpinDale) available: [HIPBLAS](https://aur.archlinux.org/packages/koboldcpp-hipblas) and [CUBLAS](https://aur.archlinux.org/packages/koboldcpp-cuda).
 
 The recommended installation method is through an AUR helper such as [paru](https://aur.archlinux.org/packages/paru) or [yay](https://aur.archlinux.org/packages/yay):
 
 ```sh
-paru -S koboldcpp-cpu
+paru -S koboldcpp-cpuhipblas
 ```
 
 Alternatively, you can manually install, though it's not recommended (since the build depends on [customtkinter](https://aur.archlinux.org/packages/customtkinter)):
 
 ```sh
-git clone https://aur.archlinux.org/koboldcpp-cpu.git && cd koboldcpp-cpu
+git clone https://aur.archlinux.org/koboldcpp-hipblas.git && cd koboldcpp-hipblas
 
 makepkg -si
 ```
