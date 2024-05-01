@@ -412,9 +412,7 @@ set_target_properties(ggml_v1 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(ggml_v2 OBJECT
             otherarch/ggml_v2.c
-            otherarch/ggml_v2.h
-            ${GGML_V2_CUDA_SOURCES}
-            ${GGML_V2_LEGACY_CUDA_SOURCES})
+            otherarch/ggml_v2.h)
 target_include_directories(ggml_v2 PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml_v2 PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml_v2 PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
@@ -422,8 +420,7 @@ set_target_properties(ggml_v2 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(ggml_v3 OBJECT
             otherarch/ggml_v3.c
-            otherarch/ggml_v3.h
-            ${GGML_V3_CUDA_SOURCES})
+            otherarch/ggml_v3.h)
 target_include_directories(ggml_v3 PUBLIC . ./otherarch ./otherarch/tools)
 target_compile_features(ggml_v3 PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml_v3 PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
