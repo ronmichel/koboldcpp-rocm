@@ -426,15 +426,15 @@ target_compile_features(ggml_v3 PUBLIC c_std_11) # don't bump
 target_link_libraries(ggml_v3 PUBLIC Threads::Threads ${LLAMA_EXTRA_LIBS})
 set_target_properties(ggml_v3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+#            examples/llava/llava.cpp
+#            examples/llava/llava.h
+#            examples/llava/clip.cpp
+#            examples/llava/clip.h
 add_library(common2
             common/common.cpp
             common/common.h
             common/grammar-parser.h
             common/grammar-parser.cpp
-            examples/llava/llava.cpp
-            examples/llava/llava.h
-            examples/llava/clip.cpp
-            examples/llava/clip.h
             unicode.h
             unicode.cpp
             unicode-data.cpp)
