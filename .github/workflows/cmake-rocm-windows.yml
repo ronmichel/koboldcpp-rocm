@@ -83,7 +83,7 @@ jobs:
           Set-Location 'C:\Program Files\AMD\ROCm\5.7\bin'
           Get-Location
           curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/v1.43.2-ROCm/ROCmLibs4all.zip
-          7z x ROCmLibs4all.zip
+          7z x ROCmLibs4all.zip -aoa
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
           $env:CC = 'C:\Program Files\AMD\ROCm\5.7\bin\clang.exe'
           $env:CXX = 'C:\Program Files\AMD\ROCm\5.7\bin\clang++.exe'
