@@ -112,7 +112,7 @@ jobs:
       - name: Create ZIP archive
         run: |
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
-          Compress-Archive -Path  D:\a\koboldcpp-rocm\koboldcpp-rocm\klite.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\winclinfo.exe, D:\a\koboldcpp-rocm\koboldcpp-rocm\OpenCL.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\kcpp_docs.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_default.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_openblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_failsafe.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\libopenblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_vulkan.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_world_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas, D:\a\koboldcpp-rocm\koboldcpp-rocm\msvcp140.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\vcruntime140_1.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp.py -DestinationPath koboldcpp_rocm_files.zip
+          Compress-Archive -Path  D:\a\koboldcpp-rocm\koboldcpp-rocm\klite.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\winclinfo.exe, D:\a\koboldcpp-rocm\koboldcpp-rocm\OpenCL.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\kcpp_docs.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_default.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_openblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_failsafe.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\libopenblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_vulkan.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp_clblast_noavx2.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\clblast.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\hipblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rwkv_world_vocab.embd, D:\a\koboldcpp-rocm\koboldcpp-rocm\rocblas, D:\a\koboldcpp-rocm\koboldcpp-rocm\msvcp140.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\vcruntime140_1.dll, D:\a\koboldcpp-rocm\koboldcpp-rocm\koboldcpp.py -DestinationPath koboldcpp_rocm4all_files.zip
           copy "koboldcpp_rocm_files.zip" D:\a\koboldcpp-rocm\koboldcpp-rocm\dist
 
 
@@ -124,12 +124,12 @@ jobs:
       - uses: actions/upload-artifact@v4.3.3
         with:
           name: koboldcpp_rocm_only-${{ inputs.version }}
-          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm.exe
+          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm4all.exe
 
       - uses: actions/upload-artifact@v4.3.3
         with:
           name: koboldcpp_rocm_zip-${{ inputs.version }}
-          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm_files.zip
+          path: D:\a\koboldcpp-rocm\koboldcpp-rocm\dist\koboldcpp_rocm4all_files.zip
 
       - name: Upload files to a GitHub release
         id: upload-release
