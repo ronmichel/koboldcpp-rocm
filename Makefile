@@ -251,7 +251,8 @@ ifdef LLAMA_HIPBLAS
 	LLAMA_CUDA_DMMV_X ?= 32
 	LLAMA_CUDA_MMV_Y ?= 1
 	LLAMA_CUDA_KQUANTS_ITER ?= 2
-	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_CUDA -DSD_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
+	GGML_CUDA_USE_GRAPHS ?= ON
+	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_CUDA -DSD_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C) -DGGML_CUDA_USE_GRAPHS
 	HIPLDFLAGS    += -L$(ROCM_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lhipblas -lamdhip64 -lrocblas
 	HIP_OBJS      += ggml-cuda.o ggml_v3-cuda.o ggml_v2-cuda.o ggml_v2-cuda-legacy.o
 	HIP_OBJS      += $(patsubst %.cu,%.o,$(wildcard ggml/src/ggml-cuda/*.cu))

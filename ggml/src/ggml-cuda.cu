@@ -2461,7 +2461,9 @@ GGML_CALL static enum ggml_status ggml_backend_cuda_graph_compute(ggml_backend_t
 
     if (cuda_ctx->cuda_graph->graph == nullptr) {
         if (ggml_cuda_info().devices[cuda_ctx->device].cc < CC_AMPERE) {
-            cuda_ctx->cuda_graph->disable_due_to_gpu_arch = true;
+            #ifndef (GGML_USE_HIPBLAS)
+                cuda_ctx->cuda_graph->disable_due_to_gpu_arch = true;
+            #endif
 #ifndef NDEBUG
             GGML_CUDA_LOG_WARN("%s: disabling CUDA graphs due to GPU architecture\n", __func__);
 #endif
@@ -2673,6 +2675,36 @@ GGML_CALL static enum ggml_status ggml_backend_cuda_graph_compute(ggml_backend_t
         }
 
         // Update graph executable
+#if defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)
+        hipGraphNode_t errorNode = nullptr; 
+        hipGraphExecUpdateResult updateResult;
+
+        hipError_t err = hipGraphExecUpdate(
+            cuda_ctx->cuda_graph->instance, 
+            cuda_ctx->cuda_graph->graph, 
+            &errorNode, 
+            &updateResult
+        );
+
+        if (err != hipSuccess) {
+#ifndef NDEBUG
+            GGML_CUDA_LOG_ERROR("%s: CUDA graph update failed\n", __func__);
+#endif
+            // The pre-existing graph exec cannot be updated due to violated constraints
+            // so instead clear error and re-instantiate
+            cudaGetLastError();
+            CUDA_CHECK(cudaGraphExecDestroy(cuda_ctx->cuda_graph->instance));
+            cuda_ctx->cuda_graph->instance = nullptr;
+            CUDA_CHECK(cudaGraphInstantiate(&cuda_ctx->cuda_graph->instance, cuda_ctx->cuda_graph->graph, NULL, NULL, 0));
+        } else if (updateResult != hipGraphExecUpdateSuccess) {
+            // Handle the specific case where the update wasn't permitted
+            // You might want to log the errorNode here if it's not null.
+#ifndef NDEBUG
+            GGML_CUDA_LOG_ERROR("%s: CUDA graph update was not permitted\n", __func__);
+#endif
+            // ... (additional error handling for non-permitted update) ...
+        } 
+#else
         cudaGraphExecUpdateResultInfo result_info;
         cudaError_t stat = cudaGraphExecUpdate(cuda_ctx->cuda_graph->instance, cuda_ctx->cuda_graph->graph, &result_info);
         if (stat == cudaErrorGraphExecUpdateFailure) {
@@ -2688,6 +2720,7 @@ GGML_CALL static enum ggml_status ggml_backend_cuda_graph_compute(ggml_backend_t
         } else {
             GGML_ASSERT(stat == cudaSuccess);
         }
+#endif
         // Launch graph
         CUDA_CHECK(cudaGraphLaunch(cuda_ctx->cuda_graph->instance, cuda_ctx->stream()));
 #else
