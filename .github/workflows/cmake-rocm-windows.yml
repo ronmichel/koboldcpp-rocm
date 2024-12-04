@@ -1,18 +1,18 @@
-name: Build Koboldcpp-ROCm Windows
+name: Build Koboldcpp-ROCm Windows 6700xt
 
 on:
   workflow_dispatch:
     inputs:
       version:
         description: 'Version tag of koboldcpp-rocm to build: v1.79.yr0-ROCm'
-        default: v1.79.yr0-ROCm
+        default: v1.79.1.yr1-ROCm
         required: false
         type: string
   workflow_call:
     inputs:
       version:
         description: 'Version tag of koboldcpp-rocm to build: v1.79.yr-ROCm'
-        default: v1.79.yr0-ROCm
+        default: v1.79.1.yr1-ROCm
         required: false
         type: string
 
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'YellowRoseCx/koboldcpp-rocm'
-          ref: main
+          ref: main-6700xt
           submodules: 'recursive'
 
       - name: Setup MSYS2
@@ -84,8 +84,8 @@ jobs:
           Set-Location 'C:\Program Files\AMD\ROCm\6.1\bin'
           Get-Location
           Remove-Item -Force -Recurse -Path 'C:\Program Files\AMD\ROCm\6.1\bin\rocblas'
-          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/deps-v6.2.0/rocblasDec02.7z
-          7z x rocblasDec02.7z -aoa
+          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/deps-v6.2.0/rocblas6.2.0.7z
+          7z x rocblas6.2.0.7z -aoa
           Set-Location 'C:\Program Files\AMD\ROCm\6.1\bin\rocblas\library'
           ls
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
@@ -106,12 +106,13 @@ jobs:
         run: |
           Set-Location 'D:\a\koboldcpp-rocm\koboldcpp-rocm'
           Get-Location
-          curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/deps-v6.2.0/rocblas-6.2.0.dll.7z
-          7z x rocblas-6.2.0.dll.7z -aoa
+          copy "C:\Program Files\AMD\ROCm\6.1\bin\hipblas.dll" .\
+          copy "C:\Program Files\AMD\ROCm\6.1\bin\rocblas.dll" .\
           robocopy "C:\Program Files\AMD\ROCm\6.1\bin\rocblas" .\rocblas /MIR 
           python -m pip install customtkinter
           PyInstaller --noconfirm --onefile --collect-all customtkinter --clean --console --icon ".\niko.ico" --add-data "./winclinfo.exe;." --add-data "./OpenCL.dll;." --add-data "./klite.embd;." --add-data "./kcpp_docs.embd;." --add-data="./kcpp_sdui.embd;." --add-data="./taesd.embd;." --add-data="./taesd_xl.embd;." --add-data "./koboldcpp_default.dll;." --add-data "./koboldcpp_failsafe.dll;." --add-data "./koboldcpp_noavx2.dll;." --add-data "./koboldcpp_clblast.dll;." --add-data "./koboldcpp_clblast_noavx2.dll;." --add-data "./koboldcpp_vulkan_noavx2.dll;." --add-data "./clblast.dll;." --add-data "./koboldcpp_vulkan.dll;." --add-data "./vulkan-1.dll;." --add-data "./rwkv_vocab.embd;." --add-data "./rwkv_world_vocab.embd;." --add-data "D:\a\koboldcpp-rocm\koboldcpp-rocm\build\bin\koboldcpp_hipblas.dll;." --add-data "./rocblas.dll;." --add-data "./rocblas;." --add-data "C:/Windows/System32/msvcp140.dll;." --add-data "C:/Windows/System32/vcruntime140_1.dll;." "./koboldcpp.py" -n "koboldcpp_rocm.exe"
-
+  #curl -LO https://github.com/YellowRoseCx/koboldcpp-rocm/releases/download/deps-v6.2.0/rocblas-6.2.0.dll.7z
+  #7z x rocblas-6.2.0.dll.7z -aoa
 
       - name: Create ZIP archive
         run: |
