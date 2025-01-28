@@ -27,7 +27,6 @@ import html
 import urllib.parse as urlparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from pathlib import Path
 
 # constants
 sampler_order_max = 7
@@ -60,7 +59,7 @@ maxhordelen = 400
 modelbusy = threading.Lock()
 requestsinqueue = 0
 defaultport = 5001
-KcppVersion = "1.82.yr0-ROCm"
+KcppVersion = "1.82.4.yr0-ROCm"
 showdebug = True
 guimode = False
 showsamplerwarning = True
@@ -291,6 +290,7 @@ class tts_load_model_inputs(ctypes.Structure):
                 ("cublas_info", ctypes.c_int),
                 ("vulkan_info", ctypes.c_char_p),
                 ("gpulayers", ctypes.c_int),
+                ("flash_attention", ctypes.c_bool),
                 ("debugmode", ctypes.c_int)]
 
 class tts_generation_inputs(ctypes.Structure):
@@ -388,7 +388,7 @@ lib_option_pairs = [
     (lib_vulkan_noavx2, "Use Vulkan (Old CPU)"),
     (lib_clblast_noavx2, "Use CLBlast (Older CPU)"),
     (lib_failsafe, "Failsafe Mode (Older CPU)")]
-default_option, clblast_option, cublas_option, hipblas_option, vulkan_option, noavx2_option, clblast_noavx2_option, vulkan_noavx2_option, failsafe_option = (opt if file_exists(lib) or (os.name == 'nt' and file_exists(opt + ".dll")) else None for lib, opt in lib_option_pairs)
+default_option, clblast_option, cublas_option, hipblas_option, vulkan_option, noavx2_option, vulkan_noavx2_option, clblast_noavx2_option, failsafe_option = (opt if file_exists(lib) or (os.name == 'nt' and file_exists(opt + ".dll")) else None for lib, opt in lib_option_pairs)
 runopts = [opt for lib, opt in lib_option_pairs if file_exists(lib)]
 
 def get_amd_gfx_vers_linux():
@@ -621,6 +621,8 @@ def exit_with_error(code, message, title="Error"):
     sys.exit(code)
 
 def utfprint(str, importance = 2): #0 = only debugmode, 1 = except quiet, 2 = always print
+    if args.quiet and importance<2: #quiet overrides debugmode
+        return
     if args.debugmode < 1:
         if importance==1 and (args.debugmode == -1 or args.quiet):
             return
@@ -688,6 +690,110 @@ def get_capabilities():
     has_search = True if args.websearch else False
     has_tts = (ttsmodelpath!="")
     return {"result":"KoboldCpp", "version":KcppVersion, "protected":has_password, "llm":has_llm, "txt2img":has_txt2img,"vision":has_vision,"transcribe":has_whisper,"multiplayer":has_multiplayer,"websearch":has_search,"tts":has_tts}
+
+def dump_gguf_metadata(file_path): #if you're gonna copy this into your own project at least credit concedo
+    chunk_size = 1024*1024*12  # read first 12mb of file
+    try:
+        data = None
+        fptr = 0
+        dt_table = ["u8","i8","u16","i16","u32","i32","f32","bool","str","arr","u64","i64","f64"] #13 types, else error
+        tt_table = ["f32","f16","q4_0","q4_1","q4_2","q4_3","q5_0","q5_1","q8_0","q8_1","q2_k","q3_k","q4_k","q5_k","q6_k","q8_k","iq2_xxs","iq2_xs","iq3_xxs","iq1_s","iq4_nl","iq3_s","iq2_s","iq4_xs","i8","i16","i32","i64","f64","iq1_m","bf16","q4_0_4_4","q4_0_4_8","q4_0_8_8","tq1_0","tq2_0","iq4_nl_4_4","unknown","unknown","unknown","unknown","unknown"]
+        def read_data(datatype):
+            nonlocal fptr, data, dt_table
+            if datatype=="u32":
+                val_bytes = data[fptr:fptr + 4]
+                val = struct.unpack('<I', val_bytes)[0]
+                fptr += 4
+                return val
+            if datatype=="u64":
+                val_bytes = data[fptr:fptr + 8]
+                val = struct.unpack('<Q', val_bytes)[0]
+                fptr += 8
+                return val
+            if datatype=="i32":
+                val_bytes = data[fptr:fptr + 4]
+                val = struct.unpack('<i', val_bytes)[0]
+                fptr += 4
+                return val
+            if datatype=="bool":
+                val_bytes = data[fptr:fptr + 1]
+                val = struct.unpack('<B', val_bytes)[0]
+                fptr += 1
+                return val
+            if datatype=="f32":
+                val_bytes = data[fptr:fptr + 4]
+                val = struct.unpack('<f', val_bytes)[0]
+                fptr += 4
+                return val
+            if datatype=="str":
+                val_bytes = data[fptr:fptr + 8]
+                str_len = struct.unpack('<Q', val_bytes)[0]
+                fptr += 8
+                val_bytes = data[fptr:fptr + str_len]
+                str_val = val_bytes.split(b'\0', 1)[0].decode('utf-8')
+                fptr += str_len
+                return str_val
+            if datatype=="arr":
+                val_bytes = data[fptr:fptr + 4]
+                arr_type = struct.unpack('<I', val_bytes)[0]
+                fptr += 4
+                val_bytes = data[fptr:fptr + 8]
+                arr_elems = struct.unpack('<Q', val_bytes)[0]
+                fptr += 8
+                arr_vals = []
+                for i in range(arr_elems):
+                    dt_translated = dt_table[arr_type]
+                    arr_val = read_data(dt_translated)
+                    arr_vals.append(arr_val)
+                return arr_vals
+            print(f"Unknown Datatype: {datatype}")
+            return
+
+        fsize = os.path.getsize(file_path)
+        if fsize < 512: #ignore files under file size limit
+            print("This GGUF file is too small to analyze. Please ensure it is valid.")
+            return
+        with open(file_path, 'rb') as f:
+            file_header = f.read(4)
+            if file_header != b'GGUF': #file is not GGUF
+                print(f"File does not seem to be a GGUF: {file_header}")
+                return
+            data = f.read(chunk_size)
+            read_ver = read_data("u32")
+            if read_ver < 2:
+                print(f"This GGUF file is too old. Version detected: {read_ver}")
+                return
+            read_tensorcount = read_data("u64")
+            read_kvcount = read_data("u64")
+            print(f"*** GGUF FILE METADATA ***\nGGUF.version = {read_ver}\nGGUF.tensor_count = {read_tensorcount}\nGGUF.kv_count = {read_kvcount}")
+            for kn in range(read_kvcount):
+                curr_key = read_data("str")
+                curr_datatype = read_data("u32")
+                dt_translated = dt_table[curr_datatype]
+                curr_val = read_data(dt_translated)
+                if dt_translated=="arr":
+                    print(f"{dt_translated}: {curr_key} = [{len(curr_val)}]")
+                elif dt_translated=="str":
+                    print(f"{dt_translated}: {curr_key} = {curr_val[:100]}")
+                else:
+                    print(f"{dt_translated}: {curr_key} = {curr_val}")
+            print("\n*** GGUF TENSOR INFO ***")
+            for kn in range(read_tensorcount):
+                tensor_name = read_data("str")
+                dims = read_data("u32")
+                dim_val_str = "["
+                for d in range(dims):
+                    dim_val = read_data("u64")
+                    dim_val_str += f"{'' if d==0 else ', '}{dim_val}"
+                dim_val_str += "]"
+                tensor_type = read_data("u32")
+                read_data("u64") # tensor_offset not used
+                tensor_type_str = tt_table[tensor_type]
+                print(f"{kn:<3}: {tensor_type_str:<8} | {tensor_name:<30} | {dim_val_str}")
+            print(f"Metadata and TensorInfo Bytes: {fptr}")
+    except Exception as e:
+        print(f"Error Analyzing File: {e}")
+        return
 
 def read_gguf_metadata(file_path):
     chunk_size = 8192  # read only first 8kb of file
@@ -1354,7 +1460,7 @@ def whisper_generate(genparams):
     inputs.prompt = prompt.encode("UTF-8")
     inputs.audio_data = audio_data.encode("UTF-8")
     inputs.quiet = is_quiet
-    lc = genparams.get("langcode", "auto")
+    lc = genparams.get("langcode", genparams.get("language", "auto"))
     lc = lc.strip().lower() if (lc and lc.strip().lower()!="") else "auto"
     inputs.langcode = lc.encode("UTF-8")
     inputs.suppress_non_speech = genparams.get("suppress_non_speech", False)
@@ -1372,6 +1478,7 @@ def tts_load_model(ttc_model_filename,cts_model_filename):
     inputs.ttc_model_filename = ttc_model_filename.encode("UTF-8")
     inputs.cts_model_filename = cts_model_filename.encode("UTF-8")
     inputs.gpulayers = (999 if args.ttsgpu else 0)
+    inputs.flash_attention =  args.flashattention
     thds = args.threads
     if args.ttsthreads and args.ttsthreads > 0:
         ttst = int(args.ttsthreads)
@@ -1924,7 +2031,8 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
             super().log_message(format, *args)
         pass
 
-    def extract_b64string_from_file_upload(self, body):
+    def extract_transcribe_from_file_upload(self, body):
+        result = {"file": None, "prompt": None, "language": None}
         try:
             if 'content-type' in self.headers and self.headers['content-type']:
                 boundary = self.headers['content-type'].split("=")[1].encode()
@@ -1937,15 +2045,27 @@ class ServerRequestHandler(http.server.SimpleHTTPRequestHandler):
                             file_content_start = fpart.find(b'\r\n\r\n') + 4  # Position after headers
                             file_content_end = fpart.rfind(b'\r\n')  # Ending boundary
                             if file_content_start != -1 and file_content_end != -1:
-                                file_data = fpart[file_content_start:file_content_end]
-                                file_data_base64 = base64.b64encode(file_data).decode('utf-8',"ignore")
-                                base64_string = f"data:audio/wav;base64,{file_data_base64}"
-                                return base64_string
-            print("Uploaded file not found.")
-            return None
+                                if "file" in result and result["file"] is None:
+                                    file_data = fpart[file_content_start:file_content_end]
+                                    file_data_base64 = base64.b64encode(file_data).decode('utf-8',"ignore")
+                                    base64_string = f"data:audio/wav;base64,{file_data_base64}"
+                                    result["file"] = base64_string
+
+                        # Check for fields
+                        detected_prompt_field = re.findall(r'Content-Disposition.*name="prompt"\r\n\r\n(.*)\r\n', fpart.decode('utf-8', errors='ignore'))
+                        if detected_prompt_field and len(detected_prompt_field)>0:
+                            result["prompt"] = detected_prompt_field[0].strip()  # Extract and strip whitespace
+
+                        detected_lang_field = re.findall(r'Content-Disposition.*name="language"\r\n\r\n(.*)\r\n', fpart.decode('utf-8', errors='ignore'))
+                        if detected_lang_field and len(detected_lang_field)>0:
+                            result["language"] = detected_lang_field[0].strip()  # Extract and strip whitespace
+
+            if not ("file" in result and result["file"]):
+                print("Uploaded file not found.")
+            return result
         except Exception as e:
             print(f"File Upload Process Error: {e}")
-            return None
+            return result
 
     async def generate_text(self, genparams, api_format, stream_flag):
         global friendlymodelname, chatcompl_adapter, currfinishreason
@@ -2765,9 +2885,14 @@ Enter Prompt:<br>
                 except Exception:
                     genparams = None
                     if is_transcribe: #fallback handling of file uploads
-                        b64wav = self.extract_b64string_from_file_upload(body)
-                        if b64wav:
+                        formdata = self.extract_transcribe_from_file_upload(body)
+                        if "file" in formdata and formdata["file"]:
+                            b64wav = formdata["file"]
                             genparams = {"audio_data":b64wav}
+                            if "prompt" in formdata and formdata["prompt"]:
+                                genparams["prompt"] = formdata["prompt"]
+                            if "language" in formdata and formdata["language"]:
+                                genparams["language"] = formdata["language"]
 
                     if not genparams:
                         utfprint("Body Err: " + str(body))
@@ -3542,7 +3667,7 @@ def show_gui():
     def on_picked_model_file(filepath):
         if filepath.lower().endswith('.kcpps') or filepath.lower().endswith('.kcppt'):
             #load it as a config file instead
-            with open(filepath, 'r') as f:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                 dict = json.load(f)
                 import_vars(dict)
 
@@ -4146,7 +4271,7 @@ def show_gui():
         try:
             if kcpp_exporting_template and isinstance(args.chatcompletionsadapter, str) and args.chatcompletionsadapter!="" and os.path.exists(args.chatcompletionsadapter):
                 print("Embedding chat completions adapter...")   # parse and save embedded preload story
-                with open(args.chatcompletionsadapter, 'r') as f:
+                with open(args.chatcompletionsadapter, 'r', encoding='utf-8', errors='ignore') as f:
                     args.chatcompletionsadapter = json.load(f)
         except Exception:
             pass
@@ -4157,7 +4282,7 @@ def show_gui():
         try:
             if kcpp_exporting_template and isinstance(args.preloadstory, str) and args.preloadstory!="" and os.path.exists(args.preloadstory):
                 print("Embedding preload story...")   # parse and save embedded preload story
-                with open(args.preloadstory, 'r') as f:
+                with open(args.preloadstory, 'r', encoding='utf-8', errors='ignore') as f:
                     args.preloadstory = json.load(f)
         except Exception:
             pass
@@ -4416,7 +4541,7 @@ def show_gui():
         if not filename or filename=="":
             return
         runmode_untouched = False
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
             dict = json.load(f)
             import_vars(dict)
         pass
@@ -5032,7 +5157,7 @@ def unload_libs():
 
 def load_config_cli(filename):
     print("Loading .kcpps configuration file...")
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
         config = json.load(f)
         args.istemplate = False
         raw_args = (sys.argv[1:]) #a lousy hack to allow for overriding kcpps
@@ -5153,12 +5278,7 @@ def download_model_from_url(url,permitted_types=[".gguf",".safetensors"]):
 def analyze_gguf_model(args,filename):
     try:
         stime = datetime.now()
-        from gguf.scripts.gguf_dump import dump_metadata
-        from gguf import GGUFReader
-        reader = GGUFReader(filename, 'r')
-        ns = argparse.Namespace()
-        ns.no_tensors = False
-        dump_metadata(reader, ns)
+        dump_gguf_metadata(filename)
         atime = (datetime.now() - stime).total_seconds()
         print(f"---\nAnalyzing completed in {atime:.2f}s.\n---",flush=True)
     except Exception as e:
@@ -5206,13 +5326,6 @@ def main(launch_args,start_server=True):
 
     print(f"***\nWelcome to KoboldCpp - Version {KcppVersion}") # just update version manually
     # print("Python version: " + sys.version)
-    # connect path
-    try:
-        if (Path(__file__).parent / "gguf-py").exists():
-            ggufpy_path = str(Path(__file__).parent / "gguf-py")
-            sys.path.append(ggufpy_path)
-    except Exception as e:
-        print(f"Cannot import gguf-py path: {e}")
 
     #perform some basic cleanup of old temporary directories
     try:
@@ -5322,7 +5435,7 @@ def main(launch_args,start_server=True):
                 ccadapter_path = os.path.abspath(premade_adapt_path)
         if ccadapter_path:
             print(f"Loading Chat Completions Adapter: {ccadapter_path}")
-            with open(ccadapter_path, 'r') as f:
+            with open(ccadapter_path, 'r', encoding='utf-8', errors='replace') as f:
                 chatcompl_adapter = json.load(f)
                 canload = True
         else:
