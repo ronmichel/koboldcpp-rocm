@@ -224,37 +224,47 @@ ggml_v3-cuda.o: otherarch/ggml_v3-cuda.cu otherarch/ggml_v3-cuda.h
 endif # LLAMA_CUBLAS
 
 ifdef LLAMA_HIPBLAS
-ifeq ($(wildcard /opt/rocm),)
-	ROCM_PATH	?= /usr
-	GPU_TARGETS ?= $(shell $(shell which amdgpu-arch))
-	HCC         := $(ROCM_PATH)/bin/hipcc
-	HCXX        := $(ROCM_PATH)/bin/hipcc
-else
-	ROCM_PATH	?= /opt/rocm
-	GPU_TARGETS ?= gfx803 gfx900 gfx906 gfx908 gfx90a gfx1030 gfx1100 $(shell $(ROCM_PATH)/llvm/bin/amdgpu-arch)
-	HCC         := $(ROCM_PATH)/llvm/bin/clang
-	HCXX        := $(ROCM_PATH)/llvm/bin/clang++
-endif
-	HIPFLAGS   += -DGGML_USE_HIP -DGGML_USE_CUDA -DSD_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
+	ifeq ($(wildcard /opt/rocm),)
+		ROCM_PATH	?= /usr
+		ifdef ALLAMDGPUS:
+			GPU_TARGETS ?= gfx803 gfx900 gfx906 gfx908 gfx90a gfx1010 gfx1030 gfx1031 gfx1032 gfx1100 gfx1101 gfx1102 $(shell $(shell which amdgpu-arch))
+		else
+			GPU_TARGETS ?= $(shell $(shell which amdgpu-arch))
+		endif
+		HCC         := $(ROCM_PATH)/bin/hipcc
+		HCXX        := $(ROCM_PATH)/bin/hipcc
+	else
+		ROCM_PATH	?= /opt/rocm
+		HCC         := $(ROCM_PATH)/llvm/bin/clang
+		HCXX        := $(ROCM_PATH)/llvm/bin/clang++
+		ifdef ALLAMDGPUS:
+			GPU_TARGETS ?= gfx803 gfx900 gfx906 gfx908 gfx90a gfx1010 gfx1030 gfx1031 gfx1032 gfx1100 gfx1101 gfx1102 $(shell $(ROCM_PATH)/llvm/bin/amdgpu-arch)
+		else
+			GPU_TARGETS ?= $(shell $(ROCM_PATH)/llvm/bin/amdgpu-arch)
+		endif
+	endif
+
+	HIPFLAGS   += -DGGML_USE_HIPBLAS -DGGML_USE_HIP -DGGML_HIP_NO_VMM -DGGML_USE_CUDA -DSD_USE_CUBLAS $(shell $(ROCM_PATH)/bin/hipconfig -C)
 	HIPLDFLAGS    += -L$(ROCM_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib
 	HIPLDFLAGS    += -L$(ROCM_PATH)/lib64 -Wl,-rpath=$(ROCM_PATH)/lib64
 	HIPLDFLAGS    += -lhipblas -lamdhip64 -lrocblas
 	HIP_OBJS      += ggml-cuda.o ggml_v3-cuda.o ggml_v2-cuda.o ggml_v2-cuda-legacy.o
 	HIP_OBJS      += $(patsubst %.cu,%.o,$(filter-out ggml/src/ggml-cuda/ggml-cuda.cu, $(wildcard ggml/src/ggml-cuda/*.cu)))
 	HIP_OBJS      += $(OBJS_CUDA_TEMP_INST)
+	HCXXFLAGS = -I. -Iggml/include -Iggml/src -Iinclude -Isrc -I./common -I./include -I./include/CL -I./otherarch -I./otherarch/tools -I./otherarch/sdcpp -I./otherarch/sdcpp/thirdparty -I./include/vulkan -O3 -fno-finite-math-only  -DNDEBUG -std=c++17 -fPIC -DLOG_DISABLE_LOGS -D_GNU_SOURCE -DGGML_USE_LLAMAFILE
 
 	HIPFLAGS2    += $(addprefix --offload-arch=,$(GPU_TARGETS))
 
 ggml/src/ggml-cuda/%.o: ggml/src/ggml-cuda/%.cu ggml/include/ggml.h ggml/src/ggml-common.h ggml/src/ggml-cuda/common.cuh
-	$(HCXX) $(CXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
+	$(HCXX) $(HCXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
 ggml-cuda.o: ggml/src/ggml-cuda/ggml-cuda.cu ggml/include/ggml-cuda.h ggml/include/ggml.h ggml/include/ggml-backend.h ggml/src/ggml-backend-impl.h ggml/src/ggml-common.h $(wildcard ggml/src/ggml-cuda/*.cuh)
-	$(HCXX) $(CXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
+	$(HCXX) $(HCXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
 ggml_v2-cuda.o: otherarch/ggml_v2-cuda.cu otherarch/ggml_v2-cuda.h
-	$(HCXX) $(CXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
+	$(HCXX) $(HCXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
 ggml_v2-cuda-legacy.o: otherarch/ggml_v2-cuda-legacy.cu otherarch/ggml_v2-cuda-legacy.h
-	$(HCXX) $(CXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
+	$(HCXX) $(HCXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
 ggml_v3-cuda.o: otherarch/ggml_v3-cuda.cu otherarch/ggml_v3-cuda.h
-	$(HCXX) $(CXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
+	$(HCXX) $(HCXXFLAGS) $(HIPFLAGS) $(HIPFLAGS2) -x hip -c -o $@ $<
 endif # LLAMA_HIPBLAS
 
 
@@ -388,6 +398,12 @@ endif
 endif
 
 
+CCV := $(shell $(CC) --version | head -n 1)
+CXXV := $(shell $(CXX) --version | head -n 1)
+ifdef LLAMA_HIPBLAS
+	HCCV := $(shell $(HCC) --version | head -n 1)
+	HCXXV := $(shell $(HCXX) --version | head -n 1)
+endif
 #
 # Print build information
 #
@@ -402,6 +418,10 @@ $(info I CXXFLAGS: $(CXXFLAGS))
 $(info I LDFLAGS:  $(LDFLAGS))
 $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
+ifdef LLAMA_HIPBLAS
+	$(info I HIP CC:       $(HCCV))
+	$(info I HIP CXX:      $(HCXXV))
+endif
 $(info )
 
 #
