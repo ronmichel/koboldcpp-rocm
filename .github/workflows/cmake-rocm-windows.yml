@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag of koboldcpp-rocm to build: v1.79.yr0-ROCm'
-        default: v1.79.yr0-ROCm
+        description: 'Version tag of koboldcpp-rocm to build: v1.85.yr0-ROCm'
+        default: v1.85.yr0-ROCm
         required: false
         type: string
   workflow_call:
     inputs:
       version:
-        description: 'Version tag of koboldcpp-rocm to build: v1.79.yr-ROCm'
-        default: v1.79.yr0-ROCm
+        description: 'Version tag of koboldcpp-rocm to build: v1.85.yr0-ROCm'
+        default: v1.85.yr0-ROCm
         required: false
         type: string
 
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'YellowRoseCx/koboldcpp-rocm'
-          ref: main
+          ref: main-1.85-build2
           submodules: 'recursive'
 
       - name: Setup MSYS2
@@ -209,3 +209,4 @@ jobs:
 #        with:
 #          name: 'win-rocm-wheels'
 #          path: ./dist/*.whl
+
