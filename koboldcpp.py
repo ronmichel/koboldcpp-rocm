@@ -5194,7 +5194,6 @@ def analyze_gguf_model_wrapper(filename=""):
 
 def main(launch_args):
     import platform
-    from common.amd_gpu_kcpp import get_amd_gfx_vers_linux
     global args, showdebug, kcpp_instance, exitcounter, using_gui_launcher, sslvalid, global_memory
     args = launch_args #note: these are NOT shared with the child processes!
     OS = platform.system()
