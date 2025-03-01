@@ -359,7 +359,7 @@ ifdef LLAMA_HIPBLAS
 	HIPBLAS_BUILD = $(HCXX) $(CXXFLAGS) $(HIPFLAGS) $^ -shared -o $@.dll $(HIPLDFLAGS) $(LDFLAGS)
 endif
 else
-	DEFAULT_BUILD = $(CXX) $(CXXFLAGS)  $^ -shared -o $@.so $(LDFLAGS)
+	DEFAULT_BUILD = $(CXX) $(CXXFLAGS) $^ -shared -o $@.so $(LDFLAGS)
 ifdef LLAMA_PORTABLE
 ifeq ($(UNAME_M),$(filter $(UNAME_M),x86_64 i686 amd64))
 	FAILSAFE_BUILD = $(CXX) $(CXXFLAGS)  $^ -shared -o $@.so $(LDFLAGS)
@@ -400,10 +400,9 @@ endif
 
 CCV := $(shell $(CC) --version | head -n 1)
 CXXV := $(shell $(CXX) --version | head -n 1)
-ifdef LLAMA_HIPBLAS
-	HCCV := $(shell $(HCC) --version | head -n 1)
-	HCXXV := $(shell $(HCXX) --version | head -n 1)
-endif
+HCCV := $(shell $(HCC) --version | head -n 1)
+HCXXV := $(shell $(HCXX) --version | head -n 1)
+
 #
 # Print build information
 #
@@ -418,10 +417,8 @@ $(info I CXXFLAGS: $(CXXFLAGS))
 $(info I LDFLAGS:  $(LDFLAGS))
 $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
-ifdef LLAMA_HIPBLAS
-	$(info I HIP CC:       $(HCCV))
-	$(info I HIP CXX:      $(HCXXV))
-endif
+$(info I HIP CC:       $(HCCV))
+$(info I HIP CXX:      $(HCXXV))
 $(info )
 
 #
