@@ -930,6 +930,7 @@ def fetch_gpu_properties(testCL,testCU,testVK):
             faileddetectvram = True
             pass
         if len(FetchedCUdevices)==0:
+            faileddetectvram = False # Needs reset to False because it's set to True in the above exception when no NVIDIA GPU is detected.
             try: # Get AMD ROCm GPU names
                 output = subprocess.run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
                 device_name = None
@@ -1024,6 +1025,113 @@ def fetch_gpu_properties(testCL,testCU,testVK):
         except Exception:
             pass
     return
+
+def get_amd_gfx_vers_linux():
+    from subprocess import run
+    FetchedAMDgfxVersion = []
+    try: # Get AMD ROCm GPU gfx version
+        try:
+            output = run(['/opt/rocm/bin/rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+        except Exception as e:
+            try:
+                output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+        gfx_version = None
+        for line in output.splitlines(): # read through the output line by line
+            line = line.strip()
+            if line.startswith("Name:"):
+                gfx_version = line.split(":", 1)[1].strip()
+            elif line.startswith("Device Type:") and "GPU" in line: # if the following Device Type is a GPU (not a CPU) then add it to devices list
+                FetchedAMDgfxVersion.append(gfx_version)
+            elif line.startswith("Device Type:") and "GPU" not in line:
+                gfx_version = None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return []
+    return FetchedAMDgfxVersion
+
+def get_amd_gpu_info(): # Fallback
+    FetchedAMDdevices = []
+    FetchedAMDdeviceMem = []
+    amd_hip_devices = {
+        'W7900':    49152, 'W7800':    32768, 'W6800':    32768, '7900 XTX': 24560,
+        '7900 XT':  20464, '7900 GRE': 16368, '7800 XT':  16368, '7600':     8176,
+        '6950 XT':  16368, '6900 XT':  16368, '6800 XT':  16368, '6800':     16368
+    }
+
+    def get_amd_gpu_info_windows(): # grab the devices through vulkaninfo then check them against amd_windows_hip_devices.
+        import re
+        from subprocess import run
+        nonlocal amd_hip_devices, FetchedAMDdevices, FetchedAMDdeviceMem
+        try:
+            output = run(['vulkaninfo', '--summary'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+            output = output.split("Devices:\n========\n")[1]
+            output = re.split(r"GPU\d+:", output)
+            device_re = re.compile(r"^\s+deviceName\s+=\s+(.*)$", re.MULTILINE)
+            amd_re = re.compile(r"^\s+vendorID\s+=\s+0x1002$", re.MULTILINE)  # 0x1002 is the AMD vendor id for vulkan
+            for gpu in output:
+                if amd_re.search(gpu):
+                    device_match = device_re.search(gpu)
+                    if device_match:
+                        device_name = device_match.group(1)
+                        for key in amd_hip_devices:
+                            if key in device_name:
+                                memSize = amd_hip_devices[key]
+                        # list devices we know the memory for, that can use HIPBlas
+                        if memSize:
+                            FetchedAMDdevices.append(device_name)
+                            FetchedAMDdeviceMem.append(memSize)
+            try: 
+                FetchedAMDdevices = [item.replace("AMD Radeon", "AMD") for item in FetchedAMDdevices] #Shorten Device Names
+            except Exception as e: 
+                pass
+            return FetchedAMDdevices, FetchedAMDdeviceMem
+        except FileNotFoundError:
+            print("The command 'vulkaninfo' is not available on this system. Are GPU drivers installed?")
+            return [],[] # End get_amd_gpu_info_windows()
+        
+    def get_amd_gpu_info_linux():
+        from subprocess import run
+        nonlocal amd_hip_devices, FetchedAMDdevices, FetchedAMDdeviceMem
+        try: # Get AMD ROCm GPU names
+                output = run(['rocminfo'], capture_output=True, text=True, check=True, encoding='utf-8').stdout
+                device_name = None
+                for line in output.splitlines(): # read through the output line by line
+                    line = line.strip()
+                    if line.startswith("Marketing Name:"):
+                        device_name = line.split(":", 1)[1].strip() # if we find a named device, temporarily save the name
+                    elif line.startswith("Device Type:") and "GPU" in line and device_name is not None: # if the following Device Type is a GPU (not a CPU) then add it to devices list
+                        FetchedAMDdevices.append(device_name)
+                    elif line.startswith("Device Type:") and "GPU" not in line: device_name = None
+                if FetchedAMDdevices:
+                    try:
+                        getamdvram = run(['rocm-smi', '--showmeminfo', 'vram', '--csv'], capture_output=True, text=True, check=True, encoding='utf-8').stdout # fetch VRAM of devices
+                        if getamdvram:
+                            FetchedAMDdeviceMem = [str(int(line.split(",")[1].strip()) // 1048576) for line in getamdvram.splitlines()[1:] if line.strip()] #return Mb from Bytes
+                    except Exception as e:
+                        pass
+                    try:
+                        if not FetchedAMDdeviceMem and device_name:
+                            for key in amd_hip_devices:
+                                if key in device_name:
+                                    memSize = amd_hip_devices[key]
+                                    FetchedAMDdeviceMem.append(memSize)
+                    except Exception as e:
+                        pass
+                try: 
+                    FetchedAMDdevices = [item.replace("AMD Radeon", "AMD") for item in FetchedAMDdevices] #Shorten Device Names
+                except Exception as e: 
+                    pass
+                return FetchedAMDdevices, FetchedAMDdeviceMem
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return [], [] # End get_amd_gpu_info_linux()
+        
+    if os.name == "nt":
+        return get_amd_gpu_info_windows()
+    else:
+        return get_amd_gpu_info_linux() # End get_amd_gpu_info()
 
 def auto_set_backend_cli():
     fetch_gpu_properties(False,True,True)
@@ -3110,6 +3218,8 @@ def RunServerMultiThreaded(addr, port, server_handler):
         certpath = os.path.abspath(args.ssl[0])
         keypath = os.path.abspath(args.ssl[1])
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2 #Set Minimum TLS version to 1.2 // TLS 1.1 is not secure
+        context.maximum_version = ssl.TLSVersion.TLSv1_3 #Set Max TLS version to 1.3 // Max python-allowable version at this time.
         context.load_cert_chain(certfile=certpath, keyfile=keypath)
         ipv4_sock = context.wrap_socket(ipv4_sock, server_side=True)
         if ipv6_sock:
@@ -3314,6 +3424,18 @@ def show_gui():
     contextsize_text = ["256", "512", "1024", "2048", "3072", "4096", "6144", "8192", "10240", "12288", "14336", "16384", "20480", "24576", "28672", "32768", "40960", "49152", "57344", "65536", "81920", "98304", "114688", "131072"]
     antirunopts = [opt.replace("Use ", "") for lib, opt in lib_option_pairs if opt not in runopts]
     quantkv_text = ["F16 (Off)","8-Bit","4-Bit"]
+
+    if "Use CuBLAS" in runopts:
+        antirunopts.remove("hipBLAS (ROCm)") # Do not display CuBLAS and hipBLAS backends at the same time
+    if "Use hipBLAS (ROCm)" in runopts:
+        antirunopts.remove("CuBLAS") # Do not display CuBLAS and hipBLAS backends at the same time
+    if os.name != 'nt':
+        if "NoAVX2 Mode (Old CPU)" in antirunopts:
+            antirunopts.remove("NoAVX2 Mode (Old CPU)")
+        if "Failsafe Mode (Old CPU)" in antirunopts:
+            antirunopts.remove("Failsafe Mode (Old CPU)")
+        if "CLBlast NoAVX2 (Old CPU)" in antirunopts:
+            antirunopts.remove("CLBlast NoAVX2 (Old CPU)")
 
     if not any(runopts):
         exitcounter = 999
@@ -3609,6 +3731,9 @@ def show_gui():
                     quick_gpuname_label.configure(text=VKDevicesNames[s])
                     gpuname_label.configure(text=VKDevicesNames[s])
                 elif v == "Use CLBlast" or v == "Use CLBlast (Old CPU)" or v == "Use CLBlast (Older CPU)":
+                    quick_gpuname_label.configure(text=CLDevicesNames[s])
+                    gpuname_label.configure(text=CLDevicesNames[s])
+                elif v == "Use hipBLAS (ROCm)" and not any(CUDevicesNames) and any(CLDevicesNames):
                     quick_gpuname_label.configure(text=CLDevicesNames[s])
                     gpuname_label.configure(text=CLDevicesNames[s])
                 else:
@@ -5068,9 +5193,20 @@ def analyze_gguf_model_wrapper(filename=""):
     dumpthread.start()
 
 def main(launch_args):
+    import platform
+    from common.amd_gpu_kcpp import get_amd_gfx_vers_linux
     global args, showdebug, kcpp_instance, exitcounter, using_gui_launcher, sslvalid, global_memory
     args = launch_args #note: these are NOT shared with the child processes!
-
+    OS = platform.system()
+    if OS == "Linux":
+        if hipblas_option is not None:
+            try:
+                amd_gfx_vers = get_amd_gfx_vers_linux()
+                if any(item.startswith("gfx103") for item in amd_gfx_vers) and len(amd_gfx_vers) == 1:
+                    os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+                    print(f"Set AMD HSA_OVERRIDE_GFX_VERSION to 10.3.0")
+            except Exception as e:
+                return
     if (args.version) and len(sys.argv) <= 2:
         print(f"{KcppVersion}") # just print version and exit
         return
