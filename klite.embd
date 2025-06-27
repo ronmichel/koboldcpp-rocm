@@ -11,8 +11,8 @@ Current version indicated by LITEVER below.
 -Concedo
 -->
 
-<script>
-	const LITEVER = 252;
+<script id="init-config">
+	const LITEVER = 256;
 	const urlParams = new URLSearchParams(window.location.search);
 	var localflag = urlParams.get('local'); //this will be replaced automatically in embedded kcpp
 	const STORAGE_PREFIX = (localflag?"e_":"")+"kaihordewebui_";
@@ -34,7 +34,7 @@ Current version indicated by LITEVER below.
 
 	<style id="custom_css"></style>
 
-	<style>
+	<style id="bootstrap-normalize.min">
 	/*!
 	* Bootstrap v3.4.1 (https://getbootstrap.com/)
 	* Copyright 2011-2019 Twitter, Inc.
@@ -45,7 +45,8 @@ Current version indicated by LITEVER below.
 	pre code,td,th{padding:0}pre code,table{background-color:transparent}.table,input[type=range]{width:100%}.btn,img{vertical-align:middle}html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;font-size:10px;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.42857143;color:#333;background-color:#fff}b,dt,strong{font-weight:700}h1{margin:.67em 0}hr{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;height:0}textarea{overflow:auto}table{border-collapse:collapse;border-spacing:0}@media print{blockquote,img,pre,tr{page-break-inside:avoid}*,:after,:before{color:#000!important;text-shadow:none!important;background:0 0!important;-webkit-box-shadow:none!important;box-shadow:none!important}a,a:visited{text-decoration:underline}a[href]:after{content:" (" attr(href) ")"}abbr[title]:after{content:" (" attr(title) ")"}a[href^="#"]:after,a[href^="javascript:"]:after{content:""}blockquote,pre{border:1px solid #999}thead{display:table-header-group}img{max-width:100%!important}h2,h3,p{orphans:3;widows:3}h2,h3{page-break-after:avoid}.navbar{display:none}.btn>.caret,.dropup>.btn>.caret{border-top-color:#000!important}.table{border-collapse:collapse!important}.table td,.table th{background-color:#fff!important}.table-bordered td,.table-bordered th{border:1px solid #ddd!important}}.form-control,.table .table{background-color:#fff}.form-control,.nav>li,.nav>li>a,.radio,input[type=file],input[type=range],pre{display:block}*,:after,:before{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}button,input,select,textarea{font-family:inherit;font-size:inherit;line-height:inherit}a{color:#337ab7;text-decoration:none}a:focus,a:hover{color:#23527c;text-decoration:underline}a:focus,input[type=checkbox]:focus,input[type=file]:focus,input[type=radio]:focus{outline:-webkit-focus-ring-color auto 5px;outline-offset:-2px}hr{margin-top:20px;margin-bottom:20px;border:0;border-top:1px solid #eee}.h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6{font-family:inherit;font-weight:500;line-height:1.1;color:inherit}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-weight:400;line-height:1;color:#777}.h1,.h2,.h3,h1,h2,h3{margin-top:20px;margin-bottom:10px}.h1 .small,.h1 small,.h2 .small,.h2 small,.h3 .small,.h3 small,h1 .small,h1 small,h2 .small,h2 small,h3 .small,h3 small{font-size:65%}.h4,.h5,.h6,.navbar-btn.btn-sm,h4,h5,h6{margin-top:10px;margin-bottom:10px}.h4 .small,.h4 small,.h5 .small,.h5 small,.h6 .small,.h6 small,h4 .small,h4 small,h5 .small,h5 small,h6 .small,h6 small{font-size:75%}.h1,h1{font-size:36px}.h2,h2{font-size:30px}.h3,h3{font-size:24px}.h4,h4{font-size:18px}.h5,h5{font-size:14px}.h6,h6{font-size:12px}p{margin:0 0 10px}dl,ol,ul{margin-top:0}.btn,.form-control{padding:6px 12px;font-size:14px;background-image:none}.btn,.form-control,.nav-tabs>li>a,blockquote .small,blockquote footer,blockquote small,dd,dt,pre{line-height:1.42857143}ol,ul{margin-bottom:10px}.table,dl{margin-bottom:20px}.btn,.nav,blockquote ol:last-child,blockquote p:last-child,blockquote ul:last-child,ol ol,ol ul,ul ol,ul ul{margin-bottom:0}.btn .caret,dd{margin-left:0}blockquote{padding:10px 20px;margin:0 0 20px;font-size:17.5px;border-left:5px solid #eee}blockquote .small,blockquote footer,blockquote small{display:block;font-size:80%;color:#777}code,kbd,pre,samp{font-family:Menlo,Monaco,Consolas,"Courier New",monospace}code{padding:2px 4px;font-size:90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px}.table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>thead>tr>td.active,.table>thead>tr>th.active,pre{background-color:#f5f5f5}pre{padding:9.5px;margin:0 0 10px;font-size:13px;color:#333;word-break:break-all;word-wrap:break-word;border:1px solid #ccc;border-radius:4px}pre code{font-size:inherit;color:inherit;white-space:pre-wrap;border-radius:0;word-break:break-word}th{text-align:left}.table{max-width:100%}.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th{padding:8px;line-height:1.42857143;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>td,.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>td,.table>thead:first-child>tr:first-child>th{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}input[type=search]{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;-webkit-appearance:none;-moz-appearance:none;appearance:none}input[type=checkbox],input[type=radio]{margin:4px 0 0;line-height:normal}.checkbox.disabled label,.form-control[disabled],.radio.disabled label,fieldset[disabled] .checkbox label,fieldset[disabled] .form-control,fieldset[disabled] .radio label,fieldset[disabled] input[type=checkbox],fieldset[disabled] input[type=radio],input[type=checkbox].disabled,input[type=checkbox][disabled],input[type=radio].disabled,input[type=radio][disabled]{cursor:not-allowed}select[multiple],select[size],textarea.form-control{height:auto}.form-control{width:100%;height:34px;color:#555;border:1px solid #ccc;border-radius:4px;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.075);box-shadow:inset 0 1px 1px rgba(0,0,0,.075);-webkit-transition:border-color .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;-o-transition:border-color .15s ease-in-out,box-shadow .15s ease-in-out;transition:border-color .15s ease-in-out,box-shadow .15s ease-in-out,-webkit-box-shadow .15s ease-in-out}.form-control:focus{border-color:#66afe9;outline:0;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}.form-control::-moz-placeholder{color:#999;opacity:1}.form-control:-ms-input-placeholder{color:#999}.form-control::-webkit-input-placeholder{color:#999}.form-control::-ms-expand{background-color:transparent;border:0}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{background-color:#eee;opacity:1}.btn{text-align:center;white-space:nowrap;display:inline-block;font-weight:400;-ms-touch-action:manipulation;touch-action:manipulation;cursor:pointer;border:1px solid transparent;border-radius:4px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.btn.active.focus,.btn.active:focus,.btn.focus,.btn:active.focus,.btn:active:focus,.btn:focus{outline:-webkit-focus-ring-color auto 5px;outline-offset:-2px}.btn.focus,.btn:focus,.btn:hover{color:#333;text-decoration:none}.btn.active,.btn:active{background-image:none;outline:0;-webkit-box-shadow:inset 0 3px 5px rgba(0,0,0,.125);box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;opacity:.65;-webkit-box-shadow:none;box-shadow:none}a.btn.disabled,fieldset[disabled] a.btn{pointer-events:none}.btn-primary{color:#fff;background-color:#337ab7;border-color:#2e6da4}.btn-primary.focus,.btn-primary:focus{color:#fff;background-color:#286090;border-color:#122b40}.btn-primary:hover{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary.active,.btn-primary:active,.open>.dropdown-toggle.btn-primary{color:#fff;background-color:#286090;background-image:none;border-color:#204d74}.btn-primary.active.focus,.btn-primary.active:focus,.btn-primary.active:hover,.btn-primary:active.focus,.btn-primary:active:focus,.btn-primary:active:hover,.open>.dropdown-toggle.btn-primary.focus,.open>.dropdown-toggle.btn-primary:focus,.open>.dropdown-toggle.btn-primary:hover{color:#fff;background-color:#204d74;border-color:#122b40}.btn-primary.disabled.focus,.btn-primary.disabled:focus,.btn-primary.disabled:hover,.btn-primary[disabled].focus,.btn-primary[disabled]:focus,.btn-primary[disabled]:hover,fieldset[disabled] .btn-primary.focus,fieldset[disabled] .btn-primary:focus,fieldset[disabled] .btn-primary:hover{background-color:#337ab7;border-color:#2e6da4}.dropup .caret,.navbar-fixed-bottom .dropdown .caret{content:"";border-top:0;border-bottom:4px dashed}.dropup .dropdown-menu,.navbar-fixed-bottom .dropdown .dropdown-menu{top:auto;bottom:100%;margin-bottom:2px}[data-toggle=buttons]>.btn input[type=checkbox],[data-toggle=buttons]>.btn input[type=radio],[data-toggle=buttons]>.btn-group>.btn input[type=checkbox],[data-toggle=buttons]>.btn-group>.btn input[type=radio]{position:absolute;clip:rect(0,0,0,0);pointer-events:none}.nav{padding-left:0;list-style:none}.nav>li>a{padding:10px 15px}.nav>li>a:focus,.nav>li>a:hover{text-decoration:none;background-color:#eee}.nav>li.disabled>a{color:#777}.nav>li.disabled>a:focus,.nav>li.disabled>a:hover{color:#777;text-decoration:none;cursor:not-allowed;background-color:transparent}.nav .open>a,.nav .open>a:focus,.nav .open>a:hover{background-color:#eee;border-color:#337ab7}.nav .nav-divider{height:1px;margin:9px 0;overflow:hidden;background-color:#e5e5e5}.nav>li>a>img{max-width:none}.nav-tabs{border-bottom:1px solid #ddd}.nav-tabs>li{float:left;margin-bottom:-1px}.nav-tabs>li>a{margin-right:2px;border:1px solid transparent;border-radius:4px 4px 0 0}.nav-tabs>li>a:hover{border-color:#eee #eee #ddd}.nav-tabs>li.active>a,.nav-tabs>li.active>a:focus,.nav-tabs>li.active>a:hover{color:#555;cursor:default;background-color:#fff;border:1px solid #ddd;border-bottom-color:transparent}.nav-tabs .dropdown-menu{margin-top:-1px;border-top-left-radius:0;border-top-right-radius:0}.navbar-collapse{padding-right:15px;padding-left:15px;overflow-x:visible;border-top:1px solid transparent;-webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);-webkit-overflow-scrolling:touch}.navbar-collapse.in{overflow-y:auto}.navbar-nav{margin:7.5px -15px}.navbar-nav>li>a{padding-top:10px;padding-bottom:10px;line-height:20px}.navbar-nav>li>.dropdown-menu{margin-top:0;border-top-left-radius:0;border-top-right-radius:0}@media (min-width:768px){.navbar{border-radius:4px}.navbar-nav>li{float:left}.navbar-collapse{width:auto;border-top:0;-webkit-box-shadow:none;box-shadow:none}.navbar-collapse.collapse{display:block!important;height:auto!important;padding-bottom:0;overflow:visible!important}.navbar-collapse.in{overflow-y:visible}.navbar-nav{float:left;margin:0}.navbar-nav>li>a{padding-top:15px;padding-bottom:15px}}@media (max-width:767px){.navbar-nav .open .dropdown-menu{position:static;float:none;width:auto;margin-top:0;background-color:transparent;border:0;-webkit-box-shadow:none;box-shadow:none}.navbar-nav .open .dropdown-menu .dropdown-header,.navbar-nav .open .dropdown-menu>li>a{padding:5px 15px 5px 25px}.navbar-nav .open .dropdown-menu>li>a{line-height:20px}.navbar-nav .open .dropdown-menu>li>a:focus,.navbar-nav .open .dropdown-menu>li>a:hover{background-image:none}}.collapse{display:none}.hidden,.hide{display:none!important}.container:after,.container:before,.nav:after,.nav:before,.navbar-collapse:after,.navbar-collapse:before,.panel-body:after,.panel-body:before,.row:after,.row:before{display:table;content:" "}.container:after,.nav:after,.navbar-collapse:after,.navbar:after,.pager:after,.panel-body:after,.row:after{clear:both}button,input,select,textarea{color:inherit;font:inherit;margin:0}
 	</style>
 
-	<style> /* CSS Used specifically in Lite */
+	<style id="styling-lite">
+	/* CSS Used specifically in Lite */
 
 	/* base64 encoded image resources used in Lite */
 	:root{
@@ -60,6 +61,7 @@ Current version indicated by LITEVER below.
 		--img_chat_mono:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAA7AAAAOwBeShxvQAAADxQTFRFu7u7AAAAu7u70NDQurq60dHRjY2Ng4ODu7u7rKys19fXxsbG7+/vubm5u7u709PTyMjI4+Pj3Nzc////jB2o5QAAABR0Uk5T/wBl/xH0//9C/7z8YwZb2OmDAgHH4NesAAAAzklEQVR4nL3Tyw6EIAwF0BbLw6Lg6P//6wgKo1J1N3eBJj2xTaiAxFFfEnnAEiDtoc1UBbBUB+AKtFgHXUEng+7foDemP58XYKw1ADaf27sIzD3ojU0ft1sL27aQh1QqOHoGK6EXoNwbCA+XlYEClgEj7WAQ98EPFeAQ953yXYmO60K5AhDnPKhnKpmx1jPABPwHfxmp1CuYUl0J2cG2xbeA9/8gtPUAh851sEPcCVAL6ASQLt9I143nLGPOBpe0MCgnd8MHgBRewDqPS48vawEIEy7Qd5cAAAAASUVORK5CYII=");
 		--img_compass:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAA7AAAAOwBeShxvQAAADxQTFRF/7VV/+J5AAAA8/P11Ob1l8jt/39K+chs/9tn/8Bd/+J48eTO/9x0/9Zv99ugiHp0/5MKWVFO/6k53KWUcJJTdwAAABR0Uk5T/v8A//////8Zydn/klf///v/bf9A3eYXAAABMUlEQVR4nG2T2RaDIAwFUwEBWdz+/18LuSypNS8enTGQQGgZ4VKMW4kYHb9fnnxaaOC4fUZsxbmoxHFRx5/f2BJRkY4Dgts+f2F9AU0Q3Aol9Qyd56DUvisVMlw6Dt5D5wVDKArzusdaBfaXlZqCUrlyiksRnORKt6dioRRCSND5CK1Z8Au5vn5Y1yy4zkhBaSRYS9yh85YiURwF3CtHbhwpPHGN/FuAsN7gOjwF1bhpAtYg7tnO5Wdww8Z+nn+CapyFswtiibJN5sbIJaQQGjdyk7PMWr8RRisziU7zj0OwaBRaPTkU0ep5WPo3+mGN437wedxIYS2+n7vkvl4YvnLl3Qb0Z1TICRZcWvg2Q8B1A8dkJXqNtHTh3cCE9tHzT+zB5/Am/4aFUAe4OT66+fULsfQP1birKzkAAAAASUVORK5CYII=");
 		--img_websearch:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAN1wAADdcBQiibeAAAAEtQTFRFAAAA////////////////////////////////////////////////////////////////////////////////////////////////g5kLBwAAABl0Uk5TAP8Ds+QtpRpgIn35Ud7vnMFxhNZFkswMPA2JIJgAAAFISURBVHicvZPbjsQgCIb5PdVT1dpW+/5PutTZncwp6V4NSasGBD4BoruI6E1LqRkfBb1LX2bcZV76i1r4dCoS1hW3nX/y0uW4aBbUiiWPg3xwMjU+Fxgy2DZedhS+0aa7Xp23MXeaQ+9BUV/5CKg/C7b2nKFxEwpRgZs4iPLs9aa3QKVtJA8Zo8TA2agCdgRIkIIyrJXhl7LYiExCIk30FdFakHbUtXO6k9MPO6H1gDxOdgvPiYoURMTu4alh0gN0wcKMLkNHVA0cFZuG6QxpB6eDqSXYdaYeyrIqL5MQao6p5R0Dc22lthx2jqZMlvwjfpZc9lbayHIPYdsTjjNaslx39hu53jYkPww2JE4siTPamVjgOveAYwL0MBAMeX4D+RftBq+/89D/KfdVw1y33HXTXrb99eB8Gr36OsBPw6vehnd4+Tj+P8K7EihG+ntRAAAAAElFTkSuQmCC');
+		--img_websearch_mono:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAN1wAADdcBQiibeAAAADxQTFRFAAAAnp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eVevUTgAAABR0Uk5TAP+h4bMt7wwD0IkaYH0iQ/lRwXGxVnHZAAABPElEQVR4nL2T2W7EMAhFuXh3vOf//7U3nuloukjpU5GS2AEDx4DIS+KsmrxPWmeUnxJOg5eYM3xTx+ovhUdKeKzqFy/B7oN6Imecujf2zcmRuF9QUfTOT8biiXS89Fd0hQliRgjDSEi4vJhPC1pX2mg7sEQW2kG1qfT60BcgS9/Jw85psXE6A6HsAB42MnopdjwpV5nMJFr4Q/5FnIvimgTXmgvS3NsqOrch+8VeUJlo9CNO5IoqCYfboCdOMjaFo8aRL6M7aCBk2ZwNmtcoiRc41plMtT5GYybrnrExU1o56ciMZlQtX8JrUf5caWeZx+jZ8+oYzRfWnX4n612Gr9ugwzMxH69oV2KDdQ4D/QDcNoiEvJ6N/ER7wLv/uei/lPuuYe5b7r5pb9v+fnB+G738fYBvhnd7+XX8PwAV4g545KvJTQAAAABJRU5ErkJggg==');
 		--img_save:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAAnQAAAJ0Bj3LnbgAAADxQTFRFQlFtSVp52uHyws7lztbmjpmuUdjlu8TZeIminqi9WvH/rrjNVMbYxuT0Xm2HAAAAR1h3RVVyR1ZyR1h2eZplWQAAABR0Uk5T////////////////////ANT0HUjqAr+PAAAAgUlEQVR4nI3Q2RaDIAxF0RuCDNUWKP//ryXFWkUczmP2ghVAjkTklOQAvLT28R1CgMwbQCoC6oBIH4ocAOIR4BYoZtZboOHbKHlaQw3rTsFNNVObFjCP2gzmGvhZ47k/qOUdW7An4IdfDbAt+dLYgJbkR+zdq/YnYn+rhBxT2kPKH1FvCKEBnt/sAAAAAElFTkSuQmCC");
 		--img_save_mono:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAAnQAAAJ0Bj3LnbgAAADxQTFRFV1dXYWFh5eXl09PT2tram5ubnp6ejY2Nra2tysrKrKysvb29lpaWW1tbcnJy3d3dAAAAX19fXFxcXl5eL2vTkwAAABR0Uk5T//////////////////T//wDUHUizGkTXAAAAgUlEQVR4nI3QURKDIAxF0RcCAlUqlP3vtaRYq4jW+5kzMAHkRERWSRbAU2uXXjFGyLwBhCKgDoj0ocgJIJ0BboFiZr0HGj6NkqMt1LDtEuxUM7VpBfOoLWD+A881XvqBWt+xB38BbvjWAPuSK40NaEl+xN+96ngi9bcKyCmEI4T8BipnCJv9iKHqAAAAAElFTkSuQmCC");
 		--img_load:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAAnQAAAJ0Bj3LnbgAAADxQTFRF8MQZKbmZ8p0fAAAA8bIc8MIa8MQZq7NIKrmY7cQa0sIs8d2BebRn87wcLL+aJrmZ//8AdbhpAP//c69phZ/jMwAAABR0Uk5T//3/AP+y8v6kbP///xcZUAGrAUn40tQBAAAAp0lEQVR4nHWSiw6DIAwAy1peojLd///rKm3ZZOOiCXLpBRIhB2CCf+JeXUr1RAECATGQ+WN3TFUBKsJmJu0ijOCZo5m7EJzVRrE2c3ZBhoiXCXoYsYm4qejbUSbWo94HXCfZALXF0kVWQVAKP6Xo/hK0RHZcmVnAa+lzketYESBb6dvwPmxDqdX49TiWlIw/JeG6+ViCVsJZCWclnJVwVkLwfwau/+INBncEwpxiohQAAAAASUVORK5CYII=");
@@ -1040,6 +1042,7 @@ Current version indicated by LITEVER below.
 		background-position: top 4px left 4px, center;
 		background-size: 24px, 100%;
 		padding: 2px 2px;
+		text-wrap: wrap;
 	}
 	.scenarioitem.blue
 	{
@@ -1453,7 +1456,7 @@ Current version indicated by LITEVER below.
 		padding-left: 10px;
 		padding-right: 10px;
 		padding-top: 7px;
-        border: 1px solid #bbbbbbaa;
+		border: 1px solid #bbbbbbaa;
 	}
 	.cht_inp_bg_inner
 	{
@@ -1488,7 +1491,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_chat) !important;
 	}
 	.chat_btnmode_adventure{
@@ -1505,7 +1508,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 	}
 	.chat_btnmode_adventure.storymode
 	{
@@ -1533,7 +1536,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_chat_send_btn) !important;
 	}
 	.chat_msg_send_btn:hover {
@@ -1565,7 +1568,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_chat_abort_btn) !important;
 	}
 	.chat_msg_send_btn_abort:hover {
@@ -1588,7 +1591,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 64% !important;
 		background-repeat: no-repeat !important;
-  		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_chat_cust_btn) !important ;
 
 	}
@@ -1723,7 +1726,7 @@ Current version indicated by LITEVER below.
 		padding-right: 12px;
 		padding-top: 8px;
 		width:100%;
-        border: 1px solid #bbbbbbaa;
+		border: 1px solid #bbbbbbaa;
 		position: relative;
 	}
 	.corpo_edit_inner
@@ -1752,7 +1755,7 @@ Current version indicated by LITEVER below.
 		padding-left: 52px;
 		padding-right: 52px;
 		padding-top: 8px;
-        border: 1px solid #bbbbbbaa;
+		border: 1px solid #bbbbbbaa;
 		position: relative;
 	}
 	body.darkmode .corpo_chat_outer
@@ -1791,7 +1794,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_corpo_clip) !important;
 	}
 	.corpo_chat_img_btn:hover {
@@ -1814,7 +1817,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_corpo_send_btn) !important;
 	}
 	.corpo_chat_send_btn:hover {
@@ -1837,7 +1840,7 @@ Current version indicated by LITEVER below.
 		width: 33px;
 		background-size: 50% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 		background-image: var(--img_corpo_abort_btn) !important;
 	}
 	.corpo_btn_text
@@ -1857,7 +1860,7 @@ Current version indicated by LITEVER below.
 		width: 32px;
 		background-size: 60% !important;
 		background-repeat: no-repeat !important;
- 		background-position: center !important;
+		background-position: center !important;
 	}
 	.corpo_hover_btn:hover {
 		background: #eeeeee none repeat scroll 0 0;
@@ -1880,27 +1883,27 @@ Current version indicated by LITEVER below.
 		background-color: #161616;
 	}
 	.corpoendeditbutton {
-      position: fixed;
-      top: 75px;
-      right: 25px;
-	  width: 40px;
-      padding: 8px 6px;
-      background-color: #de5b5b;
-      color: white;
-      border-radius: 24px;
-	  opacity: 0.65;
-      cursor: pointer;
-      box-shadow: 1 2px 8px rgba(0, 0, 0, 0.2);
-    }
+		position: fixed;
+		top: 75px;
+		right: 25px;
+		width: 40px;
+		padding: 8px 6px;
+		background-color: #de5b5b;
+		color: white;
+		border-radius: 24px;
+		opacity: 0.65;
+		cursor: pointer;
+		box-shadow: 1 2px 8px rgba(0, 0, 0, 0.2);
+	}
 
-    .corpoendeditbutton:hover {
-      background-color: #f67676;
-    }
+	.corpoendeditbutton:hover {
+		background-color: #f67676;
+	}
 	.corpoleftpanelitems
 	{
 		display: flex;
 		flex-direction: column;
-		margin-top: 16px;
+		margin-top: 10px;
 		padding: 2px;
 		height: calc(100% - 20px);
 	}
@@ -1926,7 +1929,7 @@ Current version indicated by LITEVER below.
 	}
 	.corpo_leftpanel_btn
 	{
-		padding: 4px;
+		padding: 2px;
 		margin: 2px;
 		background: #f4f4f400;
 		border:none;
@@ -1934,10 +1937,10 @@ Current version indicated by LITEVER below.
 		cursor: pointer;
 		font-size: 17px;
 		background-repeat: no-repeat;
-    	background-position: 8px;
+		background-position: 8px;
 		background-size: 24px;
 		overflow: hidden;
-    	text-overflow: ellipsis;
+		text-overflow: ellipsis;
 		white-space: nowrap;
 		user-select: none;
 		width: 100%;
@@ -1945,14 +1948,14 @@ Current version indicated by LITEVER below.
 	.corpo_leftpanel_btn:hover {
 		background: #9dcef5;
 		background-repeat: no-repeat;
-    	background-position: 8px;
+		background-position: 8px;
 		background-size: 24px;
 	}
 	.corpo_leftpanel_btn.red:hover {
 		color: #000000;
 		background: #f5767f;
 		background-repeat: no-repeat;
-    	background-position: 8px;
+		background-position: 8px;
 		background-size: 24px;
 	}
 	.corpo_leftpanel_btn:active {
@@ -1963,7 +1966,7 @@ Current version indicated by LITEVER below.
 		color: #76a8ee;
 		background: #454545;
 		background-repeat: no-repeat;
-    	background-position: 8px;
+		background-position: 8px;
 		background-size: 24px;
 	}
 	body.darkmode .corpo_leftpanel_btn.red:hover
@@ -1971,7 +1974,7 @@ Current version indicated by LITEVER below.
 		color: #000000;
 		background: #f5767f;
 		background-repeat: no-repeat;
-    	background-position: 8px;
+		background-position: 8px;
 		background-size: 24px;
 	}
 	.corporightpanel
@@ -1979,7 +1982,7 @@ Current version indicated by LITEVER below.
 		width: 100%;
 		height: calc(100vh - 68px);
 		display: flex;
-    	flex-direction: column;
+		flex-direction: column;
 		padding-left: 2px;
 		padding-right: 2px;
 	}
@@ -2074,7 +2077,7 @@ Current version indicated by LITEVER below.
 	{
 		max-width: 860px;
 		margin-left: auto;
-    	margin-right: auto;
+		margin-right: auto;
 		padding-left: 8px;
 		padding-right: 8px;
 	}
@@ -2205,6 +2208,18 @@ Current version indicated by LITEVER below.
 	}
 	.color_pink {
 		color: #ffbdbd;
+	}
+	.color_wordsearch_target
+	{
+		color: violet;
+		text-decoration: underline;
+		text-decoration-color: violet;
+	}
+	.color_wordsearch_surrounding
+	{
+		color: yellow;
+		text-decoration: underline;
+		text-decoration-color: yellow;
 	}
 
 	.bg_black {
@@ -2431,8 +2446,8 @@ Current version indicated by LITEVER below.
 	}
 	</style>
 
-	<script> //Third party JS libraries
-
+	<script id="third-party.min">
+	//Third party JS libraries
 
 	//LaTeX renderer temml from temml.org, under MIT license
 	var temml=function(){"use strict";class e{constructor(t,r){let a,n=" "+t;if((t=r&&r.loc)&&t.start<=t.end){r=t.lexer.input,t=(a=t.start,t.end);var o=(a===r.length?n+=" at end of input: ":n+=" at position "+(a+1)+": ",r.slice(a,t).replace(/[^]/g,"$&̲"));let e,s;e=15<a?"…"+r.slice(a-15,a):r.slice(0,a),s=t+15<r.length?r.slice(t,t+15)+"…":r.slice(t),n+=e+o+s}return(r=new Error(n)).name="ParseError",r.__proto__=e.prototype,r.position=a,r}}e.prototype.__proto__=Error.prototype;const t=/([A-Z])/g,r={"&":"&amp;",">":"&gt;","<":"&lt;",'"':"&quot;","'":"&#x27;"},a=/[&><"']/g;function n(e){return"ordgroup"===e.type||"color"===e.type?1===e.body.length?n(e.body[0]):e:"font"===e.type?n(e.body):e}var o=function(e,t){return void 0===e?t:e},s=function(e){return String(e).replace(a,(e=>r[e]))},l=function(e){return e.replace(t,"-$1").toLowerCase()},i=function(e){return"mathord"===(e=n(e)).type||"textord"===e.type||"atom"===e.type},m=function(e){return(e=/^[\x00-\x20]*([^\\/#?]*?)(:|&#0*58|&#x0*3a|&colon)/i.exec(e))?":"===e[2]&&/^[a-zA-Z][a-zA-Z0-9+\-.]*$/.test(e[1])?e[1].toLowerCase():null:"_relative"},p=function(e){return+e.toFixed(4)};class u{constructor(e){this.displayMode=o((e=e||{}).displayMode,!1),this.annotate=o(e.annotate,!1),this.leqno=o(e.leqno,!1),this.throwOnError=o(e.throwOnError,!1),this.errorColor=o(e.errorColor,"#b22222"),this.macros=e.macros||{},this.wrap=o(e.wrap,"tex"),this.xml=o(e.xml,!1),this.colorIsTextColor=o(e.colorIsTextColor,!1),this.strict=o(e.strict,!1),this.trust=o(e.trust,!1),this.maxSize=void 0!==e.maxSize&&Array.isArray(e.maxSize)?e.maxSize:[1/0,1/0],this.maxExpand=Math.max(0,o(e.maxExpand,1e3))}isTrusted(e){if(e.url&&!e.protocol){var t=m(e.url);if(null==t)return!1;e.protocol=t}return t="function"==typeof this.trust?this.trust(e):this.trust,Boolean(t)}}const d={},h={};function c({type:e,names:t,props:r,handler:a,mathmlBuilder:n}){var o={type:e,numArgs:r.numArgs,argTypes:r.argTypes,allowedInArgument:!!r.allowedInArgument,allowedInText:!!r.allowedInText,allowedInMath:void 0===r.allowedInMath||r.allowedInMath,numOptionalArgs:r.numOptionalArgs||0,infix:!!r.infix,primitive:!!r.primitive,handler:a};for(let e=0;e<t.length;++e)d[t[e]]=o;e&&n&&(h[e]=n)}function g({type:e,mathmlBuilder:t}){c({type:e,names:[],props:{numArgs:0},handler(){throw new Error("Should never be called.")},mathmlBuilder:t})}function b(e){return"ordgroup"===e.type&&1===e.body.length?e.body[0]:e}function f(e){return"ordgroup"===e.type?e.body:[e]}class y{constructor(e){this.children=e,this.classes=[],this.style={}}hasClass(e){return this.classes.includes(e)}toNode(){var e=document.createDocumentFragment();for(let t=0;t<this.children.length;t++)e.appendChild(this.children[t].toNode());return e}toMarkup(){let e="";for(let t=0;t<this.children.length;t++)e+=this.children[t].toMarkup();return e}toText(){return this.children.map((e=>e.toText())).join("")}}function x(e){return e.filter((e=>e)).join(" ")}class w{constructor(e,t,r){(function(e,t){this.classes=e||[],this.attributes={},this.style=t||{}}).call(this,e,r),this.children=t||[]}setAttribute(e,t){this.attributes[e]=t}toNode(){return function(e){var t=document.createElement(e);t.className=x(this.classes);for(let e in this.style)Object.prototype.hasOwnProperty.call(this.style,e)&&(t.style[e]=this.style[e]);for(let e in this.attributes)Object.prototype.hasOwnProperty.call(this.attributes,e)&&t.setAttribute(e,this.attributes[e]);for(let e=0;e<this.children.length;e++)t.appendChild(this.children[e].toNode());return t}.call(this,"span")}toMarkup(){return function(e){let t="<"+e,r=(this.classes.length&&(t+=` class="${s(x(this.classes))}"`),"");for(let e in this.style)Object.prototype.hasOwnProperty.call(this.style,e)&&(r+=`${l(e)}:${this.style[e]};`);r&&(t+=` style="${r}"`);for(let e in this.attributes)Object.prototype.hasOwnProperty.call(this.attributes,e)&&(t+=` ${e}="${s(this.attributes[e])}"`);t+=">";for(let e=0;e<this.children.length;e++)t+=this.children[e].toMarkup();return t+`</${e}>`}.call(this,"span")}}let v=class{constructor(e){this.text=e}toNode(){return document.createTextNode(this.text)}toMarkup(){return s(this.text)}};class k{constructor(e,t,r){this.alt=t,this.src=e,this.classes=["mord"],this.style=r}hasClass(e){return this.classes.includes(e)}toNode(){var e=document.createElement("img");e.src=this.src,e.alt=this.alt,e.className="mord";for(let t in this.style)Object.prototype.hasOwnProperty.call(this.style,t)&&(e.style[t]=this.style[t]);return e}toMarkup(){let e=`<img src='${this.src}' alt='${this.alt}'`,t="";for(let e in this.style)Object.prototype.hasOwnProperty.call(this.style,e)&&(t+=`${l(e)}:${this.style[e]};`);return t&&(e+=` style="${s(t)}"`),e+">"}}class A{constructor(e,t,r,a){this.type=e,this.attributes={},this.children=t||[],this.classes=r||[],this.style=a||{}}setAttribute(e,t){this.attributes[e]=t}getAttribute(e){return this.attributes[e]}toNode(){var e=document.createElementNS("http://www.w3.org/1998/Math/MathML",this.type);for(let t in this.attributes)Object.prototype.hasOwnProperty.call(this.attributes,t)&&e.setAttribute(t,this.attributes[t]);0<this.classes.length&&(e.className=x(this.classes));for(let t in this.style)Object.prototype.hasOwnProperty.call(this.style,t)&&(e.style[t]=this.style[t]);for(let t=0;t<this.children.length;t++)e.appendChild(this.children[t].toNode());return e}toMarkup(){let e="<"+this.type;for(let t in this.attributes)Object.prototype.hasOwnProperty.call(this.attributes,t)&&(e=(e+=" "+t+'="')+s(this.attributes[t])+'"');0<this.classes.length&&(e+=` class="${s(x(this.classes))}"`);let t="";for(let e in this.style)Object.prototype.hasOwnProperty.call(this.style,e)&&(t+=`${l(e)}:${this.style[e]};`);t&&(e+=` style="${t}"`),e+=">";for(let t=0;t<this.children.length;t++)e+=this.children[t].toMarkup();return e+"</"+this.type+">"}toText(){return this.children.map((e=>e.toText())).join("")}}class N{constructor(e){this.text=e}toNode(){return document.createTextNode(this.text)}toMarkup(){return s(this.toText())}toText(){return this.text}}const T=e=>{let t;return 1===e.length&&"mrow"===e[0].type?(t=e.pop()).type="mstyle":t=new A("mstyle",e),t};var q={MathNode:A,TextNode:N,newDocumentFragment:function(e){return new y(e)}};function S(e){return e=new q.TextNode(M[e.slice(1)]),(e=new q.MathNode("mo",[e])).setAttribute("stretchy","true"),e}const O=e=>{let t=0;if(e.body)for(let r of e.body)t+=O(r);else if("supsub"===e.type)t+=O(e.base),e.sub&&(t+=.7*O(e.sub)),e.sup&&(t+=.7*O(e.sup));else if("mathord"===e.type||"textord"===e.type)for(let a of e.text.split("")){var r=a.codePointAt(0);t+=96<r&&r<123||944<r&&r<970?.56:47<r&&r<58?.5:.92}else t+=1;return t},M={widehat:"^",widecheck:"ˇ",widetilde:"~",wideparen:"⏜",utilde:"~",overleftarrow:"←",underleftarrow:"←",xleftarrow:"←",overrightarrow:"→",underrightarrow:"→",xrightarrow:"→",underbrace:"⏟",overbrace:"⏞",overgroup:"⏠",overparen:"⏜",undergroup:"⏡",underparen:"⏝",overleftrightarrow:"↔",underleftrightarrow:"↔",xleftrightarrow:"↔",Overrightarrow:"⇒",xRightarrow:"⇒",overleftharpoon:"↼",xleftharpoonup:"↼",overrightharpoon:"⇀",xrightharpoonup:"⇀",xLeftarrow:"⇐",xLeftrightarrow:"⇔",xhookleftarrow:"↩",xhookrightarrow:"↪",xmapsto:"↦",xrightharpoondown:"⇁",xleftharpoondown:"↽",xtwoheadleftarrow:"↞",xtwoheadrightarrow:"↠",xlongequal:"=",xrightleftarrows:"⇄",yields:"→",yieldsLeft:"←",mesomerism:"↔",longrightharpoonup:"⇀",longleftharpoondown:"↽",eqrightharpoonup:"⇀",eqleftharpoondown:"↽","\\cdrightarrow":"→","\\cdleftarrow":"←","\\cdlongequal":"="},B=["\\widetilde","\\widehat","\\widecheck","\\utilde"];var C=S,z=e=>{var t=S(e.label);return B.includes(e.label)&&(1<(e=O(e.base))&&e<1.6?t.classes.push("tml-crooked-2"):1.6<=e&&e<2.5?t.classes.push("tml-crooked-3"):2.5<=e&&t.classes.push("tml-crooked-4")),t};const E={bin:1,close:1,inner:1,open:1,punct:1,rel:1},I={"accent-token":1,mathord:1,"op-token":1,spacing:1,textord:1},L={math:{},text:{}};function F(e,t,r,a,n){L[e][a]={group:t,replace:r},n&&r&&(L[e][r]=L[e][a])}var $="math",G="text",D="accent-token",P="bin",j="close",R="inner",U="mathord",H="op-token",V="open",_="punct",W="rel",X="spacing",Z="textord";F($,W,"≡","\\equiv",!0),F($,W,"≺","\\prec",!0),F($,W,"≻","\\succ",!0),F($,W,"∼","\\sim",!0),F($,W,"⟂","\\perp",!0),F($,W,"⪯","\\preceq",!0),F($,W,"⪰","\\succeq",!0),F($,W,"≃","\\simeq",!0),F($,W,"≌","\\backcong",!0),F($,W,"|","\\mid",!0),F($,W,"≪","\\ll",!0),F($,W,"≫","\\gg",!0),F($,W,"≍","\\asymp",!0),F($,W,"∥","\\parallel"),F($,W,"⌣","\\smile",!0),F($,W,"⊑","\\sqsubseteq",!0),F($,W,"⊒","\\sqsupseteq",!0),F($,W,"≐","\\doteq",!0),F($,W,"⌢","\\frown",!0),F($,W,"∋","\\ni",!0),F($,W,"∌","\\notni",!0),F($,W,"∝","\\propto",!0),F($,W,"⊢","\\vdash",!0),F($,W,"⊣","\\dashv",!0),F($,W,"∋","\\owns"),F($,W,"≘","\\arceq",!0),F($,W,"≙","\\wedgeq",!0),F($,W,"≚","\\veeeq",!0),F($,W,"≛","\\stareq",!0),F($,W,"≝","\\eqdef",!0),F($,W,"≞","\\measeq",!0),F($,W,"≟","\\questeq",!0),F($,W,"≠","\\ne",!0),F($,W,"≠","\\neq"),F($,W,"⩵","\\eqeq",!0),F($,W,"⩶","\\eqeqeq",!0),F($,W,"∷","\\dblcolon",!0),F($,W,"≔","\\coloneqq",!0),F($,W,"≕","\\eqqcolon",!0),F($,W,"∹","\\eqcolon",!0),F($,W,"⩴","\\Coloneqq",!0),F($,_,".","\\ldotp"),F($,_,"·","\\cdotp"),F($,Z,"#","\\#"),F(G,Z,"#","\\#"),F($,Z,"&","\\&"),F(G,Z,"&","\\&"),F($,Z,"ℵ","\\aleph",!0),F($,Z,"∀","\\forall",!0),F($,Z,"ℏ","\\hbar",!0),F($,Z,"∃","\\exists",!0),F($,P,"∇","\\nabla",!0),F($,Z,"♭","\\flat",!0),F($,Z,"ℓ","\\ell",!0),F($,Z,"♮","\\natural",!0),F($,Z,"Å","\\Angstrom",!0),F(G,Z,"Å","\\Angstrom",!0),F($,Z,"♣","\\clubsuit",!0),F($,Z,"♧","\\varclubsuit",!0),F($,Z,"℘","\\wp",!0),F($,Z,"♯","\\sharp",!0),F($,Z,"♢","\\diamondsuit",!0),F($,Z,"♦","\\vardiamondsuit",!0),F($,Z,"ℜ","\\Re",!0),F($,Z,"♡","\\heartsuit",!0),F($,Z,"♥","\\varheartsuit",!0),F($,Z,"ℑ","\\Im",!0),F($,Z,"♠","\\spadesuit",!0),F($,Z,"♤","\\varspadesuit",!0),F($,Z,"♀","\\female",!0),F($,Z,"♂","\\male",!0),F($,Z,"§","\\S",!0),F(G,Z,"§","\\S"),F($,Z,"¶","\\P",!0),F(G,Z,"¶","\\P"),F(G,Z,"☺","\\smiley",!0),F($,Z,"☺","\\smiley",!0),F($,Z,"†","\\dag"),F(G,Z,"†","\\dag"),F(G,Z,"†","\\textdagger"),F($,Z,"‡","\\ddag"),F(G,Z,"‡","\\ddag"),F(G,Z,"‡","\\textdaggerdbl"),F($,j,"⎱","\\rmoustache",!0),F($,V,"⎰","\\lmoustache",!0),F($,j,"⟯","\\rgroup",!0),F($,V,"⟮","\\lgroup",!0),F($,P,"∓","\\mp",!0),F($,P,"⊖","\\ominus",!0),F($,P,"⊎","\\uplus",!0),F($,P,"⊓","\\sqcap",!0),F($,P,"∗","\\ast"),F($,P,"⊔","\\sqcup",!0),F($,P,"◯","\\bigcirc",!0),F($,P,"∙","\\bullet",!0),F($,P,"‡","\\ddagger"),F($,P,"≀","\\wr",!0),F($,P,"⨿","\\amalg"),F($,P,"&","\\And"),F($,P,"⫽","\\sslash",!0),F($,W,"⟵","\\longleftarrow",!0),F($,W,"⇐","\\Leftarrow",!0),F($,W,"⟸","\\Longleftarrow",!0),F($,W,"⟶","\\longrightarrow",!0),F($,W,"⇒","\\Rightarrow",!0),F($,W,"⟹","\\Longrightarrow",!0),F($,W,"↔","\\leftrightarrow",!0),F($,W,"⟷","\\longleftrightarrow",!0),F($,W,"⇔","\\Leftrightarrow",!0),F($,W,"⟺","\\Longleftrightarrow",!0),F($,W,"↤","\\mapsfrom",!0),F($,W,"↦","\\mapsto",!0),F($,W,"⟼","\\longmapsto",!0),F($,W,"↗","\\nearrow",!0),F($,W,"↩","\\hookleftarrow",!0),F($,W,"↪","\\hookrightarrow",!0),F($,W,"↘","\\searrow",!0),F($,W,"↼","\\leftharpoonup",!0),F($,W,"⇀","\\rightharpoonup",!0),F($,W,"↙","\\swarrow",!0),F($,W,"↽","\\leftharpoondown",!0),F($,W,"⇁","\\rightharpoondown",!0),F($,W,"↖","\\nwarrow",!0),F($,W,"⇌","\\rightleftharpoons",!0),F($,U,"↯","\\lightning",!0),F($,U,"∎","\\QED",!0),F($,U,"‰","\\permil",!0),F(G,Z,"‰","\\permil"),F($,U,"☉","\\astrosun",!0),F($,U,"☼","\\sun",!0),F($,U,"☾","\\leftmoon",!0),F($,U,"☽","\\rightmoon",!0),F($,U,"⊕","\\Earth"),F($,W,"≮","\\nless",!0),F($,W,"⪇","\\lneq",!0),F($,W,"≨","\\lneqq",!0),F($,W,"≨︀","\\lvertneqq"),F($,W,"⋦","\\lnsim",!0),F($,W,"⪉","\\lnapprox",!0),F($,W,"⊀","\\nprec",!0),F($,W,"⋠","\\npreceq",!0),F($,W,"⋨","\\precnsim",!0),F($,W,"⪹","\\precnapprox",!0),F($,W,"≁","\\nsim",!0),F($,W,"∤","\\nmid",!0),F($,W,"∤","\\nshortmid"),F($,W,"⊬","\\nvdash",!0),F($,W,"⊭","\\nvDash",!0),F($,W,"⋪","\\ntriangleleft"),F($,W,"⋬","\\ntrianglelefteq",!0),F($,W,"⊄","\\nsubset",!0),F($,W,"⊅","\\nsupset",!0),F($,W,"⊊","\\subsetneq",!0),F($,W,"⊊︀","\\varsubsetneq"),F($,W,"⫋","\\subsetneqq",!0),F($,W,"⫋︀","\\varsubsetneqq"),F($,W,"≯","\\ngtr",!0),F($,W,"⪈","\\gneq",!0),F($,W,"≩","\\gneqq",!0),F($,W,"≩︀","\\gvertneqq"),F($,W,"⋧","\\gnsim",!0),F($,W,"⪊","\\gnapprox",!0),F($,W,"⊁","\\nsucc",!0),F($,W,"⋡","\\nsucceq",!0),F($,W,"⋩","\\succnsim",!0),F($,W,"⪺","\\succnapprox",!0),F($,W,"≆","\\ncong",!0),F($,W,"∦","\\nparallel",!0),F($,W,"∦","\\nshortparallel"),F($,W,"⊯","\\nVDash",!0),F($,W,"⋫","\\ntriangleright"),F($,W,"⋭","\\ntrianglerighteq",!0),F($,W,"⊋","\\supsetneq",!0),F($,W,"⊋","\\varsupsetneq"),F($,W,"⫌","\\supsetneqq",!0),F($,W,"⫌︀","\\varsupsetneqq"),F($,W,"⊮","\\nVdash",!0),F($,W,"⪵","\\precneqq",!0),F($,W,"⪶","\\succneqq",!0),F($,P,"⊴","\\unlhd"),F($,P,"⊵","\\unrhd"),F($,W,"↚","\\nleftarrow",!0),F($,W,"↛","\\nrightarrow",!0),F($,W,"⇍","\\nLeftarrow",!0),F($,W,"⇏","\\nRightarrow",!0),F($,W,"↮","\\nleftrightarrow",!0),F($,W,"⇎","\\nLeftrightarrow",!0),F($,W,"△","\\vartriangle"),F($,Z,"ℏ","\\hslash"),F($,Z,"▽","\\triangledown"),F($,Z,"◊","\\lozenge"),F($,Z,"Ⓢ","\\circledS"),F($,Z,"®","\\circledR",!0),F(G,Z,"®","\\circledR"),F(G,Z,"®","\\textregistered"),F($,Z,"∡","\\measuredangle",!0),F($,Z,"∄","\\nexists"),F($,Z,"℧","\\mho"),F($,Z,"Ⅎ","\\Finv",!0),F($,Z,"⅁","\\Game",!0),F($,Z,"‵","\\backprime"),F($,Z,"‶","\\backdprime"),F($,Z,"‷","\\backtrprime"),F($,Z,"▲","\\blacktriangle"),F($,Z,"▼","\\blacktriangledown"),F($,Z,"■","\\blacksquare"),F($,Z,"⧫","\\blacklozenge"),F($,Z,"★","\\bigstar"),F($,Z,"∢","\\sphericalangle",!0),F($,Z,"∁","\\complement",!0),F($,Z,"ð","\\eth",!0),F(G,Z,"ð","ð"),F($,Z,"╱","\\diagup"),F($,Z,"╲","\\diagdown"),F($,Z,"□","\\square"),F($,Z,"□","\\Box"),F($,Z,"◊","\\Diamond"),F($,Z,"¥","\\yen",!0),F(G,Z,"¥","\\yen",!0),F($,Z,"✓","\\checkmark",!0),F(G,Z,"✓","\\checkmark"),F($,Z,"✗","\\ballotx",!0),F(G,Z,"✗","\\ballotx"),F(G,Z,"•","\\textbullet"),F($,Z,"ℶ","\\beth",!0),F($,Z,"ℸ","\\daleth",!0),F($,Z,"ℷ","\\gimel",!0),F($,Z,"ϝ","\\digamma",!0),F($,Z,"ϰ","\\varkappa"),F($,V,"⌜","\\ulcorner",!0),F($,j,"⌝","\\urcorner",!0),F($,V,"⌞","\\llcorner",!0),F($,j,"⌟","\\lrcorner",!0),F($,W,"≦","\\leqq",!0),F($,W,"⩽","\\leqslant",!0),F($,W,"⪕","\\eqslantless",!0),F($,W,"≲","\\lesssim",!0),F($,W,"⪅","\\lessapprox",!0),F($,W,"≊","\\approxeq",!0),F($,P,"⋖","\\lessdot"),F($,W,"⋘","\\lll",!0),F($,W,"≶","\\lessgtr",!0),F($,W,"⋚","\\lesseqgtr",!0),F($,W,"⪋","\\lesseqqgtr",!0),F($,W,"≑","\\doteqdot"),F($,W,"≓","\\risingdotseq",!0),F($,W,"≒","\\fallingdotseq",!0),F($,W,"∽","\\backsim",!0),F($,W,"⋍","\\backsimeq",!0),F($,W,"⫅","\\subseteqq",!0),F($,W,"⋐","\\Subset",!0),F($,W,"⊏","\\sqsubset",!0),F($,W,"≼","\\preccurlyeq",!0),F($,W,"⋞","\\curlyeqprec",!0),F($,W,"≾","\\precsim",!0),F($,W,"⪷","\\precapprox",!0),F($,W,"⊲","\\vartriangleleft"),F($,W,"⊴","\\trianglelefteq"),F($,W,"⊨","\\vDash",!0),F($,W,"⊫","\\VDash",!0),F($,W,"⊪","\\Vvdash",!0),F($,W,"⌣","\\smallsmile"),F($,W,"⌢","\\smallfrown"),F($,W,"≏","\\bumpeq",!0),F($,W,"≎","\\Bumpeq",!0),F($,W,"≧","\\geqq",!0),F($,W,"⩾","\\geqslant",!0),F($,W,"⪖","\\eqslantgtr",!0),F($,W,"≳","\\gtrsim",!0),F($,W,"⪆","\\gtrapprox",!0),F($,P,"⋗","\\gtrdot"),F($,W,"⋙","\\ggg",!0),F($,W,"≷","\\gtrless",!0),F($,W,"⋛","\\gtreqless",!0),F($,W,"⪌","\\gtreqqless",!0),F($,W,"≖","\\eqcirc",!0),F($,W,"≗","\\circeq",!0),F($,W,"≜","\\triangleq",!0),F($,W,"∼","\\thicksim"),F($,W,"≈","\\thickapprox"),F($,W,"⫆","\\supseteqq",!0),F($,W,"⋑","\\Supset",!0),F($,W,"⊐","\\sqsupset",!0),F($,W,"≽","\\succcurlyeq",!0),F($,W,"⋟","\\curlyeqsucc",!0),F($,W,"≿","\\succsim",!0),F($,W,"⪸","\\succapprox",!0),F($,W,"⊳","\\vartriangleright"),F($,W,"⊵","\\trianglerighteq"),F($,W,"⊩","\\Vdash",!0),F($,W,"∣","\\shortmid"),F($,W,"∥","\\shortparallel"),F($,W,"≬","\\between",!0),F($,W,"⋔","\\pitchfork",!0),F($,W,"∝","\\varpropto"),F($,W,"◀","\\blacktriangleleft"),F($,W,"∴","\\therefore",!0),F($,W,"∍","\\backepsilon"),F($,W,"▶","\\blacktriangleright"),F($,W,"∵","\\because",!0),F($,W,"⋘","\\llless"),F($,W,"⋙","\\gggtr"),F($,P,"⊲","\\lhd"),F($,P,"⊳","\\rhd"),F($,W,"≂","\\eqsim",!0),F($,W,"≑","\\Doteq",!0),F($,W,"⥽","\\strictif",!0),F($,W,"⥼","\\strictfi",!0),F($,P,"∔","\\dotplus",!0),F($,P,"∖","\\smallsetminus"),F($,P,"⋒","\\Cap",!0),F($,P,"⋓","\\Cup",!0),F($,P,"⩞","\\doublebarwedge",!0),F($,P,"⊟","\\boxminus",!0),F($,P,"⊞","\\boxplus",!0),F($,P,"⧄","\\boxslash",!0),F($,P,"⋇","\\divideontimes",!0),F($,P,"⋉","\\ltimes",!0),F($,P,"⋊","\\rtimes",!0),F($,P,"⋋","\\leftthreetimes",!0),F($,P,"⋌","\\rightthreetimes",!0),F($,P,"⋏","\\curlywedge",!0),F($,P,"⋎","\\curlyvee",!0),F($,P,"⊝","\\circleddash",!0),F($,P,"⊛","\\circledast",!0),F($,P,"⊺","\\intercal",!0),F($,P,"⋒","\\doublecap"),F($,P,"⋓","\\doublecup"),F($,P,"⊠","\\boxtimes",!0),F($,P,"⋈","\\bowtie",!0),F($,P,"⋈","\\Join"),F($,P,"⟕","\\leftouterjoin",!0),F($,P,"⟖","\\rightouterjoin",!0),F($,P,"⟗","\\fullouterjoin",!0),F($,P,"∸","\\dotminus",!0),F($,P,"⟑","\\wedgedot",!0),F($,P,"⟇","\\veedot",!0),F($,P,"⩢","\\doublebarvee",!0),F($,P,"⩣","\\veedoublebar",!0),F($,P,"⩟","\\wedgebar",!0),F($,P,"⩠","\\wedgedoublebar",!0),F($,P,"⩔","\\Vee",!0),F($,P,"⩓","\\Wedge",!0),F($,P,"⩃","\\barcap",!0),F($,P,"⩂","\\barcup",!0),F($,P,"⩈","\\capbarcup",!0),F($,P,"⩀","\\capdot",!0),F($,P,"⩇","\\capovercup",!0),F($,P,"⩆","\\cupovercap",!0),F($,P,"⩍","\\closedvarcap",!0),F($,P,"⩌","\\closedvarcup",!0),F($,P,"⨪","\\minusdot",!0),F($,P,"⨫","\\minusfdots",!0),F($,P,"⨬","\\minusrdots",!0),F($,P,"⊻","\\Xor",!0),F($,P,"⊼","\\Nand",!0),F($,P,"⊽","\\Nor",!0),F($,P,"⊽","\\barvee"),F($,P,"⫴","\\interleave",!0),F($,P,"⧢","\\shuffle",!0),F($,P,"⫶","\\threedotcolon",!0),F($,P,"⦂","\\typecolon",!0),F($,P,"∾","\\invlazys",!0),F($,P,"⩋","\\twocaps",!0),F($,P,"⩊","\\twocups",!0),F($,P,"⩎","\\Sqcap",!0),F($,P,"⩏","\\Sqcup",!0),F($,P,"⩖","\\veeonvee",!0),F($,P,"⩕","\\wedgeonwedge",!0),F($,P,"⧗","\\blackhourglass",!0),F($,P,"⧆","\\boxast",!0),F($,P,"⧈","\\boxbox",!0),F($,P,"⧇","\\boxcircle",!0),F($,P,"⊜","\\circledequal",!0),F($,P,"⦷","\\circledparallel",!0),F($,P,"⦶","\\circledvert",!0),F($,P,"⦵","\\circlehbar",!0),F($,P,"⟡","\\concavediamond",!0),F($,P,"⟢","\\concavediamondtickleft",!0),F($,P,"⟣","\\concavediamondtickright",!0),F($,P,"⋄","\\diamond",!0),F($,P,"⧖","\\hourglass",!0),F($,P,"⟠","\\lozengeminus",!0),F($,P,"⌽","\\obar",!0),F($,P,"⦸","\\obslash",!0),F($,P,"⨸","\\odiv",!0),F($,P,"⧁","\\ogreaterthan",!0),F($,P,"⧀","\\olessthan",!0),F($,P,"⦹","\\operp",!0),F($,P,"⨷","\\Otimes",!0),F($,P,"⨶","\\otimeshat",!0),F($,P,"⋆","\\star",!0),F($,P,"△","\\triangle",!0),F($,P,"⨺","\\triangleminus",!0),F($,P,"⨹","\\triangleplus",!0),F($,P,"⨻","\\triangletimes",!0),F($,P,"⟤","\\whitesquaretickleft",!0),F($,P,"⟥","\\whitesquaretickright",!0),F($,P,"⨳","\\smashtimes",!0),F($,W,"⇢","\\dashrightarrow",!0),F($,W,"⇠","\\dashleftarrow",!0),F($,W,"⇇","\\leftleftarrows",!0),F($,W,"⇆","\\leftrightarrows",!0),F($,W,"⇚","\\Lleftarrow",!0),F($,W,"↞","\\twoheadleftarrow",!0),F($,W,"↢","\\leftarrowtail",!0),F($,W,"↫","\\looparrowleft",!0),F($,W,"⇋","\\leftrightharpoons",!0),F($,W,"↶","\\curvearrowleft",!0),F($,W,"↺","\\circlearrowleft",!0),F($,W,"↰","\\Lsh",!0),F($,W,"⇈","\\upuparrows",!0),F($,W,"↿","\\upharpoonleft",!0),F($,W,"⇃","\\downharpoonleft",!0),F($,W,"⊶","\\origof",!0),F($,W,"⊷","\\imageof",!0),F($,W,"⊸","\\multimap",!0),F($,W,"↭","\\leftrightsquigarrow",!0),F($,W,"⇉","\\rightrightarrows",!0),F($,W,"⇄","\\rightleftarrows",!0),F($,W,"↠","\\twoheadrightarrow",!0),F($,W,"↣","\\rightarrowtail",!0),F($,W,"↬","\\looparrowright",!0),F($,W,"↷","\\curvearrowright",!0),F($,W,"↻","\\circlearrowright",!0),F($,W,"↱","\\Rsh",!0),F($,W,"⇊","\\downdownarrows",!0),F($,W,"↾","\\upharpoonright",!0),F($,W,"⇂","\\downharpoonright",!0),F($,W,"⇝","\\rightsquigarrow",!0),F($,W,"⇝","\\leadsto"),F($,W,"⇛","\\Rrightarrow",!0),F($,W,"↾","\\restriction"),F($,Z,"‘","`"),F($,Z,"$","\\$"),F(G,Z,"$","\\$"),F(G,Z,"$","\\textdollar"),F($,Z,"¢","\\cent"),F(G,Z,"¢","\\cent"),F($,Z,"%","\\%"),F(G,Z,"%","\\%"),F($,Z,"_","\\_"),F(G,Z,"_","\\_"),F(G,Z,"_","\\textunderscore"),
@@ -2491,7 +2506,7 @@ Current version indicated by LITEVER below.
 	!function (t, e) { "object" == typeof exports && "undefined" != typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define(e) : (t = "undefined" != typeof globalThis ? globalThis : t || self).MiniSearch = e() }(this, (function () { "use strict"; function t(t, e, s, i) { return new (s || (s = Promise))((function (n, o) { function r(t) { try { u(i.next(t)) } catch (t) { o(t) } } function c(t) { try { u(i.throw(t)) } catch (t) { o(t) } } function u(t) { var e; t.done ? n(t.value) : (e = t.value, e instanceof s ? e : new s((function (t) { t(e) }))).then(r, c) } u((i = i.apply(t, e || [])).next()) })) } "function" == typeof SuppressedError && SuppressedError; const e = "KEYS", s = "VALUES", i = ""; class n { constructor(t, e) { const s = t._tree, i = Array.from(s.keys()); this.set = t, this._type = e, this._path = i.length > 0 ? [{ node: s, keys: i }] : [] } next() { const t = this.dive(); return this.backtrack(), t } dive() { if (0 === this._path.length) return { done: !0, value: void 0 }; const { node: t, keys: e } = o(this._path); if (o(e) === i) return { done: !1, value: this.result() }; const s = t.get(o(e)); return this._path.push({ node: s, keys: Array.from(s.keys()) }), this.dive() } backtrack() { if (0 === this._path.length) return; const t = o(this._path).keys; t.pop(), t.length > 0 || (this._path.pop(), this.backtrack()) } key() { return this.set._prefix + this._path.map((({ keys: t }) => o(t))).filter((t => t !== i)).join("") } value() { return o(this._path).node.get(i) } result() { switch (this._type) { case s: return this.value(); case e: return this.key(); default: return [this.key(), this.value()] } } [Symbol.iterator]() { return this } } const o = t => t[t.length - 1], r = (t, e, s, n, o, c, u, h) => { const d = c * u; t: for (let a of t.keys()) if (a === i) { const e = o[d - 1]; e <= s && n.set(h, [t.get(a), e]) } else { let i = c; for (let t = 0; t < a.length; ++t, ++i) { const n = a[t], r = u * i, c = r - u; let h = o[r]; const d = Math.max(0, i - s - 1), l = Math.min(u - 1, i + s); for (let t = d; t < l; ++t) { const s = n !== e[t], i = o[c + t] + +s, u = o[c + t + 1] + 1, d = o[r + t] + 1, a = o[r + t + 1] = Math.min(i, u, d); a < h && (h = a) } if (h > s) continue t } r(t.get(a), e, s, n, o, i, u, h + a) } }; class c { constructor(t = new Map, e = "") { this._size = void 0, this._tree = t, this._prefix = e } atPrefix(t) { if (!t.startsWith(this._prefix)) throw new Error("Mismatched prefix"); const [e, s] = u(this._tree, t.slice(this._prefix.length)); if (void 0 === e) { const [e, n] = m(s); for (let s of e.keys()) if (s !== i && s.startsWith(n)) { const i = new Map; return i.set(s.slice(n.length), e.get(s)), new c(i, t) } } return new c(e, t) } clear() { this._size = void 0, this._tree.clear() } delete(t) { return this._size = void 0, a(this._tree, t) } entries() { return new n(this, "ENTRIES") } forEach(t) { for (let [e, s] of this) t(e, s, this) } fuzzyGet(t, e) { return ((t, e, s) => { const i = new Map; if (void 0 === e) return i; const n = e.length + 1, o = n + s, c = new Uint8Array(o * n).fill(s + 1); for (let t = 0; t < n; ++t)c[t] = t; for (let t = 1; t < o; ++t)c[t * n] = t; return r(t, e, s, i, c, 1, n, ""), i })(this._tree, t, e) } get(t) { const e = h(this._tree, t); return void 0 !== e ? e.get(i) : void 0 } has(t) { const e = h(this._tree, t); return void 0 !== e && e.has(i) } keys() { return new n(this, e) } set(t, e) { if ("string" != typeof t) throw new Error("key must be a string"); this._size = void 0; return d(this._tree, t).set(i, e), this } get size() { if (this._size) return this._size; this._size = 0; const t = this.entries(); for (; !t.next().done;)this._size += 1; return this._size } update(t, e) { if ("string" != typeof t) throw new Error("key must be a string"); this._size = void 0; const s = d(this._tree, t); return s.set(i, e(s.get(i))), this } fetch(t, e) { if ("string" != typeof t) throw new Error("key must be a string"); this._size = void 0; const s = d(this._tree, t); let n = s.get(i); return void 0 === n && s.set(i, n = e()), n } values() { return new n(this, s) } [Symbol.iterator]() { return this.entries() } static from(t) { const e = new c; for (let [s, i] of t) e.set(s, i); return e } static fromObject(t) { return c.from(Object.entries(t)) } } const u = (t, e, s = []) => { if (0 === e.length || null == t) return [t, s]; for (let n of t.keys()) if (n !== i && e.startsWith(n)) return s.push([t, n]), u(t.get(n), e.slice(n.length), s); return s.push([t, e]), u(void 0, "", s) }, h = (t, e) => { if (0 === e.length || null == t) return t; for (let s of t.keys()) if (s !== i && e.startsWith(s)) return h(t.get(s), e.slice(s.length)) }, d = (t, e) => { const s = e.length; t: for (let n = 0; t && n < s;) { for (let o of t.keys()) if (o !== i && e[n] === o[0]) { const i = Math.min(s - n, o.length); let r = 1; for (; r < i && e[n + r] === o[r];)++r; const c = t.get(o); if (r === o.length) t = c; else { const s = new Map; s.set(o.slice(r), c), t.set(e.slice(n, n + r), s), t.delete(o), t = s } n += r; continue t } const o = new Map; return t.set(e.slice(n), o), o } return t }, a = (t, e) => { const [s, n] = u(t, e); if (void 0 !== s) if (s.delete(i), 0 === s.size) l(n); else if (1 === s.size) { const [t, e] = s.entries().next().value; f(n, t, e) } }, l = t => { if (0 === t.length) return; const [e, s] = m(t); if (e.delete(s), 0 === e.size) l(t.slice(0, -1)); else if (1 === e.size) { const [s, n] = e.entries().next().value; s !== i && f(t.slice(0, -1), s, n) } }, f = (t, e, s) => { if (0 === t.length) return; const [i, n] = m(t); i.set(n + e, s), i.delete(n) }, m = t => t[t.length - 1], g = "or"; class _ { constructor(t) { if (null == (null == t ? void 0 : t.fields)) throw new Error('MiniSearch: option "fields" must be provided'); const e = null == t.autoVacuum || !0 === t.autoVacuum ? O : t.autoVacuum; this._options = Object.assign(Object.assign(Object.assign({}, v), t), { autoVacuum: e, searchOptions: Object.assign(Object.assign({}, x), t.searchOptions || {}), autoSuggestOptions: Object.assign(Object.assign({}, z), t.autoSuggestOptions || {}) }), this._index = new c, this._documentCount = 0, this._documentIds = new Map, this._idToShortId = new Map, this._fieldIds = {}, this._fieldLength = new Map, this._avgFieldLength = [], this._nextId = 0, this._storedFields = new Map, this._dirtCount = 0, this._currentVacuum = null, this._enqueuedVacuum = null, this._enqueuedVacuumConditions = I, this.addFields(this._options.fields) } add(t) { const { extractField: e, tokenize: s, processTerm: i, fields: n, idField: o } = this._options, r = e(t, o); if (null == r) throw new Error(`MiniSearch: document does not have ID field "${o}"`); if (this._idToShortId.has(r)) throw new Error(`MiniSearch: duplicate ID ${r}`); const c = this.addDocumentId(r); this.saveStoredFields(c, t); for (let o of n) { const n = e(t, o); if (null == n) continue; const r = s(n.toString(), o), u = this._fieldIds[o], h = new Set(r).size; this.addFieldLength(c, u, this._documentCount - 1, h); for (let t of r) { const e = i(t, o); if (Array.isArray(e)) for (let t of e) this.addTerm(u, c, t); else e && this.addTerm(u, c, e) } } } addAll(t) { for (let e of t) this.add(e) } addAllAsync(t, e = {}) { const { chunkSize: s = 10 } = e, i = { chunk: [], promise: Promise.resolve() }, { chunk: n, promise: o } = t.reduce((({ chunk: t, promise: e }, i, n) => (t.push(i), (n + 1) % s == 0 ? { chunk: [], promise: e.then((() => new Promise((t => setTimeout(t, 0))))).then((() => this.addAll(t))) } : { chunk: t, promise: e })), i); return o.then((() => this.addAll(n))) } remove(t) { const { tokenize: e, processTerm: s, extractField: i, fields: n, idField: o } = this._options, r = i(t, o); if (null == r) throw new Error(`MiniSearch: document does not have ID field "${o}"`); const c = this._idToShortId.get(r); if (null == c) throw new Error(`MiniSearch: cannot remove document with ID ${r}: it is not in the index`); for (let o of n) { const n = i(t, o); if (null == n) continue; const r = e(n.toString(), o), u = this._fieldIds[o], h = new Set(r).size; this.removeFieldLength(c, u, this._documentCount, h); for (let t of r) { const e = s(t, o); if (Array.isArray(e)) for (let t of e) this.removeTerm(u, c, t); else e && this.removeTerm(u, c, e) } } this._storedFields.delete(c), this._documentIds.delete(c), this._idToShortId.delete(r), this._fieldLength.delete(c), this._documentCount -= 1 } removeAll(t) { if (t) for (let e of t) this.remove(e); else { if (arguments.length > 0) throw new Error("Expected documents to be present. Omit the argument to remove all documents."); this._index = new c, this._documentCount = 0, this._documentIds = new Map, this._idToShortId = new Map, this._fieldLength = new Map, this._avgFieldLength = [], this._storedFields = new Map, this._nextId = 0 } } discard(t) { const e = this._idToShortId.get(t); if (null == e) throw new Error(`MiniSearch: cannot discard document with ID ${t}: it is not in the index`); this._idToShortId.delete(t), this._documentIds.delete(e), this._storedFields.delete(e), (this._fieldLength.get(e) || []).forEach(((t, s) => { this.removeFieldLength(e, s, this._documentCount, t) })), this._fieldLength.delete(e), this._documentCount -= 1, this._dirtCount += 1, this.maybeAutoVacuum() } maybeAutoVacuum() { if (!1 === this._options.autoVacuum) return; const { minDirtFactor: t, minDirtCount: e, batchSize: s, batchWait: i } = this._options.autoVacuum; this.conditionalVacuum({ batchSize: s, batchWait: i }, { minDirtCount: e, minDirtFactor: t }) } discardAll(t) { const e = this._options.autoVacuum; try { this._options.autoVacuum = !1; for (let e of t) this.discard(e) } finally { this._options.autoVacuum = e } this.maybeAutoVacuum() } replace(t) { const { idField: e, extractField: s } = this._options, i = s(t, e); this.discard(i), this.add(t) } vacuum(t = {}) { return this.conditionalVacuum(t) } conditionalVacuum(t, e) { return this._currentVacuum ? (this._enqueuedVacuumConditions = this._enqueuedVacuumConditions && e, null != this._enqueuedVacuum || (this._enqueuedVacuum = this._currentVacuum.then((() => { const e = this._enqueuedVacuumConditions; return this._enqueuedVacuumConditions = I, this.performVacuuming(t, e) }))), this._enqueuedVacuum) : !1 === this.vacuumConditionsMet(e) ? Promise.resolve() : (this._currentVacuum = this.performVacuuming(t), this._currentVacuum) } performVacuuming(e, s) { return t(this, void 0, void 0, (function* () { const t = this._dirtCount; if (this.vacuumConditionsMet(s)) { const s = e.batchSize || S.batchSize, i = e.batchWait || S.batchWait; let n = 1; for (let [t, e] of this._index) { for (let [t, s] of e) for (let [i] of s) this._documentIds.has(i) || (s.size <= 1 ? e.delete(t) : s.delete(i)); 0 === this._index.get(t).size && this._index.delete(t), n % s == 0 && (yield new Promise((t => setTimeout(t, i)))), n += 1 } this._dirtCount -= t } (yield null), this._currentVacuum = this._enqueuedVacuum, this._enqueuedVacuum = null })) } vacuumConditionsMet(t) { if (null == t) return !0; let { minDirtCount: e, minDirtFactor: s } = t; return e = e || O.minDirtCount, s = s || O.minDirtFactor, this.dirtCount >= e && this.dirtFactor >= s } get isVacuuming() { return null != this._currentVacuum } get dirtCount() { return this._dirtCount } get dirtFactor() { return this._dirtCount / (1 + this._documentCount + this._dirtCount) } has(t) { return this._idToShortId.has(t) } getStoredFields(t) { const e = this._idToShortId.get(t); if (null != e) return this._storedFields.get(e) } search(t, e = {}) { const s = this.executeQuery(t, e), i = []; for (let [t, { score: n, terms: o, match: r }] of s) { const s = o.length || 1, c = { id: this._documentIds.get(t), score: n * s, terms: Object.keys(r), queryTerms: o, match: r }; Object.assign(c, this._storedFields.get(t)), (null == e.filter || e.filter(c)) && i.push(c) } return t === _.wildcard && null == e.boostDocument && null == this._options.searchOptions.boostDocument || i.sort(k), i } autoSuggest(t, e = {}) { e = Object.assign(Object.assign({}, this._options.autoSuggestOptions), e); const s = new Map; for (let { score: i, terms: n } of this.search(t, e)) { const t = n.join(" "), e = s.get(t); null != e ? (e.score += i, e.count += 1) : s.set(t, { score: i, terms: n, count: 1 }) } const i = []; for (let [t, { score: e, terms: n, count: o }] of s) i.push({ suggestion: t, terms: n, score: e / o }); return i.sort(k), i } get documentCount() { return this._documentCount } get termCount() { return this._index.size } static loadJSON(t, e) { if (null == e) throw new Error("MiniSearch: loadJSON should be given the same options used when serializing the index"); return this.loadJS(JSON.parse(t), e) } static loadJSONAsync(e, s) { return t(this, void 0, void 0, (function* () { if (null == s) throw new Error("MiniSearch: loadJSON should be given the same options used when serializing the index"); return this.loadJSAsync(JSON.parse(e), s) })) } static getDefault(t) { if (v.hasOwnProperty(t)) return p(v, t); throw new Error(`MiniSearch: unknown option "${t}"`) } static loadJS(t, e) { const { index: s, documentIds: i, fieldLength: n, storedFields: o, serializationVersion: r } = t, c = this.instantiateMiniSearch(t, e); c._documentIds = j(i), c._fieldLength = j(n), c._storedFields = j(o); for (let [t, e] of c._documentIds) c._idToShortId.set(e, t); for (let [t, e] of s) { const s = new Map; for (let t of Object.keys(e)) { let i = e[t]; 1 === r && (i = i.ds), s.set(parseInt(t, 10), j(i)) } c._index.set(t, s) } return c } static loadJSAsync(e, s) { return t(this, void 0, void 0, (function* () { const { index: t, documentIds: i, fieldLength: n, storedFields: o, serializationVersion: r } = e, c = this.instantiateMiniSearch(e, s); c._documentIds = yield V(i), c._fieldLength = yield V(n), c._storedFields = yield V(o); for (let [t, e] of c._documentIds) c._idToShortId.set(e, t); let u = 0; for (let [e, s] of t) { const t = new Map; for (let e of Object.keys(s)) { let i = s[e]; 1 === r && (i = i.ds), t.set(parseInt(e, 10), yield V(i)) } ++u % 1e3 == 0 && (yield T(0)), c._index.set(e, t) } return c })) } static instantiateMiniSearch(t, e) { const { documentCount: s, nextId: i, fieldIds: n, averageFieldLength: o, dirtCount: r, serializationVersion: u } = t; if (1 !== u && 2 !== u) throw new Error("MiniSearch: cannot deserialize an index created with an incompatible version"); const h = new _(e); return h._documentCount = s, h._nextId = i, h._idToShortId = new Map, h._fieldIds = n, h._avgFieldLength = o, h._dirtCount = r || 0, h._index = new c, h } executeQuery(t, e = {}) { if (t === _.wildcard) return this.executeWildcardQuery(e); if ("string" != typeof t) { const s = Object.assign(Object.assign(Object.assign({}, e), t), { queries: void 0 }), i = t.queries.map((t => this.executeQuery(t, s))); return this.combineResults(i, s.combineWith) } const { tokenize: s, processTerm: i, searchOptions: n } = this._options, o = Object.assign(Object.assign({ tokenize: s, processTerm: i }, n), e), { tokenize: r, processTerm: c } = o, u = r(t).flatMap((t => c(t))).filter((t => !!t)).map(b(o)).map((t => this.executeQuerySpec(t, o))); return this.combineResults(u, o.combineWith) } executeQuerySpec(t, e) { const s = Object.assign(Object.assign({}, this._options.searchOptions), e), i = (s.fields || this._options.fields).reduce(((t, e) => Object.assign(Object.assign({}, t), { [e]: p(s.boost, e) || 1 })), {}), { boostDocument: n, weights: o, maxFuzzy: r, bm25: c } = s, { fuzzy: u, prefix: h } = Object.assign(Object.assign({}, x.weights), o), d = this._index.get(t.term), a = this.termResults(t.term, t.term, 1, t.termBoost, d, i, n, c); let l, f; if (t.prefix && (l = this._index.atPrefix(t.term)), t.fuzzy) { const e = !0 === t.fuzzy ? .2 : t.fuzzy, s = e < 1 ? Math.min(r, Math.round(t.term.length * e)) : e; s && (f = this._index.fuzzyGet(t.term, s)) } if (l) for (let [e, s] of l) { const o = e.length - t.term.length; if (!o) continue; null == f || f.delete(e); const r = h * e.length / (e.length + .3 * o); this.termResults(t.term, e, r, t.termBoost, s, i, n, c, a) } if (f) for (let e of f.keys()) { const [s, o] = f.get(e); if (!o) continue; const r = u * e.length / (e.length + o); this.termResults(t.term, e, r, t.termBoost, s, i, n, c, a) } return a } executeWildcardQuery(t) { const e = new Map, s = Object.assign(Object.assign({}, this._options.searchOptions), t); for (let [t, i] of this._documentIds) { const n = s.boostDocument ? s.boostDocument(i, "", this._storedFields.get(t)) : 1; e.set(t, { score: n, terms: [], match: {} }) } return e } combineResults(t, e = g) { if (0 === t.length) return new Map; const s = e.toLowerCase(), i = y[s]; if (!i) throw new Error(`Invalid combination operator: ${e}`); return t.reduce(i) || new Map } toJSON() { const t = []; for (let [e, s] of this._index) { const i = {}; for (let [t, e] of s) i[t] = Object.fromEntries(e); t.push([e, i]) } return { documentCount: this._documentCount, nextId: this._nextId, documentIds: Object.fromEntries(this._documentIds), fieldIds: this._fieldIds, fieldLength: Object.fromEntries(this._fieldLength), averageFieldLength: this._avgFieldLength, storedFields: Object.fromEntries(this._storedFields), dirtCount: this._dirtCount, index: t, serializationVersion: 2 } } termResults(t, e, s, i, n, o, r, c, u = new Map) { if (null == n) return u; for (let h of Object.keys(o)) { const d = o[h], a = this._fieldIds[h], l = n.get(a); if (null == l) continue; let f = l.size; const m = this._avgFieldLength[a]; for (let n of l.keys()) { if (!this._documentIds.has(n)) { this.removeTerm(a, n, e), f -= 1; continue } const o = r ? r(this._documentIds.get(n), e, this._storedFields.get(n)) : 1; if (!o) continue; const g = l.get(n), _ = this._fieldLength.get(n)[a], y = s * i * d * o * w(g, f, this._documentCount, _, m, c), b = u.get(n); if (b) { b.score += y, F(b.terms, t); const s = p(b.match, e); s ? s.push(h) : b.match[e] = [h] } else u.set(n, { score: y, terms: [t], match: { [e]: [h] } }) } } return u } addTerm(t, e, s) { const i = this._index.fetch(s, C); let n = i.get(t); if (null == n) n = new Map, n.set(e, 1), i.set(t, n); else { const t = n.get(e); n.set(e, (t || 0) + 1) } } removeTerm(t, e, s) { if (!this._index.has(s)) return void this.warnDocumentChanged(e, t, s); const i = this._index.fetch(s, C), n = i.get(t); null == n || null == n.get(e) ? this.warnDocumentChanged(e, t, s) : n.get(e) <= 1 ? n.size <= 1 ? i.delete(t) : n.delete(e) : n.set(e, n.get(e) - 1), 0 === this._index.get(s).size && this._index.delete(s) } warnDocumentChanged(t, e, s) { for (let i of Object.keys(this._fieldIds)) if (this._fieldIds[i] === e) return void this._options.logger("warn", `MiniSearch: document with ID ${this._documentIds.get(t)} has changed before removal: term "${s}" was not present in field "${i}". Removing a document after it has changed can corrupt the index!`, "version_conflict") } addDocumentId(t) { const e = this._nextId; return this._idToShortId.set(t, e), this._documentIds.set(e, t), this._documentCount += 1, this._nextId += 1, e } addFields(t) { for (let e = 0; e < t.length; e++)this._fieldIds[t[e]] = e } addFieldLength(t, e, s, i) { let n = this._fieldLength.get(t); null == n && this._fieldLength.set(t, n = []), n[e] = i; const o = (this._avgFieldLength[e] || 0) * s + i; this._avgFieldLength[e] = o / (s + 1) } removeFieldLength(t, e, s, i) { if (1 === s) return void (this._avgFieldLength[e] = 0); const n = this._avgFieldLength[e] * s - i; this._avgFieldLength[e] = n / (s - 1) } saveStoredFields(t, e) { const { storeFields: s, extractField: i } = this._options; if (null == s || 0 === s.length) return; let n = this._storedFields.get(t); null == n && this._storedFields.set(t, n = {}); for (let t of s) { const s = i(e, t); void 0 !== s && (n[t] = s) } } } _.wildcard = Symbol("*"); const p = (t, e) => Object.prototype.hasOwnProperty.call(t, e) ? t[e] : void 0, y = { [g]: (t, e) => { for (let s of e.keys()) { const i = t.get(s); if (null == i) t.set(s, e.get(s)); else { const { score: t, terms: n, match: o } = e.get(s); i.score = i.score + t, i.match = Object.assign(i.match, o), M(i.terms, n) } } return t }, and: (t, e) => { const s = new Map; for (let i of e.keys()) { const n = t.get(i); if (null == n) continue; const { score: o, terms: r, match: c } = e.get(i); M(n.terms, r), s.set(i, { score: n.score + o, terms: n.terms, match: Object.assign(n.match, c) }) } return s }, and_not: (t, e) => { for (let s of e.keys()) t.delete(s); return t } }, w = (t, e, s, i, n, o) => { const { k: r, b: c, d: u } = o; return Math.log(1 + (s - e + .5) / (e + .5)) * (u + t * (r + 1) / (t + r * (1 - c + c * i / n))) }, b = t => (e, s, i) => ({ term: e, fuzzy: "function" == typeof t.fuzzy ? t.fuzzy(e, s, i) : t.fuzzy || !1, prefix: "function" == typeof t.prefix ? t.prefix(e, s, i) : !0 === t.prefix, termBoost: "function" == typeof t.boostTerm ? t.boostTerm(e, s, i) : 1 }), v = { idField: "id", extractField: (t, e) => t[e], tokenize: t => t.split(L), processTerm: t => t.toLowerCase(), fields: void 0, searchOptions: void 0, storeFields: [], logger: (t, e) => { "function" == typeof (null === console || void 0 === console ? void 0 : console[t]) && console[t](e) }, autoVacuum: !0 }, x = { combineWith: g, prefix: !1, fuzzy: !1, maxFuzzy: 6, boost: {}, weights: { fuzzy: .45, prefix: .375 }, bm25: { k: 1.2, b: .7, d: .5 } }, z = { combineWith: "and", prefix: (t, e, s) => e === s.length - 1 }, S = { batchSize: 1e3, batchWait: 10 }, I = { minDirtFactor: .1, minDirtCount: 20 }, O = Object.assign(Object.assign({}, S), I), F = (t, e) => { t.includes(e) || t.push(e) }, M = (t, e) => { for (let s of e) t.includes(s) || t.push(s) }, k = ({ score: t }, { score: e }) => e - t, C = () => new Map, j = t => { const e = new Map; for (let s of Object.keys(t)) e.set(parseInt(s, 10), t[s]); return e }, V = e => t(void 0, void 0, void 0, (function* () { const t = new Map; let s = 0; for (let i of Object.keys(e)) t.set(parseInt(i, 10), e[i]), ++s % 1e3 == 0 && (yield T(0)); return t })), T = t => new Promise((e => setTimeout(e, t))), L = /[\n\r\s!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]+/; return _ }));
 	</script>
 
-	<script>
+	<script id="constants">
 	// Define all constants used in Lite
 	// base64 js image resources
 	const rootStyles = getComputedStyle(document.documentElement);
@@ -3018,6 +3033,7 @@ Current version indicated by LITEVER below.
 
 	const default_oai_image_endpoint = "/images/generations";
 	const default_oai_tts_endpoint = "/audio/speech";
+	const default_oai_embeddings_endpoint = "/embeddings";
 	const default_dalle_model_name = "dall-e-3";
 
 	const claude_submit_endpoint = "/complete";
@@ -3036,8 +3052,8 @@ Current version indicated by LITEVER below.
 	const default_cohere_base = "https://api.cohere.ai/v1/chat";
 
 	const a1111_models_endpoint = "/sdapi/v1/sd-models";
-    const a1111_options_endpoint = "/sdapi/v1/options";
-    const a1111_txt2img_endpoint = "/sdapi/v1/txt2img";
+	const a1111_options_endpoint = "/sdapi/v1/options";
+	const a1111_txt2img_endpoint = "/sdapi/v1/txt2img";
 	const a1111_img2img_endpoint = "/sdapi/v1/img2img";
 	const a1111_interrogate_endpoint = "/sdapi/v1/interrogate";
 
@@ -3045,6 +3061,7 @@ Current version indicated by LITEVER below.
 	const comfy_generate_endpoint = "/prompt";
 	const comfy_history_endpoint = "/history";
 	const comfy_results_endpoint = "/view?filename=";
+	const comfy_upload_endpoint = "/api/upload/image";
 
 	const xtts_gen_endpoint = "/tts_to_audio/";
 	const xtts_voices_endpoint = "/speakers_list";
@@ -3085,6 +3102,7 @@ Current version indicated by LITEVER below.
 	const HD_RES_PX = 768;
 	const VHD_RES_PX = 960;
 	const NO_HD_RES_PX = 512;
+	const PREVIEW_RES_PX = 200;
 	const AVATAR_PX = 384;
 	const SAVE_SLOTS = 10;
 	const num_regex_rows = 4;
@@ -3121,13 +3139,12 @@ Current version indicated by LITEVER below.
 	var current_wi = []; //each item stores a wi object.
 	var wi_insertlocation = 0; //after memory
 	var wi_searchdepth = 0; //search everything
-	var documentdb_enabled = false;
+	var documentdb_provider = 0; //0 = disables, 1 = textdb, 2 = kcpp, 3 = openai embeddings
 	var documentdb_searchhistory = false;
 	var documentdb_numresults = 3;
 	var documentdb_searchrange = 300;
 	var documentdb_chunksize = 800;
 	var documentdb_data = "";
-	var documentdb_useembeddings = false
 	var generateimagesinterval = 750; //if generated images is enabled, it will trigger after every 700 new characters in context.
 	var nextgeneratedimagemilestone = generateimagesinterval; //used to keep track of when to generate the next image
 	var image_db = {}; //stores a dictionary of pending images
@@ -3231,6 +3248,8 @@ Current version indicated by LITEVER below.
 		saved_dalle_model: default_dalle_model_name,
 		saved_oai_tts_key: "",
 		saved_oai_tts_url: (default_oai_base + "/v1" + default_oai_tts_endpoint),
+		saved_oai_embd_key: "",
+		saved_oai_embd_url: (default_oai_base + "/v1" + default_oai_embeddings_endpoint),
 		saved_openrouter_key: "",
 		saved_mistralai_key: "",
 		saved_featherless_key: "",
@@ -3308,7 +3327,7 @@ Current version indicated by LITEVER below.
 		img_gen_from_instruct: true,
 		img_autogen_type: 0, //0 is off, 1 is on, 2 is smart
 		img_allownsfw: true,
-		img_cfgscale: 7,
+		img_cfgscale: 6,
 		img_allowhd: true,
 		img_crop: false,
 		img_newturn: false,
@@ -3367,6 +3386,7 @@ Current version indicated by LITEVER below.
 		websearch_multipass: false,
 		websearch_retain: false,
 		websearch_template: "",
+		wordsearch_enabled: false,
 
 		max_context_length: (localflag?4096:2048),
 		max_length: (localflag?512:256),
@@ -3577,7 +3597,7 @@ Current version indicated by LITEVER below.
 
 	</script>
 
-	<script>
+	<script id="main">
 	// Utility helper functions for data processing
 	function buf_to_b64(buffer) { //converts a buffer to base64 string
 		var binary = '';
@@ -4690,12 +4710,12 @@ Current version indicated by LITEVER below.
 		}
 
 		const request = indexedDB.open(STORAGE_PREFIX, 1);
-        request.onsuccess = (event) => {
+		request.onsuccess = (event) => {
 			const db = event.target.result;
 			const transaction = db.transaction(STORAGE_PREFIX, "readonly");
 			const store = transaction.objectStore(STORAGE_PREFIX);
-            const getRequest = store.get(objkey);
-            getRequest.onsuccess = () => {
+			const getRequest = store.get(objkey);
+			getRequest.onsuccess = () => {
 				let res = getRequest.result;
 				if(res){
 					resolve(res.value); //since it was json previously, return it
@@ -4703,12 +4723,12 @@ Current version indicated by LITEVER below.
 					resolve(defaultvalue);
 				}
 			}
-            getRequest.onerror = () =>
+			getRequest.onerror = () =>
 			{
 				console.log(getRequest.error);
 				fallbackResolveLoad();
 			}
-        };
+		};
 
 		request.onupgradeneeded = function(event)
 		{
@@ -4724,12 +4744,12 @@ Current version indicated by LITEVER below.
 			}
 		}
 
-      	request.onerror = function(event)
+		request.onerror = function(event)
 		{
 			console.error(`Unable to initialize IndexedDB Database! Fallback to localstorage.`);
 			fallbackResolveLoad();
 		}
-    	});
+		});
 	}
 	function readTavernPngFromBlob(blob, onDone) // File loading and import functionality
 	{
@@ -4962,7 +4982,7 @@ Current version indicated by LITEVER below.
 				}
 				var plainfile = unzip.decompress(correctfile);
 				const decoder = new TextDecoder('utf-8');
-            	const readtxt = decoder.decode(plainfile);
+				const readtxt = decoder.decode(plainfile);
 				var decoded = JSON.parse(readtxt);
 				console.log(decoded);
 				return decoded;
@@ -4972,7 +4992,7 @@ Current version indicated by LITEVER below.
 			}
 		}
 		return null;
-    };
+	};
 
 	function extractRisuData(arr) {
 		function strToBytes(str) {
@@ -5761,7 +5781,7 @@ Current version indicated by LITEVER below.
 	}
 
 	function playbeep() {
-    	var sound = new Audio("data:audio/wav;base64,UklGRkwBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YScBAAB8gIN8fICAgIB8gHmAjXVkhptyXYqbcmiKjXKAim5ymIpWcqmKU3Klhl18kXl5jXlkjZ5oVpelZFaUm2trioN1ioZkeaKDU3msgFN8nnxog4Nyg5FrZJubXWGem2FnlIpufIZyfJR8XYOleVaDonlhg5F1eYZ5dZGNYXWbimhrm4Nrg3KDjWt/hm6UkUmDvV1TrINdkXxol4Boinx1nmtWr5RChqVheZdkeZtucop1io1WgLNhWql/XZd/YZSNZH+GeY1yZKKNUIaeZHmYZ3WbeWuGg4B/a4Oba2uXgGuNf2iKjWt5ioB/eXWNg2t/jXJ8inJ5kXxug4N8fHl/hnl1hnx5hn91g4Z1fIN8fHx8f4B5gIB8gH98fIN8fH+AfHx8fH98fIB/AA==");
+		var sound = new Audio("data:audio/wav;base64,UklGRkwBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YScBAAB8gIN8fICAgIB8gHmAjXVkhptyXYqbcmiKjXKAim5ymIpWcqmKU3Klhl18kXl5jXlkjZ5oVpelZFaUm2trioN1ioZkeaKDU3msgFN8nnxog4Nyg5FrZJubXWGem2FnlIpufIZyfJR8XYOleVaDonlhg5F1eYZ5dZGNYXWbimhrm4Nrg3KDjWt/hm6UkUmDvV1TrINdkXxol4Boinx1nmtWr5RChqVheZdkeZtucop1io1WgLNhWql/XZd/YZSNZH+GeY1yZKKNUIaeZHmYZ3WbeWuGg4B/a4Oba2uXgGuNf2iKjWt5ioB/eXWNg2t/jXJ8inJ5kXxug4N8fHl/hnl1hnx5hn91g4Z1fIN8fHx8f4B5gIB8gH98fIN8fH+AfHx8fH98fIB/AA==");
 		sound.play();
 		console.log("beep sound");
 	}
@@ -5844,7 +5864,7 @@ Current version indicated by LITEVER below.
 			if (innercode.startsWith(matcher)) {
 				innercode = innercode.substring(matcher.length);
 				break;
-			 }
+			}
 		}
 		copyToClipboard(innercode);
 	}
@@ -6311,7 +6331,7 @@ Current version indicated by LITEVER below.
 
 
 	function connect_to_a1111(silent=false)
-    {
+	{
 		console.log("Attempt A1111 Connection...");
 		//establish initial connection to a1111 api
 		fetch(localsettings.saved_a1111_url + a1111_models_endpoint)
@@ -6371,7 +6391,7 @@ Current version indicated by LITEVER below.
 
 
 	function connect_to_comfyui(silent=false)
-    {
+	{
 		console.log("Attempt ComfyUI Connection...");
 		//establish initial connection to a1111 api
 		fetch(localsettings.saved_comfy_url + comfy_models_endpoint)
@@ -6400,11 +6420,37 @@ Current version indicated by LITEVER below.
 		});
 	}
 
+	function uploadBase64ImgToComfy(base64Data,filename) {
+		if (base64Data==null || base64Data == '') {
+			return Promise.resolve(); //return instantly
+		}
+		let upload_endpoint = localsettings.saved_comfy_url + comfy_upload_endpoint;
+		const binary = atob(base64Data);
+		const bytes = new Uint8Array(binary.length);
+		for (let i = 0; i < binary.length; i++) {
+			bytes[i] = binary.charCodeAt(i);
+		}
+		const blob = new Blob([bytes], { type: 'image/jpeg' });
+		const formData = new FormData();
+		formData.append('image', blob, filename);
+		formData.append('overwrite',1);
+		return fetch(`${upload_endpoint}`, {
+			method: 'POST',
+			body: formData,
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error(`Upload failed with status ${response.status}`);
+			}
+			return response;
+		});
+	}
+
 	function generate_comfy_image(req_payload, autoappend)
 	{
 		let splits = req_payload.prompt.split("###");
 		let prompt = splits[0].trim();
 		let negprompt = (splits.length > 1 ? splits[1] : "");
+		let comfyimg2imgname = 'kcpp_img2img.jpg';
 
 		let genimg_payload = {
 			"prompt": {
@@ -6468,6 +6514,25 @@ Current version indicated by LITEVER below.
 			}
 		};
 
+		if(req_payload["source_image"]) //override with img2img nodes
+		{
+			genimg_payload["prompt"]["5"] = {
+				"class_type": "LoadImage",
+				"inputs": {
+					"image": comfyimg2imgname
+				}
+			};
+			genimg_payload["prompt"]["10"] = {
+				"class_type": "VAEEncode",
+				"inputs": {
+					"pixels": ["5", 0],
+					"vae": ["4", 2]
+				}
+			};
+			genimg_payload["prompt"]["3"]["inputs"]["latent_image"] = ["10", 0];
+			genimg_payload["prompt"]["3"]["inputs"]["denoise"] = req_payload["params"]["denoising_strength"];
+		}
+
 		let gen_endpoint = localsettings.saved_comfy_url + comfy_generate_endpoint;
 		console.log(genimg_payload);
 		let imgid = "Comfyimg"+(Math.floor(10000 + Math.random() * 90000)).toString();
@@ -6491,6 +6556,7 @@ Current version indicated by LITEVER below.
 		image_db[imgid].imsource = 0; //0=generated,1=uploaded
 		image_db[imgid].imrefid = "";
 
+		uploadBase64ImgToComfy(req_payload["source_image"],comfyimg2imgname).then(() => {
 		fetch(gen_endpoint, {
 			method: 'POST',
 			headers: {
@@ -6511,6 +6577,10 @@ Current version indicated by LITEVER below.
 		}).catch((error) => {
 			console.log("Generation Error: " + error);
 			msgbox("Image Generation Failed!\n\nPlease make sure ComfyUI is running at "+localsettings.saved_comfy_url+" and properly configured!\n\nIt must be launched with the flag --listen --enable-cors-header '*' to enable API access\n");
+		});
+		}).catch((error) => {
+			console.log("Upload Img2Img Error: " + error);
+			msgbox("Image Upload Failed!\n\nPlease make sure ComfyUI is running at "+localsettings.saved_comfy_url+" and properly configured!\n\nIt must be launched with the flag --listen --enable-cors-header '*' to enable API access\n");
 		});
 		return imgid;
 	}
@@ -6775,6 +6845,29 @@ Current version indicated by LITEVER below.
 				localsettings.saved_oai_tts_url = userinput.trim();
 			}else{
 				localsettings.saved_oai_tts_url = (default_oai_base + "/v1" + default_oai_tts_endpoint);
+			}
+		},false);
+	}
+
+	function set_oai_embd_key()
+	{
+		inputBox("Enter OpenAI Compatible Embeddings API Key","OpenAI Compatible Embeddings API Key",localsettings.saved_oai_embd_key,"Input OpenAI Compatible Embeddings API Key", ()=>{
+			let userinput = getInputBoxValue();
+			userinput = userinput.trim();
+			if (userinput != null && userinput!="") {
+				localsettings.saved_oai_embd_key = userinput.trim();
+			}
+		},false,false,true);
+	}
+	function set_oai_embd_url()
+	{
+		inputBox("Enter OpenAI Compatible TTS API URL","OpenAI Compatible Embeddings API URL",localsettings.saved_oai_embd_url,"Input OpenAI Compatible Embeddings API URL", ()=>{
+			let userinput = getInputBoxValue();
+			userinput = userinput.trim();
+			if (userinput != null && userinput!="") {
+				localsettings.saved_oai_embd_url = userinput.trim();
+			}else{
+				localsettings.saved_oai_embd_url = (default_oai_base + "/v1" + default_oai_embeddings_endpoint);
 			}
 		},false);
 	}
@@ -7288,13 +7381,12 @@ Current version indicated by LITEVER below.
 		new_save_storyobj.wisearchdepth = wi_searchdepth;
 		new_save_storyobj.wiinsertlocation = wi_insertlocation;
 		new_save_storyobj.personal_notes = personal_notes;
-		new_save_storyobj.documentdb_enabled = documentdb_enabled;
+		new_save_storyobj.documentdb_provider = documentdb_provider;
 		new_save_storyobj.documentdb_searchhistory = documentdb_searchhistory;
 		new_save_storyobj.documentdb_numresults = documentdb_numresults;
 		new_save_storyobj.documentdb_searchrange = documentdb_searchrange;
 		new_save_storyobj.documentdb_chunksize = documentdb_chunksize;
 		new_save_storyobj.documentdb_data = documentdb_data;
-		new_save_storyobj.documentdb_useembeddings = documentdb_useembeddings;
 
 		if (export_settings) {
 			new_save_storyobj.savedsettings = JSON.parse(JSON.stringify(localsettings));
@@ -7374,7 +7466,7 @@ Current version indicated by LITEVER below.
 					//check for tavernai fields
 					let has_tav_wi_check = has_tavern_wi_check(new_loaded_storyobj);
 					if (!new_loaded_storyobj.scenarioVersion && (new_loaded_storyobj.name != null || new_loaded_storyobj.description != null ||
-						new_loaded_storyobj.personality != null || new_loaded_storyobj.spec=="chara_card_v2" || has_tav_wi_check)) {
+						new_loaded_storyobj.personality != null || (new_loaded_storyobj.spec=="chara_card_v2" || new_loaded_storyobj.spec=="chara_card_v3") || has_tav_wi_check)) {
 						load_tavern_obj(new_loaded_storyobj);
 					}
 					else if (new_loaded_storyobj.char_name != null || new_loaded_storyobj.char_persona != null) {
@@ -7580,9 +7672,9 @@ Current version indicated by LITEVER below.
 				if (storyobj.personal_notes) {
 					personal_notes = storyobj.personal_notes;
 				}
-				if(storyobj.documentdb_enabled)
+				if(storyobj.documentdb_provider)
 				{
-					documentdb_enabled = storyobj.documentdb_enabled;
+					documentdb_provider = storyobj.documentdb_provider;
 				}
 				if(storyobj.documentdb_searchhistory)
 				{
@@ -7604,11 +7696,6 @@ Current version indicated by LITEVER below.
 				{
 					documentdb_data = storyobj.documentdb_data;
 				}
-				if(storyobj.documentdb_useembeddings)
-				{
-					documentdb_useembeddings = storyobj.documentdb_useembeddings;
-				}
-
 
 				// adapting legacy fields - these are all now moved to SETTINGS
 				if (storyobj.extrastopseq) {
@@ -7726,6 +7813,8 @@ Current version indicated by LITEVER below.
 					let tmp_oai4 = localsettings.saved_dalle_url;
 					let tmp_oai5 = localsettings.saved_oai_tts_key;
 					let tmp_oai6 = localsettings.saved_oai_tts_url;
+					let tmp_oai7 = localsettings.saved_oai_embd_key;
+					let tmp_oai8 = localsettings.saved_oai_embd_url;
 					let tmp_or1 = localsettings.saved_openrouter_key;
 					let tmp_mai = localsettings.saved_mistralai_key;
 					let tmp_fai = localsettings.saved_featherless_key;
@@ -7782,6 +7871,8 @@ Current version indicated by LITEVER below.
 					localsettings.saved_dalle_url = tmp_oai4;
 					localsettings.saved_oai_tts_key = tmp_oai5;
 					localsettings.saved_oai_tts_url = tmp_oai6;
+					localsettings.saved_oai_embd_key = tmp_oai7;
+					localsettings.saved_oai_embd_url = tmp_oai8;
 					localsettings.saved_openrouter_key = tmp_or1;
 					localsettings.saved_mistralai_key = tmp_mai;
 					localsettings.saved_featherless_key = tmp_fai;
@@ -8268,7 +8359,7 @@ Current version indicated by LITEVER below.
 		if(obj!=null)
 		{
 			//a lightweight tavern card loader, not fully compliant
-			if(obj.spec=="chara_card_v2" && obj.data!=null)
+			if((obj.spec=="chara_card_v2"||obj.spec=="chara_card_v3") && obj.data!=null)
 			{
 				obj = obj.data;
 			}
@@ -8425,7 +8516,7 @@ Current version indicated by LITEVER below.
 	{
 		hide_popups();
 		document.getElementById("charcreator_name").value = document.getElementById("charcreator_persona").value = document.getElementById("charcreator_scenario").value = document.getElementById("charcreator_greeting").value = "";
-        document.getElementById("usecharactertemplate").checked = false;
+		document.getElementById("usecharactertemplate").checked = false;
 		document.getElementById("charactercreator").classList.remove("hidden");
 		tempAestheticInstructUISettings = deepCopyAestheticSettings(aestheticInstructUISettings);
 		character_creator_updateimg();
@@ -8508,9 +8599,9 @@ Current version indicated by LITEVER below.
 		tempAestheticInstructUISettings = null;
 		hide_popups();
 		if (confirm && usingtemplate)
-        {
-            btn_memory();
-        }
+		{
+			btn_memory();
+		}
 	}
 
 	function click_scenario(idx)
@@ -8812,11 +8903,11 @@ Current version indicated by LITEVER below.
 		},
 		// Chub.ai
 		{
-			name: "characterhub.org / chub.ai",
+			name: "chub.ai / characterhub.org",
 			urlParam: "chub",
 			inputBox: {
-				text: "Enter characterhub.org or chub.ai prompt URL",
-				placeholder: "https://characterhub.org/characters/Anonymous/example-character"
+				text: "Enter chub.ai or characterhub.org card URL",
+				placeholder: "https://chub.ai/characters/Anonymous/example-character"
 			},
 			extraction: (userInput) => {
 				if (userInput.match(/chub\.ai\//i)) {
@@ -8968,10 +9059,10 @@ Current version indicated by LITEVER below.
 		},
 		// aicharactercards.com
 		{
-			name: "AICC / character-tavern.com",
+			name: "aicharactercards.com / character-tavern.com",
 			urlParam: "aicc",
 			inputBox: {
-				text: "Enter aicharactercards.com or character-tavern.com prompt URL",
+				text: "Enter aicharactercards.com or character-tavern.com card URL",
 				placeholder: "https://aicharactercards.com/character-cards/work-jobs/deffcolony/lara-lightland",
 			},
 			extraction: (userInput) => {
@@ -8991,7 +9082,7 @@ Current version indicated by LITEVER below.
 					}
 					return userInput;
 				}
-				 else {
+				else {
 					userInput = userInput.split("#")[0].split("?")[0];
 					userInput = userInput.endsWith('/') ? userInput.slice(0, -1) : userInput;
 					if (userInput.match(/aicharactercards\.com\//i) || userInput.match(/AICC\//i)) {
@@ -9003,6 +9094,91 @@ Current version indicated by LITEVER below.
 						}
 					}
 					return "https://aicharactercards.com/wp-json/pngapi/v1/image/"+userInput;
+				}
+			},
+			fetch: (userInput) => {
+				temp_scenario = {
+					"title":"",
+					"desc": "",
+					"opmode":3,
+					"chatopponent": "",
+					"gui_type":1,
+					"prompt":"",
+					"memory": "",
+					"authorsnote": "",
+					"worldinfo": [],
+				};
+
+				finalurl = apply_proxy_url(userInput,true);
+				//try to obtain the full portrait image
+				return fetch(finalurl, {
+					method: 'GET',
+					redirect: 'follow',
+					referrerPolicy: 'no-referrer',
+					})
+					.then(rb => {
+						if(rb.ok)
+						{
+							return rb.blob();
+						}else{
+							throw new Error('Cannot fetch tavern image');
+						}
+					})
+					.then(blob => {
+						preview_temp_scenario();
+
+						readTavernPngFromBlob(blob,(obj)=>{
+							load_temp_scenario_from_tavernobj(obj);
+						});
+
+						const objectURL = URL.createObjectURL(blob);
+						const compressedImg = compressImage(objectURL, (compressedImageURI, aspectratio)=>{
+							temp_scenario.image = compressedImageURI;
+							temp_scenario.image_aspect = aspectratio;
+							preview_temp_scenario();
+						}, true, AVATAR_PX);
+					})
+					.catch(error => {
+						throw new Error("Selected scenario is invalid.");
+						console.error(error);
+					});
+			}
+		},
+		{
+		name: "char-archive.evulid.cc",
+			urlParam: "carc",
+			inputBox: {
+				text: "Enter char-archive.evulid.cc card URL",
+				placeholder: "https://char-archive.evulid.cc/#/chub/Cyber_Elite/character/Cat",
+			},
+			extraction: (userInput) => {
+				if (userInput.match(/char-archive\.evulid\.cc\/\#\//i))
+				{
+					let parsedInput = userInput.split("?")[0];
+					parsedInput = parsedInput.split("char-archive.evulid.cc/#/")[1];
+					let parts = parsedInput.split("/");
+
+					if (parts.length == 3) {
+						let final = parts[2];
+						final = final.includes("+")?("+"+final.split("+")[1]):final;
+						return `https://char-archive.evulid.cc/api/archive/v1/${parts[0]}/image/character/${final}?definition=true`;
+					}
+					if (parts.length == 2 || parts[0] == 'generic') {
+						let final = parts[1];
+						final = final.includes("+")?(final.split("+")[1]):final;
+						return `https://char-archive.evulid.cc/api/archive/v1/${parts[0]}/image/character/${final}?definition=true`;
+					}
+					if (parts.length !== 4 || parts[2] !== 'character') {
+						//bad format, return original
+						return userInput;
+					}
+					let final = parts[3];
+					final = final.includes("+")?("+"+final.split("+")[1]):final;
+					return `https://char-archive.evulid.cc/api/archive/v1/${parts[0]}/image/character/${parts[1]}/${final}?definition=true`;
+				}
+				else
+				{
+					return userInput;
 				}
 			},
 			fetch: (userInput) => {
@@ -9111,7 +9287,7 @@ Current version indicated by LITEVER below.
 
 		let scenarios = ``;
 		for(let i=0;i<scenario_sources.length;++i) {
-			scenarios += `<button type="button" name="" class="scenarioitem purple btn btn-primary" onclick="import_scenario(scenario_sources[${i}])">Import from<br>${scenario_sources[i].name}</button>`
+			scenarios += `<button type="button" name="" class="scenarioitem purple btn btn-primary" onclick="import_scenario(scenario_sources[${i}])">${scenario_sources[i].name}</button>`
 		}
 
 		scenarios += `<button type="button" name="" class="scenarioitem purple btn btn-primary" onclick="character_creator()">New Character Creator</button>`;
@@ -9134,14 +9310,14 @@ Current version indicated by LITEVER below.
 		let searchstr = document.getElementById("scenariosearch").value.trim().toLowerCase();
 		let sdrop = document.getElementById("scenariosearchdropdown").value;
 		let sgrid_nodes = sgrid.children;
-        for(let i=0; i<sgrid_nodes.length; i++){
-            let schild = sgrid_nodes[i];
+		for(let i=0; i<sgrid_nodes.length; i++){
+			let schild = sgrid_nodes[i];
 			let elem = null;
 			if(schild.name!="")
 			{
 				elem = scenario_db[schild.name];
 			}
-            if(searchstr=="" || schild.innerText.trim().toLowerCase().includes(searchstr))
+			if(searchstr=="" || schild.innerText.trim().toLowerCase().includes(searchstr))
 			{
 				if(sdrop==0 || (elem && sdrop==elem.opmode))
 				{
@@ -9154,7 +9330,7 @@ Current version indicated by LITEVER below.
 			}else{
 				schild.style.display = "none";
 			}
-        }
+		}
 	}
 
 	function show_last_req()
@@ -10931,6 +11107,8 @@ Current version indicated by LITEVER below.
 					localsettings.saved_dalle_url = custom_oai_endpoint + default_oai_image_endpoint;
 					localsettings.saved_oai_tts_key = custom_oai_key;
 					localsettings.saved_oai_tts_url = custom_oai_endpoint + default_oai_tts_endpoint;
+					localsettings.saved_oai_embd_key = custom_oai_key;
+					localsettings.saved_oai_embd_url = custom_oai_endpoint + default_oai_embeddings_endpoint;
 				}
 				else if(epchoice==7)
 				{
@@ -11150,6 +11328,7 @@ Current version indicated by LITEVER below.
 						el.value = values[i];
 						dropdown.appendChild(el);
 					}
+					change_admin_config_selection();
 					document.getElementById("admincontainer").classList.remove("hidden");
 				}
 				else
@@ -11175,6 +11354,36 @@ Current version indicated by LITEVER below.
 		}
 	}
 
+	function change_admin_config_selection()
+	{
+		let targetfile = document.getElementById("adminconfigdropdown").value;
+		if(targetfile && targetfile.endsWith(".gguf"))
+		{
+			let overridedropdown = document.getElementById("adminconfigoverridedropdown");
+			overridedropdown.classList.remove("hidden");
+			var dropdown = document.getElementById("adminconfigdropdown");
+			for (var i = overridedropdown.options.length; i >= 0; i--) {
+				var option = overridedropdown.options[i];
+				overridedropdown.remove(option);
+			}
+			var el = document.createElement("option");
+			el.textContent = "Default Config";
+			el.value = "";
+			overridedropdown.appendChild(el);
+			for(var i=0;i<dropdown.options.length;++i)
+			{
+				let str = dropdown.options[i].value;
+				if(str.endsWith(".gguf") || str=="unload_model")
+				{continue;}
+				var el = document.createElement("option");
+				el.textContent = str;
+				el.value = str;
+				overridedropdown.appendChild(el);
+			}
+		}else{
+			document.getElementById("adminconfigoverridedropdown").classList.add("hidden");
+		}
+	}
 	var adminrebootflag = 0;
 	function trigger_admin_reload()
 	{
@@ -11185,7 +11394,14 @@ Current version indicated by LITEVER below.
 			msgbox("No config file was selected.");
 			return;
 		}
+
 		let header = {'Content-Type': 'application/json'};
+		let payload = {"filename": targetfile};
+		if(!document.getElementById("adminconfigoverridedropdown").classList.contains("hidden"))
+		{
+			payload["overrideconfig"] = document.getElementById("adminconfigoverridedropdown").value;
+		}
+
 		if(last_admin_key!="")
 		{
 			header['Authorization'] = 'Bearer ' + last_admin_key;
@@ -11193,9 +11409,7 @@ Current version indicated by LITEVER below.
 		fetch(custom_kobold_endpoint + koboldcpp_admin_reload_endpoint, {
 			method: 'POST',
 			headers: header,
-			body: JSON.stringify({
-				"filename": targetfile
-			})
+			body: JSON.stringify(payload)
 		})
 		.then(x => x.json())
 		.then(values => {
@@ -11916,15 +12130,15 @@ Current version indicated by LITEVER below.
 		let pickedparent = document.getElementById("pickedmodel");
 		let pickedentries = pickedparent.children;
 		let searchstr = document.getElementById("modelquicksearch").value.trim().toLowerCase();
-        for(let i=0; i<pickedentries.length; i++){
-            let schild = pickedentries[i];
-            if(searchstr=="" || schild.text.trim().toLowerCase().includes(searchstr))
+		for(let i=0; i<pickedentries.length; i++){
+			let schild = pickedentries[i];
+			if(searchstr=="" || schild.text.trim().toLowerCase().includes(searchstr))
 			{
 				schild.style.display = "block";
 			}else{
 				schild.style.display = "none";
 			}
-        }
+		}
 	}
 
 	function confirm_horde_models() {
@@ -12319,6 +12533,7 @@ Current version indicated by LITEVER below.
 
 		document.getElementById("setgrammar").disabled = !is_using_kcpp_with_grammar();
 		document.getElementById("voice_typing_mode").disabled = !is_using_kcpp_with_whisper();
+		document.getElementById("transcribe_file_btn").disabled = !is_using_kcpp_with_whisper();
 		document.getElementById("grammar_retain_state").disabled = document.getElementById("setgrammar").disabled;
 
 		if(custom_kobold_endpoint=="" && custom_oai_key=="" && custom_gemini_key=="")
@@ -12353,6 +12568,7 @@ Current version indicated by LITEVER below.
 		document.getElementById("run_in_background").checked = run_in_background;
 		document.getElementById("auto_ctxlen").checked = localsettings.auto_ctxlen;
 		document.getElementById("auto_genamt").checked = localsettings.auto_genamt;
+		document.getElementById("wordsearch_toggle").checked = localsettings.wordsearch_enabled;
 		if(localflag)
 		{
 			document.getElementById("auto_ctxlen_panel").classList.add("hidden");
@@ -12943,6 +13159,7 @@ Current version indicated by LITEVER below.
 		localsettings.voice_langcode = document.getElementById("voice_langcode").value;
 		localsettings.auto_ctxlen = (document.getElementById("auto_ctxlen").checked ? true : false);
 		localsettings.auto_genamt = (document.getElementById("auto_genamt").checked ? true : false);
+		localsettings.wordsearch_enabled = (document.getElementById("wordsearch_toggle").checked ? true : false);
 
 		localsettings.image_styles = document.getElementById("imagestyleinput").value;
 		localsettings.image_negprompt = document.getElementById("negpromptinput").value;
@@ -13240,9 +13457,20 @@ Current version indicated by LITEVER below.
 	function toggle_uistyle()
 	{
 		//show or hide the 'Customize UI' button based on whether the Aesthetic Instruct UI Mode is active or not.
-		if (document.getElementById('gui_type').value==2) { document.getElementById('btn_aesthetics').classList.remove('hidden'); }
-		else { document.getElementById('btn_aesthetics').classList.add('hidden'); }
+		if (document.getElementById('gui_type').value == 2) {
+			document.getElementById('btn_aesthetics').classList.remove('hidden');
+		}
+		else {
+			document.getElementById('btn_aesthetics').classList.add('hidden');
+		}
 		document.getElementById("guitypedesc").innerText = get_theme_desc(document.getElementById('gui_type').value);
+
+		if (document.getElementById('gui_type').value == 0) {
+			document.getElementById('classicmodeoptions').classList.remove('hidden');
+		}
+		else {
+			document.getElementById('classicmodeoptions').classList.add('hidden');
+		}
 	}
 
 	function select_welcome_ui()
@@ -13345,8 +13573,12 @@ Current version indicated by LITEVER below.
 			document.getElementById('gui_type').value = 0;
 		}
 
-		if (document.getElementById('gui_type').value==2) { document.getElementById('btn_aesthetics').classList.remove('hidden'); }
-		else { document.getElementById('btn_aesthetics').classList.add('hidden'); }
+		if (document.getElementById('gui_type').value == 2) {
+			document.getElementById('btn_aesthetics').classList.remove('hidden');
+		}
+		else {
+			document.getElementById('btn_aesthetics').classList.add('hidden');
+		}
 
 		toggle_uistyle();
 	}
@@ -13418,13 +13650,12 @@ Current version indicated by LITEVER below.
 		current_anotetemplate = document.getElementById("anotetemplate").value;
 		anote_strength = document.getElementById("anote_strength").value;
 		newlineaftermemory = (document.getElementById("newlineaftermemory").checked?true:false);
-		documentdb_enabled = document.getElementById("documentdb_enabled").checked?true:false;
+		documentdb_provider = document.getElementById("documentdb_provider").value;
 		documentdb_searchhistory = document.getElementById("documentdb_searchhistory").checked?true:false;
 		documentdb_numresults = document.getElementById("documentdb_numresults").value;
 		documentdb_searchrange = document.getElementById("documentdb_searchrange").value;
 		documentdb_chunksize = document.getElementById("documentdb_chunksize").value;
 		documentdb_data = document.getElementById("documentdb_data").value;
-		documentdb_useembeddings = document.getElementById("documentdb_useembeddings").checked ? true : false;
 		documentdb_numresults = parseInt(documentdb_numresults);
 		documentdb_numresults = cleannum(documentdb_numresults,1,10);
 		documentdb_searchrange = parseInt(documentdb_searchrange);
@@ -13642,6 +13873,17 @@ Current version indicated by LITEVER below.
 		}
 	}
 
+	function simplecssexample()
+	{
+		let simplemodscript = `/* This custom CSS changes all buttons to yellow */
+		.btn-primary {
+			color: black!important;
+			background-color: yellow!important;
+			border-color: black!important;
+		}
+		`;
+		document.getElementById("inputboxcontainerinputarea").value = simplemodscript;
+	}
 	function simplemodexample()
 	{
 		let simplemodscript = `// This mod changes your top menu to a yellow gradient, then displays the current temperature setting as a popup\n`
@@ -13665,7 +13907,7 @@ Current version indicated by LITEVER below.
 					}
 				}
 			} catch (e) { }
-			let txt = `Here, you can apply third-party mod scripts shared by other users.<br><br><span class='color_red'>Caution: This mod will have full access to your story and API keys, so only run third-party mods that you trust!<br><br>Mods must always be manually applied every time unless 'Apply Mod On Startup' is selected. If a startup mod breaks KoboldAI Lite, add ?resetmod=1 to the url to uninstall it.</span><br><br>Want to start modding? <a href='#' class='color_blueurl' onclick='simplemodexample()'>Click here</a> to load a simple example mod.<br><br><div><span>Apply Mod On Startup? (Extreme Caution!) </span><input type='checkbox' id='apply_mod_on_start' style='vertical-align: top;' ${applyonstart?'checked':''}></div>`;
+			let txt = `Here, you can apply third-party mod scripts shared by other users.<br><br><span class='color_red'>Caution: This mod will have full access to your story and API keys, so only run third-party mods that you trust!<br><br>Mods must always be manually applied every time unless 'Apply Mod On Startup' is selected. If a startup mod breaks KoboldAI Lite, add ?resetmod=1 to the url to uninstall it.</span><br><br>Want to start modding? <a href='#' class='color_blueurl' onclick='simplemodexample()'>Click here</a> to load a simple example mod.<br><br><div><span>Apply Mod On Startup? (Extreme Caution!) </span><input type='checkbox' id='apply_mod_on_start' style='vertical-align: top;' ${applyonstart?'checked':''}></div><div><button type="button" class="btn btn-primary" onclick="load_inputbox_from_file()">Import UserMod From File</button></div>`;
 			inputBoxOkCancel(txt,"Apply Third-Party Mod",currmod,"Paste Mod Script Here",()=>{
 			let userinput = getInputBoxValue().trim();
 			applyonstart = (document.getElementById("apply_mod_on_start").checked?true:false);
@@ -13683,18 +13925,49 @@ Current version indicated by LITEVER below.
 			});
 		});
 	}
+	function load_inputbox_from_file()
+	{
+		promptUserForLocalFile((fileDetails) => {
+			try {
+				let { file, fileName, ext, content, plaintext } = fileDetails;
+				if(plaintext && plaintext!="")
+				{
+					if(document.getElementById("inputboxcontainerinputarea").classList.contains("hidden"))
+					{
+						document.getElementById("inputboxcontainerinput").value = plaintext;
+					}
+					else
+					{
+						document.getElementById("inputboxcontainerinputarea").value = plaintext;
+					}
+				}
+			}
+			catch (e) {
+				console.log("Load Inputbox File Failed: " + e);
+			}
+		});
+	}
 
 	function sanitize_css(input)
 	{
+		let safeImages = [];
+		let counter = 0;
 		input = input.replace(/<\s*\/?\s*\w+\s*[^>]*>/gi, ""); //replace html tags
 		input = input.replace(/</g, "");  // Remove any remaining `<` characters
+		input = input.replace(/data:image\/(jpeg|jpg|png|gif|webp);base64,[A-Za-z0-9+\/=]+/gi, function(match) {
+			safeImages.push(match);
+			return "__SAFE_IMG_" + (counter++) + "__";
+		});
 		input = input.replace(/(?:javascript|data|vbscript|file):/gi, "");
+		for(let i = 0; i < safeImages.length; i++) {
+			input = input.replace("__SAFE_IMG_" + i + "__", safeImages[i]);
+		}
 		return input;
 	}
 	function apply_custom_css()
 	{
 		indexeddb_load("savedcustomcss","").then(currcss=>{
-			inputBoxOkCancel("Here, you can apply third-party custom CSS styles shared by other users.<br><br><span class='color_red'>Caution: This will modify the existing document, so only use third-party CSS styles that you trust! Custom CSS is persistent, but can be reset in this menu.</span><br><br>You can return to default styles by clearing the box below. If you get stuck, add ?resetcss=1 to the URL to clear custom styles.","Apply Custom CSS Styles",currcss,"Paste CSS Styles Here",()=>{
+			inputBoxOkCancel(`Here, you can apply third-party custom CSS styles shared by other users.<br><br><span class='color_red'>Caution: This will modify the existing document, so only use third-party CSS styles that you trust! Custom CSS is persistent, but can be reset in this menu.</span><br><br>Need help? <a href='#' class='color_blueurl' onclick='simplecssexample()'>Click here</a> to load a simple example CSS theme. You can return to default styles by clearing the box below. If you get stuck, add ?resetcss=1 to the URL to clear custom styles. <div><button type="button" class="btn btn-primary" onclick="load_inputbox_from_file()">Import CSS From File</button></div>`,"Apply Custom CSS Styles",currcss,"Paste CSS Styles Here",()=>{
 			let userinput = sanitize_css(getInputBoxValue().trim());
 			indexeddb_save("savedcustomcss", userinput);
 			let styleElement = document.getElementById('custom_css');
@@ -13783,6 +14056,8 @@ Current version indicated by LITEVER below.
 		document.getElementById("input_text").value = "";
 		document.getElementById("corpo_cht_inp").value = "";
 		document.getElementById("cht_inp").value = "";
+		let wsresultsContainer = document.getElementById("wordsearch_results");
+		if(wsresultsContainer){wsresultsContainer.innerHTML="";}
 		chat_resize_input();
 		image_db = {};
 		interrogation_db = {};
@@ -13808,13 +14083,12 @@ Current version indicated by LITEVER below.
 			wi_searchdepth = 0;
 			wi_insertlocation = 0;
 			current_anotetemplate = "[Author's note: <|>]";
-			documentdb_enabled = false;
+			documentdb_provider = 0; //disabled
 			documentdb_searchhistory = false;
 			documentdb_numresults = 3;
 			documentdb_searchrange = 300;
 			documentdb_chunksize = 800;
 			documentdb_data = "";
-			documentdb_useembeddings = false;
 		}
 		if(localsettings.inject_randomness_seed>0)
 		{
@@ -15714,7 +15988,7 @@ Current version indicated by LITEVER below.
 			}
 
 			// TextDB Long term memory minisearch
-			if (documentdb_enabled)
+			if (documentdb_provider > 0)
 			{
 				// Finds the relevant memory fragments, formats them in a similar way to an authors note and inserts them before WI
 				const ltmSearchQuery = !!rawNewText ? rawNewText : gametext_arr.length > 0 ? gametext_arr.slice(-1)[0] : undefined;
@@ -15809,18 +16083,30 @@ Current version indicated by LITEVER below.
 				//insert authors note 80 tokens before the ending (320 characters).
 				let anote_dist = anote_strength;
 				let anote_insert_idx = truncated_context.length - anote_dist;
+				anote_insert_idx = clamp(anote_insert_idx, 0, truncated_context.length);
 				//try to align anote with a word boundary
-				for(let i=0;i<15;++i)
-				{
-					if(anote_insert_idx>=0 && anote_insert_idx<truncated_context.length
-					&& truncated_context[anote_insert_idx]!=" " && truncated_context[anote_insert_idx]!="."
-					&& truncated_context[anote_insert_idx]!="!" && truncated_context[anote_insert_idx]!="?"
-					&& truncated_context[anote_insert_idx]!="," && truncated_context[anote_insert_idx]!="\n")
-					{
-						++anote_insert_idx;
-					}else{
+				const maxLookahead = 30;
+				let best_insert_idx = anote_insert_idx;
+				let insert_preference = 0;
+				for (let i = 0; i < maxLookahead && anote_insert_idx + i < truncated_context.length; ++i) {
+					const char = truncated_context[anote_insert_idx + i];
+					if (char == "\n") {
+						best_insert_idx = anote_insert_idx + i + 1;
+						insert_preference = 3;
 						break;
 					}
+					if (insert_preference<=1 && (char == "," || char == "!" || char == "." || char == "?")) {
+						best_insert_idx = anote_insert_idx + i + 1;
+						insert_preference = 2;
+					}
+					if (insert_preference==0 && (char == " ")) {
+						best_insert_idx = anote_insert_idx + i + 1;
+						insert_preference = 1;
+					}
+				}
+				if(insert_preference>0)
+				{
+					anote_insert_idx = best_insert_idx;
 				}
 				anote_insert_idx = clamp(anote_insert_idx, 0, truncated_context.length);
 				truncated_context = truncated_context.slice(0, anote_insert_idx) + truncated_anote + truncated_context.slice(anote_insert_idx);
@@ -16037,7 +16323,7 @@ Current version indicated by LITEVER below.
 			const sentenceEndings = /[.!?]/g;
 			let lastsentences = gametext_arr[gametext_arr.length-1].split(sentenceEndings);
 			lastsentences = lastsentences.map(lastsentences => lastsentences.trim()); //remove whitespace
-    		lastsentences = lastsentences.filter(lastsentences => lastsentences.length > 0);
+			lastsentences = lastsentences.filter(lastsentences => lastsentences.length > 0);
 			if(lastsentences.length>0)
 			{
 				let lastsentence = lastsentences[lastsentences.length - 1];
@@ -16618,7 +16904,11 @@ Current version indicated by LITEVER below.
 				{
 					if(!document.getElementById("usegeminithink").checked)
 					{
-						payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0};
+						//gemini pro cannot fully disable thinking
+						payload["generationConfig"]["thinkingConfig"] = {"includeThoughts": false, "thinkingBudget": (mdlname.includes("gemini-2.5-pro")?128:0)};
+					}else
+					{
+						payload["generationConfig"]["thinkingConfig"] = {"includeThoughts": true};
 					}
 				}
 
@@ -17378,7 +17668,7 @@ Current version indicated by LITEVER below.
 	}
 
 	function render_image_html(data, pend_txt = "", siclass="storyimgfloat") {
-		var dim = (localsettings.opmode == 2 ? 160 : 180); //adventure mode has smaller pictures
+		var dim = PREVIEW_RES_PX; //image preview. adventure mode has smaller pictures
 		dimW = dim;
 		dimH = dim;
 		let reinvertcolor = localsettings.invert_colors?" invert_colors":"";
@@ -19792,6 +20082,14 @@ Current version indicated by LITEVER below.
 		{
 			document.getElementById("searchingtxt").classList.add("hidden");
 		}
+
+		if(localsettings.wordsearch_enabled)
+		{
+			document.getElementById("wordsearch_panel").classList.remove("hidden");
+		}else
+		{
+			document.getElementById("wordsearch_panel").classList.add("hidden");
+		}
 	}
 
 	function render_corpo_welcome()
@@ -20445,6 +20743,10 @@ Current version indicated by LITEVER below.
 			let amode = (localsettings.adventure_switch_mode==0?"Story Mode":(localsettings.adventure_switch_mode==1?"Action Mode":"Dice Mode"))
 			panelitems += `<div onclick="btn_adventure_mode()" class="corpo_leftpanel_btn" type="button" >Adventure: ${amode}</div>`;
 		}
+		if(is_using_kcpp_with_websearch())
+		{
+			panelitems += `<div onclick="toggle_websearch()" class="corpo_leftpanel_btn" type="button" style="background-image: var(--img_websearch_mono); padding-left: 44px;">WebSearch: ${localsettings.websearch_enabled?"<span class='color_green'>On</span>":"<span class='color_gray'>Off</span>"}</div>`;
+		}
 		panel.innerHTML = panelitems;
 	}
 	function populate_corpo_leftpanel()
@@ -20830,7 +21132,7 @@ Current version indicated by LITEVER below.
 		start_editing_wi();
 		update_wi();
 
-		document.getElementById("documentdb_enabled").checked = documentdb_enabled;
+		document.getElementById("documentdb_provider").value = documentdb_provider;
 		document.getElementById("documentdb_searchhistory").checked = documentdb_searchhistory;
 		document.getElementById("documentdb_numresults").value = documentdb_numresults
 		document.getElementById("documentdb_searchrange").value = documentdb_searchrange;
@@ -20839,17 +21141,32 @@ Current version indicated by LITEVER below.
 		document.getElementById("documentdb_searchrange_slide").value = documentdb_searchrange;
 		document.getElementById("documentdb_chunksize_slide").value = documentdb_chunksize;
 		document.getElementById("documentdb_data").value = documentdb_data;
-		document.getElementById("documentdb_useembeddings").checked = documentdb_useembeddings;
+		let providerdropdown = document.getElementById("documentdb_provider");
+		const kcppEmbeddingDropdownOption = Array.from(providerdropdown.options).find(opt => opt.value === "2");
 		if(is_using_kcpp_with_embeddings())
 		{
-			document.getElementById("useembeddingslabel").classList.remove("color_red");
-			document.getElementById("documentdb_useembeddings").disabled = false;
+			kcppEmbeddingDropdownOption.classList.remove("hidden");
 		}
 		else
 		{
-			document.getElementById("useembeddingslabel").classList.add("color_red");
-			document.getElementById("documentdb_useembeddings").disabled = true;
-			document.getElementById("documentdb_useembeddings").checked = false;
+			if(document.getElementById("documentdb_provider").value=="2")
+			{
+				document.getElementById("documentdb_provider").value = 1;
+			}
+			kcppEmbeddingDropdownOption.classList.add("hidden");
+		}
+		toggle_documentdb_provider();
+	}
+
+	function toggle_documentdb_provider()
+	{
+		if(document.getElementById("documentdb_provider").value=="3")
+		{
+			document.getElementById("documentdb_oai_buttons").classList.remove("hidden");
+		}
+		else
+		{
+			document.getElementById("documentdb_oai_buttons").classList.add("hidden");
 		}
 	}
 
@@ -21048,7 +21365,7 @@ Current version indicated by LITEVER below.
 				pending_wi_obj[idx - 1] = pending_wi_obj[idx];
 				pending_wi_obj[idx] = temp;
 			}
-   		}
+		}
 		update_wi();
 	}
 
@@ -21064,7 +21381,7 @@ Current version indicated by LITEVER below.
 				pending_wi_obj[idx + 1] = pending_wi_obj[idx];
 				pending_wi_obj[idx] = temp;
 			}
-   		}
+		}
 		update_wi();
 	}
 
@@ -21657,13 +21974,13 @@ Current version indicated by LITEVER below.
 	}
 	const stableSort = (arr, compare) => {
 	return arr.map((item, index) => ({ item, index }))
-     .sort((a, b) => compare(a.item, b.item) || a.index - b.index)
-     .map(({ item }) => item);
+		.sort((a, b) => compare(a.item, b.item) || a.index - b.index)
+		.map(({ item }) => item);
 	};
 	</script>
 
 	<!-- Aesthetic UI scripts -->
-	<script>
+	<script id="aesthetic-ui">
 	const aestheticTextStyleTypes = ['text', 'speech', 'action'];	 // One style per speech type. Could add more later I guess.
 	const aestheticTextStyleRoles = ['uniform', 'you', 'AI', 'sys']; // Uniform for when you want all roles use the same styles.
 
@@ -21702,7 +22019,7 @@ Current version indicated by LITEVER below.
 			}
 
 			this.code_block_background = 'rgb(0, 0, 0)';
-			this.code_block_foreground = 'rgb(180, 35, 40)';
+			this.code_block_foreground = 'rgb(210, 50, 50)';
 		}
 
 		padding() { return `${this.background_padding[2]}px ${this.background_padding[1]}px ${this.background_padding[3]}px ${this.background_padding[0]}px`; }
@@ -22005,6 +22322,11 @@ Current version indicated by LITEVER below.
 		`<style>
 			.you-portrait-image`+classSuffixStr+` {margin: 10px 6px; background:url(`+ as.you_portrait +`); background-clip: content-box; background-position: 50% 50%; background-size: 100% 100%; background-origin: content-box; background-repeat: no-repeat; border:none;}
 			.AI-portrait-image`+classSuffixStr+` {margin: 10px 6px; background:url(`+ (as.AI_portrait!="default"?as.AI_portrait:niko_square) +`); background-clip: content-box; background-position: 50% 50%; background-size: 100% 100%; background-origin: content-box; background-repeat: no-repeat; border:none;}
+			code
+			{
+				color: ${as.code_block_foreground};
+				background-color: ${as.code_block_background};
+			}
 		</style>
 		`;
 
@@ -22167,7 +22489,7 @@ Current version indicated by LITEVER below.
 					});
 				}
 				else {
-					blocks[i] = blocks[i].replaceAll('```', '`').replaceAll('``', '`').replace(/`(.*?)`/g, function (m,m2) {return `<code style='background-color:black'>${m2.replace(/[“”]/g, "\"")}</code>`;}); //remove fancy quotes too
+					blocks[i] = blocks[i].replaceAll('```', '`').replaceAll('``', '`').replace(/`(.*?)`/g, function (m,m2) {return `<code>${m2.replace(/[“”]/g, "\"")}</code>`;}); //remove fancy quotes too
 				}
 			}
 			return [blocks.join(''),codestashes];
@@ -22194,7 +22516,7 @@ Current version indicated by LITEVER below.
 	}
 
 	function updateTextPreview() {
-		let preview = `You are Mikago, a prestigious bot that's a supervillain.\n\nRoleplay in first person, be prestigious, don't be a bot. This is a fantasy world.\n\nCode blocks should be wrapped in triple backticks, like so:\n\`\`\`\n<Some_\n-- multiline\n--- code here$\n\`\`\`\n[AI_REPLY]\n*takes my hat off to greet the squad* "Greetings, I am Mikago, the prestigious!" *bows to the crew*\n*clears my throat* "Now, I'm sure there are many questions, but all will be answered in due time." *deep breath*\n[USER_REPLY]\n*draws my sword* "Yes. You should know the code to calculate the factorial of a number."\nThe crew also draws their weapons and point them at you, not giving you any space.\n[AI_REPLY]\n*backs off* "Woah, easy there.." *makes some steps backwards, but then stops*\n"I would normally take this as an insult to my prestige, but I understand your caution.." *takes a deep breath*\n"Well, if it's to prove myself, here goes the python code to calculate the factorial of a number.."\n\nMikago opens a live-code-portal with his magic and writes the code that was requested.\n\`\`\`\ndef factorial(n):\n  if n == 0:\n    return 1\n  else:\n    return n * factorial(n-1)\n\`\`\`\n*looks at you, getting impatient* "Are we ok now.. or do you want me to write the code of a game next?"\n[USER_REPLY]\n*sheathes my sword and approaches for a hug* "Oh, Mikago, my old friend, it is really you!"`;
+		let preview = `You are Mikago, a prestigious bot that's a supervillain.\n\nRoleplay in first person, be prestigious, don't be a bot. This is a fantasy world.\n\nCode blocks should be wrapped in triple backticks, like so:\n\`\`\`\n-- multiline\n--- code here\n\`\`\`\n[AI_REPLY]\n*takes my hat off to greet the squad* "Greetings, I am Mikago, the prestigious!" *bows to the crew*\n*clears my throat* "Now, I'm sure there are many questions, but all will be answered in due time." *deep breath*\n[USER_REPLY]\n*draws my sword* "Yes. You should know the code to calculate the factorial of a number."\nThe crew also draws their weapons and point them at you, not giving you any space.\n[AI_REPLY]\n*backs off* "Woah, easy there.." *makes some steps backwards, but then stops*\n"I would normally take this as an insult to my prestige, but I understand your caution.." *takes a deep breath*\n"Well, if it's to prove myself, here goes the python code to calculate the factorial of a number.."\n\nMikago opens a live-code-portal with his magic and writes the code that was requested.\n\`\`\`\ndef factorial(n):\n  if n == 0:\n    return 1\n  else:\n    return n * factorial(n-1)\n\`\`\`\n*looks at you, getting impatient* "Are we ok now.. or do you want me to write the code of a game next?"\n[USER_REPLY]\n*sheathes my sword and approaches for a hug* "Oh, Mikago, my old friend, it is really you!"`;
 
 		if(localsettings.opmode==3)
 		{
@@ -22343,21 +22665,47 @@ Current version indicated by LITEVER below.
 	}
 
 	const generateNewEmbedding = asyncRunner(function* (text) { //generates new embedding from kcpp
-		let reqOpt = {
-			method: 'POST', // or 'PUT'
-			headers: get_kobold_header(),
-			body: JSON.stringify({
-				"input": text,
-				"truncate": true
-			}),
-		};
-		if (globalabortcontroller) {
-			reqOpt.signal = globalabortcontroller.signal;
+
+		if (documentdb_provider == 3) //openai embeddings provider
+		{
+			let selmodel = document.getElementById("oai_embd_model").value;
+			let reqOpt = {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + localsettings.saved_oai_embd_key
+				},
+				body: JSON.stringify({
+						"input": text,
+						"model": selmodel,
+						"encoding_format": "float"
+				})
+			};
+			if (globalabortcontroller) {
+				reqOpt.signal = globalabortcontroller.signal;
+			}
+			let sub_endpt = localsettings.saved_oai_embd_url;
+			return fetch(sub_endpt, reqOpt).then((response) => response.json()).catch(err=>{
+				console.log("error while fetching embeddings: " + err);
+			});
+
+		} else { //kcpp embeddings provider
+			let reqOpt = {
+				method: 'POST', // or 'PUT'
+				headers: get_kobold_header(),
+				body: JSON.stringify({
+					"input": text,
+					"truncate": true
+				}),
+			};
+			if (globalabortcontroller) {
+				reqOpt.signal = globalabortcontroller.signal;
+			}
+			let sub_endpt = apply_proxy_url(`${custom_kobold_endpoint}/api/extra/embeddings`);
+			return fetch(sub_endpt, reqOpt).then((response) => response.json()).catch(err=>{
+				console.log("error while fetching embeddings: " + err);
+			});
 		}
-		let sub_endpt = apply_proxy_url(`${custom_kobold_endpoint}/api/extra/embeddings`);
-		return fetch(sub_endpt, reqOpt).then((response) => response.json()).catch(err=>{
-			console.log("error while fetching embeddings: " + err);
-		});
 	});
 	const DBComputeAndLoadEmbedding = asyncRunner(function* (hash, documentName, documentContent) //gets a cached embedding, recomputes if missing
 	{
@@ -22382,7 +22730,7 @@ Current version indicated by LITEVER below.
 			const embedding = yield generateNewEmbedding(documentContent);
 			if (embedding && embedding.data && embedding.data.length > 0 && embedding.data[0].embedding) {
 				const newembedding = {
-					document: documentName ? documentName : "None",
+					document: documentName ? documentName : "",
 					hash: hash,
 					embedding: embedding.data[0].embedding,
 					snippet: documentContent,
@@ -22557,33 +22905,33 @@ Current version indicated by LITEVER below.
 		recentTextStr = replace_search_placeholders(recentTextStr);
 
 		let i = 0;
-        allText.split("[DOCUMENT BREAK]").forEach(doc => {
-            doc = doc.trim();
-            if (!doc) { return; }
-            let titleMatch = doc.match(/^\[([^\n]+?)\]/);
-            let title = null;
-            if (titleMatch !== null)
-            {
-                doc = doc.replace(titleMatch[0], "");
-                title = titleMatch[1];
-            }
-            let startLoc = 0;
-            while (startLoc < doc.length && i < Number.MAX_SAFE_INTEGER) {
-                let actualChunkStart = Math.max(0, startLoc - chunkSizeOverlap);
-                let actualChunkEnd = Math.min(doc.length, actualChunkStart + chunkSize);
-                let currentSnippet = doc.substring(actualChunkStart, actualChunkEnd);
-                paragraphs.push({snippet: currentSnippet, document: title});
-                startLoc = actualChunkEnd;
-                i++;
-            }
-        });
-        paragraphs = paragraphs.map(c => {
-            c.snippet = c.snippet.replace(/\n\n/g, "\n");
-            return c;
-        }).filter(c => !!c.snippet);
+		allText.split("[DOCUMENT BREAK]").forEach(doc => {
+			doc = doc.trim();
+			if (!doc) { return; }
+			let titleMatch = doc.match(/^\[([^\n]+?)\]/);
+			let title = null;
+			if (titleMatch !== null)
+			{
+				doc = doc.replace(titleMatch[0], "");
+				title = titleMatch[1];
+			}
+			let startLoc = 0;
+			while (startLoc < doc.length && i < Number.MAX_SAFE_INTEGER) {
+				let actualChunkStart = Math.max(0, startLoc - chunkSizeOverlap);
+				let actualChunkEnd = Math.min(doc.length, actualChunkStart + chunkSize);
+				let currentSnippet = doc.substring(actualChunkStart, actualChunkEnd);
+				paragraphs.push({snippet: currentSnippet, document: title});
+				startLoc = actualChunkEnd;
+				i++;
+			}
+		});
+		paragraphs = paragraphs.map(c => {
+			c.snippet = c.snippet.replace(/\n\n/g, "\n");
+			return c;
+		}).filter(c => !!c.snippet);
 
 		let miniSearch;
-		if (documentdb_useembeddings && is_using_kcpp_with_embeddings())
+		if ((documentdb_provider==2 && is_using_kcpp_with_embeddings()) || documentdb_provider==3)
 		{
 			let searchResults = yield getRankedEmbeddings(searchStr, paragraphs);
 			searchResults = searchResults.filter(x=>x.similarity>minSimilarity);
@@ -22654,6 +23002,210 @@ Current version indicated by LITEVER below.
 			return searchResults;
 		}
 	});
+
+	/** Inspired by My Ghost Writer from trincadev - https://github.com/trincadev/my_ghost_writer */
+	//scan through full context to ngram a possible set of candidates
+	function trigger_wordsearch_candidates() {
+		const searchBox = document.getElementById("wordsearch_input");
+		const resultsContainer = document.getElementById("wordsearch_results");
+		const sortByFreq = document.getElementById("wordsearch_sort").value=="0";
+		const query = searchBox.value.trim();
+		resultsContainer.innerHTML = "";
+
+		let ngramParser = function (text, n) {
+			const words = text.split(/ +/).filter(word => word.length > 0);
+			const ngrams = {};
+			let prevNgram = null;
+
+			for (let i = 0; i <= words.length - n; i++) {
+				let ngram = words.slice(i, i + n).join(' ');
+				//strip leading and trailing punctuation
+				ngram = ngram.replace(/^[,\.?!()\[\]{}\`:;\-\'\"—]+|[,\.?!()\[\]{}\`:;\-\'\"—]+$/g, '');
+				if (ngram === prevNgram) continue; // skip duplicate overlaps
+				prevNgram = ngram;
+
+				if (ngrams[ngram]) {
+					ngrams[ngram]++;
+				} else {
+					ngrams[ngram] = 1;
+				}
+			}
+			const sortedNgrams = Object.entries(ngrams).sort((a, b) => b[1] - a[1]);
+			return sortedNgrams.map(entry => ({ ng: entry[0], cnt: entry[1] }));
+		};
+
+		let prepare_candidates_from_text = function(query) {
+			const fullgametext = concat_gametext(true, "").toLowerCase();
+			let querylc = query.toLowerCase();
+			let candidateDict = {};
+
+			let textrows = fullgametext.split("\n").filter(x=>x);
+
+			for(let l=0;l<textrows.length;++l)
+			{
+				for(let i=1;i<=3;++i) //ngram of 3
+				{
+					let res = ngramParser(textrows[l],i);
+					if(querylc!="")
+					{
+						res = res.filter(x=>x.ng.toLowerCase().includes(querylc));
+					}
+					let lim = Math.min(res.length,250);
+					for(let j=0;j<lim;++j)
+					{
+						if (!candidateDict[res[j].ng]) {
+							candidateDict[res[j].ng] = res[j].cnt;
+						} else {
+							candidateDict[res[j].ng] += res[j].cnt;
+						}
+					}
+				}
+			}
+
+			//todo: counts are not correct because of substrings. let's manually count each item for now
+			for(let key in candidateDict)
+			{
+				candidateDict[key] = (fullgametext.split(key).length - 1);
+			}
+
+			if(querylc!="")
+			{
+				let basecount = (fullgametext.split(querylc).length - 1); //count of the pure substring
+				candidateDict[query] = basecount;
+			}
+
+			return candidateDict;
+		}
+
+		let candidateDict = prepare_candidates_from_text(query);
+		var candidateItems = Object.keys(candidateDict).map(function(key) {
+			return [key, candidateDict[key]];
+		});
+
+		if(sortByFreq)
+		{
+			candidateItems.sort(function(first, second) {
+				return second[1] - first[1];
+			});
+		}else
+		{
+			//sort alphabetically
+			candidateItems.sort(function(first, second) {
+				if (first[0] < second[0]) {
+					return -1;
+				}
+				if (first[0] > second[0]) {
+					return 1;
+				}
+				return 0;
+			});
+
+		}
+
+
+		for(let i=0;i<candidateItems.length;++i)
+		{
+			let key = candidateItems[i][0];
+			let count = candidateItems[i][1];
+			const btn = document.createElement("div");
+			btn.style.border = "1px solid #646464";
+			btn.innerHTML = `<a href="#"><span class="color_wordsearch_surrounding">${key} (${count})</span></a>`;
+			let searchstr = key;
+			btn.onclick = () => {
+				trigger_wordsearch_results(searchstr);
+			};
+			resultsContainer.appendChild(btn);
+		}
+	}
+	function trigger_wordsearch_candidates_key()
+	{
+		if (event.key === 'Enter') {
+			trigger_wordsearch_candidates();
+		}
+	}
+
+	function trigger_wordsearch_results(query) {
+		const resultsContainer = document.getElementById("wordsearch_results");
+		const gametext = document.getElementById("gametext");
+		query = query.trim();
+		resultsContainer.innerHTML = "";
+		if (!query) return;
+
+		let extract_surrounding_text = function(range, contextLength) {
+			const textNode = range.startContainer;
+			if (textNode.nodeType !== Node.TEXT_NODE) return;
+			const textContent = textNode.textContent;
+			const startOffset = range.startOffset;
+			const endOffset = range.endOffset;
+			// Compute raw bounds
+			let start = Math.max(0, startOffset - contextLength);
+			let end = Math.min(textContent.length, endOffset + contextLength);
+			// Clamp to word boundaries
+			start = textContent.lastIndexOf(' ', start);
+			end = textContent.indexOf(' ', end);
+			if (start === -1) start = 0;
+			if (end === -1) end = textContent.length;
+			const before = textContent.slice(start, startOffset);
+			const middle = textContent.slice(startOffset, endOffset);
+			const after = textContent.slice(endOffset,end);
+			return {"before":before, "middle":middle, "after":after, "full":`${before}${middle}${after}`};
+		}
+
+		let search_text_for_strings = function(query) { //search text nodes for all instances of query
+			const gametext = document.getElementById("gametext");
+			let matchRanges = [];
+			const walker = document.createTreeWalker(gametext, NodeFilter.SHOW_TEXT, null, false);
+
+			while (walker.nextNode()) {
+				const node = walker.currentNode;
+				const text = node.nodeValue;
+				let idx = 0;
+				while ((idx = text.toLowerCase().indexOf(query.toLowerCase(), idx)) !== -1) {
+				const range = document.createRange();
+				range.setStart(node, idx);
+				range.setEnd(node, idx + query.length);
+				matchRanges.push({ range, preview: text.substr(idx, query.length) });
+				idx += query.length;
+				}
+			}
+			return matchRanges;
+		}
+
+		let matchRanges = search_text_for_strings(query);
+
+		const topper = document.createElement("div");
+		topper.style.border = "1px solid #646464";
+		topper.innerText = `${matchRanges.length} results`;
+		resultsContainer.appendChild(topper);
+		matchRanges.forEach(({ range, preview }, i) => {
+			const btn = document.createElement("div");
+			btn.style.border = "1px solid #646464";
+			let nearbytext = extract_surrounding_text(range, 8);  //8 chars clamped to word bounds
+			btn.innerHTML = `<a href="#"><span class="color_wordsearch_surrounding">${nearbytext.before}</span><span class="color_wordsearch_target">${nearbytext.middle}</span><span class="color_wordsearch_surrounding">${nearbytext.after}</span></a>`;
+			btn.onclick = () => {
+				const sel = window.getSelection();
+				sel.removeAllRanges();
+				sel.addRange(range);
+
+				// Scroll the container
+				const rect = range.getBoundingClientRect();
+				const containerRect = gametext.getBoundingClientRect();
+				if (rect.top < containerRect.top || rect.bottom > containerRect.bottom) {
+					if (range.startContainer && range.startContainer.nodeType === Node.TEXT_NODE) {
+						gametext.scrollTop = 0; //simple fix for safari scrolling
+						const span = document.createElement("span");
+						span.style.display = "inline";
+						span.style.background = "transparent";
+						span.id = "temp-scroll-target";
+						range.insertNode(span); // Insert a temporary marker, then scroll to it
+						document.querySelector("#temp-scroll-target").scrollIntoView({ behavior: "smooth", block: "center" });
+						span.remove(); //remove temp marker
+					}
+				}
+			};
+			resultsContainer.appendChild(btn);
+		});
+	}
 	</script>
 
 </head>
@@ -22770,6 +23322,20 @@ Current version indicated by LITEVER below.
 					<p id="tempgtloadtxt">Loading...</p>
 					<noscript><style>#tempgtloadtxt { display: none; } #gametext { white-space: normal!important; }</style><p>Sorry, KoboldAI Lite requires Javascript to function.</p></noscript>
 				</span>
+				<div class="hidden" id="wordsearch_panel" style="flex:250px">
+					<div style="display:flex; padding:6px">
+					<input title="Word Search Input" class="form-control menuinput_inline" style="width: calc(100% - 34px); margin-right:2px;" type="text" placeholder="WordSearch" value="" onkeyup="trigger_wordsearch_candidates_key();" id="wordsearch_input">
+					<button title="Perform WordSearch" type="button" class="btn btn-primary" style="width:30px;padding:4px 4px;" onclick="trigger_wordsearch_candidates();">🔎</button>
+					</div>
+					<div style="display:flex; padding:6px">
+					<p style="margin-right:6px">Sort: </p>
+					<select title="Sort" style="padding:2px; font-size:14px; height:24px; width: calc(100% - 50px);" class="form-control" id="wordsearch_sort">
+						<option value="0">Frequency</option>
+						<option value="1">Alphabetical</option>
+					</select>
+					</div>
+					<div id="wordsearch_results" style="height:calc(100% - 98px);overflow-y: auto;"></div>
+				</div>
 			</div>
 		</div>
 
@@ -22840,7 +23406,7 @@ Current version indicated by LITEVER below.
 					<button title="Toggle Adventure Mode" onclick="btn_adventure_mode()" id="chat_btnmode_adventure" class="chat_btnmode_adventure actionmode hidden mainnav" type="button"></button>
 					<div id="cht_inp_bg" class="cht_inp_bg">
 					<div class="cht_inp_bg_inner" id="cht_inp_lengthtester" style="white-space: nowrap; visibility: hidden; height: 0px; position:absolute; width: auto;"></div>
-					<textarea title="User Input" class="cht_inp_bg_inner mainnav" id="cht_inp" type="text" name="chtchtinp"  role="presentation" autocomplete="noppynop" spellcheck="true" rows="1" wrap="on" placeholder="Type a message" value="" oninput="update_submit_button();chat_resize_input();" onpaste="return img_paste_event(event)" onkeypress="return chat_handle_typing(event)"/></textarea>
+					<textarea title="User Input" class="cht_inp_bg_inner mainnav" id="cht_inp" type="text" name="chtchtinp"  role="presentation" autocomplete="noppynop" spellcheck="true" rows="1" wrap="on" placeholder="Type a message" value="" oninput="update_submit_button();chat_resize_input();" onpaste="return img_paste_event(event)" onkeypress="return chat_handle_typing(event)"></textarea>
 					</div>
 					<button title="Submit" onclick="submit_generation_button(true)" onmousedown="ptt_start()" onmouseup="ptt_end()" id="chat_msg_send_btn" class="chat_msg_send_btn mainnav" type="button"></button>
 					<button title="Abort" onclick="abort_generation()" id="chat_msg_send_btn_abort" class="hidden chat_msg_send_btn_abort mainnav" type="button"></button>
@@ -22874,7 +23440,7 @@ Current version indicated by LITEVER below.
 						<div class="corpo_chat_outer">
 							<button title="Image" onclick="add_img_btn_menu()" id="corpo_chat_img_btn" class="corpo_chat_img_btn mainnav" type="button"></button>
 							<div class="corpo_chat_inner" id="corpo_cht_inp_lengthtester" style="white-space: nowrap; visibility: hidden; height: 0px; position:absolute; width: auto;"></div>
-							<textarea title="User Input" class="corpo_chat_inner mainnav" id="corpo_cht_inp" type="text" name="crpchtinp"  role="presentation" autocomplete="noppynop" spellcheck="true" rows="1" wrap="on" placeholder="Message KoboldAI" value="" oninput="update_submit_button();chat_resize_input();" onpaste="return img_paste_event(event)" onkeypress="return chat_handle_typing(event)"/></textarea>
+							<textarea title="User Input" class="corpo_chat_inner mainnav" id="corpo_cht_inp" type="text" name="crpchtinp"  role="presentation" autocomplete="noppynop" spellcheck="true" rows="1" wrap="on" placeholder="Message KoboldAI" value="" oninput="update_submit_button();chat_resize_input();" onpaste="return img_paste_event(event)" onkeypress="return chat_handle_typing(event)"></textarea>
 							<button title="Submit" onclick="submit_generation_button(true)" id="corpo_chat_send_btn" class="corpo_chat_send_btn mainnav" type="button"></button>
 							<button title="Abort" onclick="abort_generation()" id="corpo_chat_send_btn_abort" class="hidden corpo_chat_send_btn_abort mainnav" type="button"></button>
 						</div>
@@ -22883,6 +23449,8 @@ Current version indicated by LITEVER below.
 				</div>
 			</div>
 		</div>
+
+
 	</div>
 
 	<div class="popupcontainer flex hidden" id="memorycontainer">
@@ -22895,7 +23463,7 @@ Current version indicated by LITEVER below.
 				<li id="memory_tab" class="active"><a class="" href="#" onclick="display_memory_tab(0)">Memory</a></li>
 				<li id="wi_tab"><a class="" href="#" onclick="display_memory_tab(1)">World Info</a></li>
 				<li id="documentdb_tab"><a class="" href="#" onclick="display_memory_tab(2)">TextDB</a></li>
-			  </ul></div>
+			</ul></div>
 
 			<div class="context_tab_container" id="memory_tab_container">
 				<div class="settinglabel">
@@ -22999,26 +23567,35 @@ Current version indicated by LITEVER below.
 			<div class="context_tab_container" id="documentdb_tab_container">
 				<div class="settinglabel" style="padding: 4px;">Automatically search and include relevant snippets from a text document or history.</div>
 				<div class="settinglabel" style="padding: 4px;">
-					<div class="justifyleft settingsmall" title="Enable TextDB">Enable TextDB </div>
-					<input title="Enable TextDB" type="checkbox" id="documentdb_enabled" style="margin:0px 0 0;">
-				</div>
-
-				<div class="settinglabel" style="padding: 4px;">
-					<div class="justifyleft settingsmall" id="useembeddingslabel" title="Use Embeddings for Searching">Use Embeddings for Searching <span class="helpicon">?
-						<span class="helptext">If enabled, the text DB is converted to vectors using the KoboldCPP embedding endpoint. If not, it uses the traditional TextDB keyword based search. Generally, embeddings are slower to generate initially (so when making changes to DB the next response might be very slow) - but may understand the context of the sentence better while also potentially supporting multiple languages.</span></span></div>
-					<input title="Use Embeddings for Searching" type="checkbox" id="documentdb_useembeddings" style="margin:0px 0 0;">
+					<div class="justifyleft settingsmall" title="Select TextDB Provider">Select TextDB Provider <span class="helpicon">?
+						<span class="helptext">Disabled does not use TextDB. Local TextDB does all searches directly in browser with strings. KoboldCpp Embeddings relies on a loaded Kcpp Embeddings model to generate embeddings. OpenAI Embeddings uses a remote OpenAI API to generate embeddings.</span></span></div>
+					<select title="Select TextDB Provider" style="height:20px;padding:0px;margin:0px 4px 0; width:150px;font-size:12px;" class="form-control" onchange="toggle_documentdb_provider()" id="documentdb_provider">
+						<option value="0">Disabled</option>
+						<option value="1">Local TextDB</option>
+						<option value="2">KoboldCpp Embeddings</option>
+						<option value="3">OpenAI API Embeddings</option>
+					</select>
+					<div id="documentdb_oai_buttons" style="display: flex;">
+						<button type="button" class="btn btn-primary" style="margin:0px; padding:0px; padding-left:2px;padding-right:2px;font-size:11px;margin-right:2px;" onclick="set_oai_embd_url()">Set URL</button>
+						<button type="button" class="btn btn-primary" style="margin:0px; padding:0px; padding-left:2px;padding-right:2px;font-size:11px;" onclick="set_oai_embd_key()">Set Key</button>
+						<select title="Select OpenAI Embed Model" style="height:20px;padding:0px;margin:0px 4px 0; width:150px;font-size:12px;" class="form-control" id="oai_embd_model">
+							<option value="text-embedding-3-small">text-embedding-3-small</option>
+							<option value="text-embedding-3-large">text-embedding-3-large</option>
+							<option value="text-embedding-ada-002">text-embedding-ada-002</option>
+						</select>
+					</div>
 				</div>
 
 				<div class="settinglabel" style="padding: 4px;">
 					<div class="justifyleft settingsmall" title="Delete Embedding cache">Delete Embedding cache <span class="helpicon">?
 						<span class="helptext">When embeddings are enabled, they get generated by the KCPP server and then are cached in the web browser. This button clears the browser cache.</span></span></div>
-					<button title="Delete Embedding cache" class="btn btn-primary" onclick="DBClearEmbeddings()" style="margin:0px 0 0;">Delete Embedding cache</button>
+					<button title="Delete Embedding cache" class="btn btn-primary" onclick="DBClearEmbeddings()" style="font-size:12px;padding:2px 2px;margin:0px 0 0;">Delete Embedding cache</button>
 				</div>
 
 				<div class="settinglabel" style="padding: 4px;">
 					<div class="justifyleft settingsmall" title="Add document to TextDB">Add document to TextDB <span class="helpicon">?
 						<span class="helptext">Tries to extract the text from the document, adding (or overwriting) an existing document in the TextDB with the same name.</span></span></div>
-					<button title="Add document to TextDB" class="btn btn-primary" onclick="addDocumentToTextDB()" style="margin:0px 0 0;">Add document to TextDB</button>
+					<button title="Add document to TextDB" class="btn btn-primary" onclick="addDocumentToTextDB()" style="font-size:12px;padding:2px 2px;margin:0px 0 0;">Add document to TextDB</button>
 				</div>
 
 				<div class="settinglabel" style="padding: 4px;">
@@ -23129,6 +23706,10 @@ Current version indicated by LITEVER below.
 								<option id="uipicker_corpo" value="3">Corpo Theme</option>
 							</select>
 							<button type="button" class="btn btn-primary" id="btn_aesthetics" onclick="openAestheticUISettingsMenu()" style="border-color: #bbbbbb; width:100%; height:30px; padding:0px 8px; margin: 3px 0 3px 0;">⚙️ Customize</button>
+							<div id="classicmodeoptions" style="margin:4px;" class="settinglabel hidden">
+							<div class="justifyleft settingsmall">Word Frequency Analysis <span class="helpicon">?<span class="helptext">Shows a tool that displays word frequency and locations, inspired by trincadev MyGhostWriter. Counts across newlines may be inaccurate.</span></span></div>
+								<input title="WordSearch Tool" type="checkbox" id="wordsearch_toggle" style="margin:0px 0px 0px 0px;">
+							</div>
 							<div id="guitypedesc" class="settingsdesctxt"></div>
 						</div>
 					</div>
@@ -23307,17 +23888,17 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Context Size <span class="helpicon">?<span class="helptext">Maximum number of context tokens submitted to the AI. Must exceed max output tokens. Can be further increased by editing the textbox. Older models stop at 2048, newer ones can do 4096 or greater.</span></span></div>
 							<input title="Context Size" inputmode="numeric" class="justifyright flex-push-right settingsmall widerinput" id="max_context_length" oninput="
-						   document.getElementById('max_context_length_slide').value = this.value;">
+							document.getElementById('max_context_length_slide').value = this.value;">
 						</div>
 						<div><input title="Context Size Slider" type="range" min="512" max="4096" step="8" id="max_context_length_slide" oninput="
-						   document.getElementById('max_context_length').value = this.value;"></div>
+							document.getElementById('max_context_length').value = this.value;"></div>
 						<div class="settingminmax">
 							<div class="justifyleft">512</div>
 							<div class="justifyright" id="max_context_length_slide_label">4096</div>
 						</div>
 						<div id="auto_ctxlen_panel" class="settinglabel">
 							<div class="justifyleft settingsmall" title="Automatically lowers settings if incompatible with existing workers">Auto-Adjust Limits </div>
-						   <input title="Auto-Adjust Context Limits" type="checkbox" id="auto_ctxlen" style="margin:0px 0 0;">
+							<input title="Auto-Adjust Context Limits" type="checkbox" id="auto_ctxlen" style="margin:0px 0 0;">
 						</div>
 					</div>
 
@@ -23326,17 +23907,17 @@ Current version indicated by LITEVER below.
 							<div class="justifyleft settingsmall">Max Output <span class="helpicon">?<span
 										class="helptext">Number of tokens the AI should generate. Higher numbers will take longer to generate.</span></span></div>
 							<input title="Max Output" inputmode="numeric" class="justifyright flex-push-right settingsmall" id="max_length" oninput="
-						   document.getElementById('max_length_slide').value = this.value;">
+							document.getElementById('max_length_slide').value = this.value;">
 						</div>
 						<div><input title="Max Output Slider" type="range" min="16" max="512" step="2"	id="max_length_slide" oninput="
-						   document.getElementById('max_length').value = this.value;"></div>
+							document.getElementById('max_length').value = this.value;"></div>
 						<div class="settingminmax">
 							<div class="justifyleft">16</div>
 							<div class="justifyright" id="max_length_slide_label">512</div>
 						</div>
 						<div id="auto_genamt_panel" class="settinglabel">
 							<div class="justifyleft settingsmall" title="Automatically lowers settings if incompatible with existing workers">Auto-Adjust Limits </div>
-						   <input title="Auto-Adjust Length Limits" type="checkbox" id="auto_genamt" style="margin:0px 0 0;">
+							<input title="Auto-Adjust Length Limits" type="checkbox" id="auto_genamt" style="margin:0px 0 0;">
 						</div>
 					</div>
 
@@ -23351,7 +23932,7 @@ Current version indicated by LITEVER below.
 						</div>
 						<div><input title="Temperature Slider" type="range" min="0.1" max="2" step="0.01"
 								id="temperature_slide" oninput="
-						   document.getElementById('temperature').value = this.value;"></div>
+							document.getElementById('temperature').value = this.value;"></div>
 						<div class="settingminmax">
 							<div class="justifyleft">0.1</div>
 							<div class="justifyright">2</div>
@@ -23364,7 +23945,7 @@ Current version indicated by LITEVER below.
 										class="helptext">Used to penalize words that were already generated or belong to
 										the context (too high causes incoherence!).</span></span></div>
 							<input title="Repetition Penalty" inputmode="decimal" class="justifyright flex-push-right settingsmall" id="rep_pen" oninput="
-						   document.getElementById('rep_pen_slide').value = this.value;">
+							document.getElementById('rep_pen_slide').value = this.value;">
 						</div>
 						<div><input title="Repetition Penalty Slider" type="range" min="1" max="2" step="0.01"
 								id="rep_pen_slide" oninput="document.getElementById('rep_pen').value = this.value;"></div>
@@ -23380,7 +23961,7 @@ Current version indicated by LITEVER below.
 										to discard unlikely text in a nucleus sampling process. Lower values will make text
 										more predictable but can become repetitious. Set to 1 to deactivate it.</span></span></div>
 							<input title="Top-P Sampling" inputmode="decimal" class="justifyright flex-push-right settingsmall" id="top_p" oninput="
-						   document.getElementById('top_p_slide').value = this.value;">
+							document.getElementById('top_p_slide').value = this.value;">
 						</div>
 						<div><input title="Top-P Sampling Slider" type="range" min="0" max="1" step="0.01" id="top_p_slide"
 								oninput="document.getElementById('top_p').value = this.value;"></div>
@@ -23394,7 +23975,7 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Top-K Sampling <span class="helpicon">?<span class="helptext">Top-K Sampling. Discards all but the K most likely tokens. Set 0 to Deactivate. Range 0 to 100.</span></span></div>
 							<input title="Top-K Sampling"inputmode="decimal" class="justifyright flex-push-right settingsmall" id="top_k" oninput="
-						   document.getElementById('top_k_slide').value = this.value;">
+							document.getElementById('top_k_slide').value = this.value;">
 						</div>
 						<div><input title="Top-K Sampling Slider" type="range" min="0" max="100" step="1" id="top_k_slide"
 								oninput="document.getElementById('top_k').value = this.value;"></div>
@@ -23632,7 +24213,7 @@ Current version indicated by LITEVER below.
 								</div>
 							<div class="settinglabel">
 								<div class="justifyleft settingsmall"  title="Save images remotely on A1111/Forge host (caution)">Save In A1111/Forge </div>
-							   <input type="checkbox" id="save_remote_images" style="margin:0px 0px 0px auto;">
+								<input type="checkbox" id="save_remote_images" style="margin:0px 0px 0px auto;">
 							</div>
 							</div>
 							<div id="generate_images_comfy_container" class="settinglabel hidden">
@@ -23671,7 +24252,7 @@ Current version indicated by LITEVER below.
 								</div>
 								<div class="settinglabel">
 									<div class="justifyleft settingsmall"  title="Includes images when saving to json file">Save Images </div>
-								   <input title="Save Images in File" type="checkbox" id="save_images" style="margin:0px 0px 0px auto;">
+									<input title="Save Images in File" type="checkbox" id="save_images" style="margin:0px 0px 0px auto;">
 								</div>
 							</div>
 
@@ -23767,18 +24348,18 @@ Current version indicated by LITEVER below.
 									<option value="voiceclone">voiceclone</option>
 									</select></td>
 									<td><input class="settinglabel miniinput" type="text" value="" placeholder="(Name)" id="kcpp_tts_voice_custom" style="margin-left:3px; height:18px; width:44px; padding: 2px;"></td>
-									<td><button id="kcpp_tts_voice_clone" type="button" class="btn btn-primary" style="width:100%; padding:2px 3px;margin-top:2px;font-size:11px;" onclick="set_voice_clone()">Set VCJson</button></tr>
+									<td><button id="kcpp_tts_voice_clone" type="button" class="btn btn-primary" style="width:100%; padding:2px 3px;margin-top:2px;font-size:11px;" onclick="set_voice_clone()">Set VCJson</button></td></tr>
 								</table>
 								</div>
 							</div>
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall"  title="If unchecked, only speak AI replies, not other text.">Narrate Both Sides </div>
-						   <input title="Narrate Both Sides" type="checkbox" id="narrate_both_sides" style="margin:0px 0px 0px auto;">
+							<input title="Narrate Both Sides" type="checkbox" id="narrate_both_sides" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall"  title="If unchecked, only speak AI replies, not other text.">Narrate Only Dialog </div>
-						   <input title="Narrate Only Dialog" type="checkbox" id="narrate_only_dialog" style="margin:0px 0px 0px auto;">
+							<input title="Narrate Only Dialog" type="checkbox" id="narrate_only_dialog" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="inlinelabel" style="font-size: 11px;">
 							<div class="justifyleft">Browser TTS Speed: </div>
@@ -23796,7 +24377,7 @@ Current version indicated by LITEVER below.
 						</div>
 						<div class="inlinelabel" style="font-size: 11px;">
 							<div class="justifyleft" style="padding:2px"  title="Suppress non-speech (e.g. music and sounds) from transcription">Suppress Non-Speech </div>
-						  	<input title="Suppress Non-Speech" type="checkbox" id="voice_suppress_nonspeech" style="margin:0px 0px 0px auto;">
+							<input title="Suppress Non-Speech" type="checkbox" id="voice_suppress_nonspeech" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="inlinelabel" style="font-size: 11px;">
 							<div class="justifyleft" style="padding:2px"  title="Language Code">Language </div>
@@ -23804,7 +24385,7 @@ Current version indicated by LITEVER below.
 							<div class="justifyleft" style="padding:3px">Delay </div>
 							<input title="Voice Delay Milliseconds" type="text" inputmode="decimal" value="300" id="voice_end_delay" style="width:30px">
 							<input type="file" id="transcribe_file_input" accept="audio/*,video/*" style="display:none;">
-							<button id="transcribe_file_btn" type="button" class="bg_green btn btn-primary" style="height:20px; padding:2px 3px; font-size:11px;margin-top: 3px;" onclick="transcribe_file_btn()">Narrate File</button>
+							<button id="transcribe_file_btn" type="button" class="bg_green btn btn-primary" style="height:20px; padding:2px 3px; font-size:11px;margin-top: 3px;" onclick="transcribe_file_btn()">Transcribe File</button>
 						</div>
 
 
@@ -24024,7 +24605,7 @@ Current version indicated by LITEVER below.
 					</div>
 					<div id="expandguidance" class="hidden">
 						<div class="color_red hidden" id="noguidance">Classifier-Free Guidance may be unavailable.</div>
-						<div style="color:#ffffff;">Classifier-Free Guidance prompt functions as a negative prompt when Guidance Scale is above 1, and a positive prompt at Guidance Scale is below 1. Disabled if scale is exactly 1 or CFG prompt is blank.</em><br></div>
+						<div style="color:#ffffff;">Classifier-Free Guidance prompt functions as a negative prompt when Guidance Scale is above 1, and a positive prompt at Guidance Scale is below 1. Disabled if scale is exactly 1 or CFG prompt is blank.<br></div>
 						<div style="display: flex; column-gap: 4px; margin-top: 4px; margin-bottom: 4px;">
 						<input class="form-control menuinput_inline" type="text" placeholder="Enter CFG Prompt" value="" id="guidance_prompt">
 						<div style="padding:1px" class="settinglabel">Scale<br>(0-5): </div><input class="form-control menuinput_inline" style="margin-left:4px;width:70px;" inputmode="numeric" placeholder="(Off)" value="" id="guidance_scale"></div>
@@ -24038,7 +24619,7 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall" id="tokenstreaminglabel">Token Streaming <span class="helpicon">?<span
 								class="helptext">Use token streaming for partial responses. SSE is smoother but less well-supported. Poll is chunkier but more reliable. Not available on Horde.</span></span></div>
-						   <select title="Token Streaming" style="padding:1px; height:auto; width: 34px; appearance: none; font-size: 7pt; margin:0px 0px 0px auto;" class="form-control" id="tokenstreammode">
+							<select title="Token Streaming" style="padding:1px; height:auto; width: 34px; appearance: none; font-size: 7pt; margin:0px 0px 0px auto;" class="form-control" id="tokenstreammode">
 								<option value="0">Off</option>
 								<option value="1">Poll</option>
 								<option value="2">SSE</option>
@@ -24073,23 +24654,23 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Render Streaming Markdown <span class="helpicon">?<span
 								class="helptext">Attempt to render markdown when streaming. May result in wonky output or lag on older devices.</span></span></div>
-						   <input title="Show Local Endpoint Selector" type="checkbox" id="render_streaming_markdown" style="margin:0px 0px 0px auto;">
+							<input title="Show Local Endpoint Selector" type="checkbox" id="render_streaming_markdown" style="margin:0px 0px 0px auto;">
 						</div>
 
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Never Escape HTML <span class="helpicon">?<span
 								class="helptext">Avoids escaping any HTML tags, allowing HTML injections. Not recommended!</span></span></div>
-						   <input title="Never Escape HTML" type="checkbox" id="no_escape_html" style="margin:0px 0px 0px auto;">
+							<input title="Never Escape HTML" type="checkbox" id="no_escape_html" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Render Sp.Tags <span class="helpicon">?<span
 								class="helptext">If enabled, renders special tags like EOS and padding tokens. Not recommended.</span></span></div>
-						   <input title="Render Special Tags" type="checkbox" id="render_special_tags" style="margin:0px 0px 0px auto;">
+							<input title="Render Special Tags" type="checkbox" id="render_special_tags" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Request Logprobs <span class="helpicon">?<span
 								class="helptext">If enabled, request top 5 alternative token log-probabilities for each generated token. Incurs an overhead.</span></span></div>
-						   <input title="Request Logprobs" type="checkbox" id="request_logprobs" style="margin:0px 0px 0px auto;">
+							<input title="Request Logprobs" type="checkbox" id="request_logprobs" style="margin:0px 0px 0px auto;">
 						</div>
 					</div>
 
@@ -24103,22 +24684,22 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Embed Settings File <span class="helpicon">?<span
 								class="helptext">Includes your current settings when saving or sharing your story</span></span></div>
-						   <input title="Embed Settings File" type="checkbox" id="export_settings" style="margin:0px 0px 0px auto;">
+							<input title="Embed Settings File" type="checkbox" id="export_settings" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Rename Save File <span class="helpicon">?<span
 								class="helptext">Prompts to input a different filename when saving file.</span></span></div>
-						   <input title="Rename Save File" type="checkbox" id="prompt_for_savename" style="margin:0px 0px 0px auto;">
+							<input title="Rename Save File" type="checkbox" id="prompt_for_savename" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Show Advanced Load <span class="helpicon">?<span
 								class="helptext">If enabled, allows you to select additional configurations during file load</span></span></div>
-						   <input title="Show Advanced Load" type="checkbox" id="show_advanced_load" style="margin:0px 0px 0px auto;">
+							<input title="Show Advanced Load" type="checkbox" id="show_advanced_load" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Card Import Prompt <span class="helpicon">?<span
 								class="helptext">If enabled, prompts the user to choose what mode to import a character card in. If disabled, automatically picks chat mode.</span></span></div>
-						   <input title="Character Card Import Prompt" type="checkbox" id="import_tavern_prompt" style="margin:0px 0px 0px auto;">
+							<input title="Character Card Import Prompt" type="checkbox" id="import_tavern_prompt" style="margin:0px 0px 0px auto;">
 						</div>
 					</div>
 
@@ -24126,7 +24707,7 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Run In Background <span class="helpicon">?<span
 								class="helptext">Prevents the browser from suspending KoboldAI Lite by playing a silent audio track. This setting cannot be saved.</span></span></div>
-						   <input title="Run In Background" type="checkbox" id="run_in_background" style="margin:0px 0px 0px auto;">
+							<input title="Run In Background" type="checkbox" id="run_in_background" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">User Mods <span class="helpicon">?<span class="helptext">Allows you to load third-party user created mods (caution).</span></span></div>
@@ -24142,17 +24723,17 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Autoscroll Text <span class="helpicon">?<span
 								class="helptext">Automatically scrolls the text window down when new text is generated</span></span></div>
-						   <input title="Autoscroll Text" type="checkbox" id="autoscroll" style="margin:0px 0px 0px auto;">
+							<input title="Autoscroll Text" type="checkbox" id="autoscroll" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Unlock Scroll Height <span class="helpicon">?<span
 								class="helptext">Unlocks the text viewport, allowing for infinite height without scrolling</span></span></div>
-						   <input title="Unlock Scroll Height" type="checkbox" id="printer_view" style="margin:0px 0px 0px auto;">
+							<input title="Unlock Scroll Height" type="checkbox" id="printer_view" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Viewport Width <span class="helpicon">?<span
 								class="helptext">Controls horizontal scaling of the viewport window</span></span></div>
-						   <select title="Viewport Width" style="padding:1px; height:auto; width: 34px; appearance: none; font-size: 7pt; margin:0px 0px 0px auto;" class="form-control" id="viewport_width_mode">
+							<select title="Viewport Width" style="padding:1px; height:auto; width: 34px; appearance: none; font-size: 7pt; margin:0px 0px 0px auto;" class="form-control" id="viewport_width_mode">
 								<option value="0">Adapt</option>
 								<option value="1">Clamp</option>
 								<option value="2">HDClamp</option>
@@ -24162,12 +24743,12 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">SidePanel Mode <span class="helpicon">?<span
 								class="helptext">Displays the settings and context panels permanently on the sides, instead of as popups. Not available on Mobile displays.</span></span></div>
-						   <input title="Inverted Colors" type="checkbox" id="sidepanel_mode" style="margin:0px 0px 0px auto;">
+							<input title="Inverted Colors" type="checkbox" id="sidepanel_mode" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">Inverted Colors <span class="helpicon">?<span
 								class="helptext">Inverts all colors, simple light mode</span></span></div>
-						   <input title="Inverted Colors" type="checkbox" id="invert_colors" style="margin:0px 0px 0px auto;">
+							<input title="Inverted Colors" type="checkbox" id="invert_colors" style="margin:0px 0px 0px auto;">
 						</div>
 						<div class="settinglabel">
 							<input type="file" id="loadbgimg" accept="image/*" onchange="load_bg_img(event)" style="display:none;">
@@ -24181,12 +24762,12 @@ Current version indicated by LITEVER below.
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">RawInstructTags <span class="helpicon">?<span
 								class="helptext">Does not insert instruct placeholders, only uses raw tags</span></span></div>
-						   <input title="Raw Instruct Tags" type="checkbox" id="raw_instruct_tags" style="margin:0px 0px 0px 0px;">
+							<input title="Raw Instruct Tags" type="checkbox" id="raw_instruct_tags" style="margin:0px 0px 0px 0px;">
 						</div>
 						<div class="settinglabel">
 							<div class="justifyleft settingsmall">ShowEndpointSelector <span class="helpicon">?<span
 								class="helptext">Allows you to change the connected custom endpoint at runtime even in local mode.</span></span></div>
-						   <input title="Show Local Endpoint Selector" type="checkbox" id="show_endpoint_selector" style="margin:0px 0px 0px 0px;">
+							<input title="Show Local Endpoint Selector" type="checkbox" id="show_endpoint_selector" style="margin:0px 0px 0px 0px;">
 						</div>
 					</div>
 
@@ -24447,9 +25028,9 @@ Current version indicated by LITEVER below.
 					<div id="charcreator_avatar" style="background-position: 50% 50%; background-size: 100% 100%; background-origin: content-box; background-repeat: no-repeat; width: 32px; height:32px; border-radius:100rem; background-clip: content-box; margin: 4px 4px; border:none;"></div>
 				</div>
 				<div class="inlinelabel">
-                    <div class="justify-center" style="margin:4px;">Use Character Template <span class="helpicon">?<span class="helptext">Adds a character template to memory while creating the character instead.</span></span>
-                    <input type="checkbox" title="Use Character Template" id="usecharactertemplate" onchange="character_creator_template_toggle()" style="margin:0px 0px 0px auto;"></div>
-                </div>
+					<div class="justify-center" style="margin:4px;">Use Character Template <span class="helpicon">?<span class="helptext">Adds a character template to memory while creating the character instead.</span></span>
+					<input type="checkbox" title="Use Character Template" id="usecharactertemplate" onchange="character_creator_template_toggle()" style="margin:0px 0px 0px auto;"></div>
+				</div>
 				<div id="nocharactertemplate">
 				<div class="inlinelabel" style="padding-bottom: 4px;">
 					<div class="justifyleft" style="padding:4px">Character Persona: </div>
@@ -24925,7 +25506,9 @@ Current version indicated by LITEVER below.
 			<div>
 				<b class="color_white" style="padding: 5px;">Change Loaded Model / Config:</b><br>
 				<div style="display:flex;padding: 5px;">
-					<select title="Select New Config" style="padding:4px; width:calc(100% - 150px)" class="form-control" id="adminconfigdropdown">
+					<select title="Select New Config" style="padding:4px; width:100%" class="form-control" id="adminconfigdropdown" onchange="change_admin_config_selection()">
+					</select>
+					<select title="Override Config" style="padding:4px; width:100%" class="form-control hidden" id="adminconfigoverridedropdown">
 					</select>
 					<button type="button" style="margin-left:2px;width:146px" class="btn btn-primary" onclick="trigger_admin_reload()">Reload KoboldCpp</button>
 				</div>
@@ -25246,7 +25829,7 @@ Current version indicated by LITEVER below.
 
 	<div class="popupcontainer flex hidden" id="inputboxcontainer">
 		<div class="popupbg flex"></div>
-		<div class="nspopup flexsize moderate">
+		<div class="nspopup flexsize higher">
 			<div class="popuptitlebar">
 				<div class="popuptitletext" id="inputboxcontainertitle"></div>
 			</div>
@@ -25282,7 +25865,7 @@ Current version indicated by LITEVER below.
 
 	<div class="popupcontainer flex hidden" id="msgboxcontainer">
 		<div class="popupbg flex"></div>
-		<div class="nspopup flexsizesmall moderate">
+		<div class="nspopup flexsizesmall higher">
 			<div class="popuptitlebar">
 				<div class="popuptitletext" id="msgboxtitle"></div>
 			</div>
@@ -25301,7 +25884,7 @@ Current version indicated by LITEVER below.
 
 </body>
 
-<script>
+<script id="pwa-setup">
 init();
 
 //this is needed for PWA to work on chrome, so users can install KoboldAI Lite to device

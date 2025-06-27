@@ -57,10 +57,9 @@ public:
     //
 
     llama_memory_state_ptr init_batch(
-            const llama_batch & batch,
+            llama_batch_allocr & balloc,
             uint32_t n_ubatch,
-            bool embd_pooled,
-            bool logits_all) override;
+            bool embd_all) override;
 
     llama_memory_state_ptr init_full() override;
 
@@ -68,7 +67,7 @@ public:
 
     bool get_can_shift() const override;
 
-    void clear() override;
+    void clear(bool data) override;
 
     bool seq_rm  (llama_seq_id seq_id,                              llama_pos p0, llama_pos p1) override;
     void seq_cp  (llama_seq_id seq_id_src, llama_seq_id seq_id_dst, llama_pos p0, llama_pos p1) override;
@@ -158,6 +157,8 @@ private:
     // SWA
     const uint32_t n_swa = 0;
 
+    int debug = 0;
+
     const llama_swa_type swa_type = LLAMA_SWA_TYPE_NONE;
 
     std::vector<ggml_context_ptr>        ctxs;
@@ -230,7 +231,6 @@ public:
     // used to create a decode state from a batch
     llama_kv_cache_unified_state(
             llama_kv_cache_unified * kv,
-            llama_sbatch sbatch,
             ubatch_heads heads,
             std::vector<llama_ubatch> ubatches);
 
@@ -242,8 +242,6 @@ public:
 
     bool next()  override;
     bool apply() override;
-
-    std::vector<int64_t> & out_ids() override;
 
     llama_memory_status  get_status() const override;
     const llama_ubatch & get_ubatch() const override;
@@ -284,8 +282,6 @@ private:
     //
     // batch processing state
     //
-
-    llama_sbatch sbatch;
 
     // the index of the next ubatch to process
     size_t i_next = 0;

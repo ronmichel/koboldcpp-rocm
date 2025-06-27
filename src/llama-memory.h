@@ -7,6 +7,8 @@
 
 struct llama_ubatch;
 
+class llama_batch_allocr;
+
 class llama_io_write_i;
 class llama_io_read_i;
 
@@ -50,9 +52,6 @@ struct llama_memory_state_i {
     // return false on failure
     virtual bool apply() = 0;
 
-    // TODO: this might get reworked in the future when refactoring llama_batch
-    virtual std::vector<int64_t> & out_ids() = 0;
-
     // get the current ubatch
     virtual const llama_ubatch & get_ubatch() const = 0;
 
@@ -71,10 +70,9 @@ struct llama_memory_i {
     // return a state object containing the ubatches and KV cache state required to process them
     // check the llama_memory_state_i::get_status() for the result
     virtual llama_memory_state_ptr init_batch(
-            const llama_batch & batch,
+            llama_batch_allocr & balloc,
             uint32_t n_ubatch,
-            bool embd_pooled,
-            bool logits_all) = 0;
+            bool embd_all) = 0;
 
     // simulate full cache, used for allocating worst-case compute buffers
     virtual llama_memory_state_ptr init_full() = 0;
@@ -90,7 +88,8 @@ struct llama_memory_i {
     // ops
     //
 
-    virtual void clear() = 0;
+    // if data == true, the data buffers will also be cleared together with the metadata
+    virtual void clear(bool data) = 0;
 
     virtual bool seq_rm  (llama_seq_id seq_id,                              llama_pos p0, llama_pos p1) = 0;
     virtual void seq_cp  (llama_seq_id seq_id_src, llama_seq_id seq_id_dst, llama_pos p0, llama_pos p1) = 0;

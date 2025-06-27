@@ -57,7 +57,7 @@ struct SDParams {
     std::string controlnet_path;
     std::string embeddings_path;
     std::string stacked_id_embeddings_path;
-    std::string input_id_images_path;
+    std::string input_id_images_path = "";
     sd_type_t wtype = SD_TYPE_COUNT;
     std::string lora_model_dir;
     std::string output_path = "output.png";
@@ -116,11 +116,15 @@ static int sddebugmode = 0;
 static std::string recent_data = "";
 static uint8_t * input_image_buffer = NULL;
 static uint8_t * input_mask_buffer = NULL;
+static uint8_t * input_photomaker_buffer = NULL;
 
 static std::string sdplatformenv, sddeviceenv, sdvulkandeviceenv;
-static bool notiling = false;
+static int cfg_tiled_vae_threshold = 0;
+static int cfg_square_limit = 0;
+static int cfg_side_limit = 0;
 static bool sd_is_quiet = false;
 static std::string sdmodelfilename = "";
+static bool photomaker_enabled = false;
 
 bool sdtype_load_model(const sd_load_model_inputs inputs) {
     sd_is_quiet = inputs.quiet;
@@ -132,7 +136,12 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     std::string t5xxl_filename = inputs.t5xxl_filename;
     std::string clipl_filename = inputs.clipl_filename;
     std::string clipg_filename = inputs.clipg_filename;
-    notiling = inputs.notile;
+    std::string photomaker_filename = inputs.photomaker_filename;
+    cfg_tiled_vae_threshold = inputs.tiled_vae_threshold;
+    cfg_tiled_vae_threshold = (cfg_tiled_vae_threshold > 8192 ? 8192 : cfg_tiled_vae_threshold);
+    cfg_tiled_vae_threshold = (cfg_tiled_vae_threshold <= 0 ? 8192 : cfg_tiled_vae_threshold); //if negative dont tile
+    cfg_side_limit = inputs.img_hard_limit;
+    cfg_square_limit = inputs.img_soft_limit;
     printf("\nImageGen Init - Load Model: %s\n",inputs.model_filename);
 
     if(lorafilename!="")
@@ -159,6 +168,11 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     if(clipg_filename!="")
     {
         printf("With Custom Clip-G Model: %s\n",clipg_filename.c_str());
+    }
+    if(photomaker_filename!="")
+    {
+        printf("With PhotoMaker Model: %s\n",photomaker_filename.c_str());
+        photomaker_enabled = true;
     }
     if(inputs.quant)
     {
@@ -201,6 +215,7 @@ bool sdtype_load_model(const sd_load_model_inputs inputs) {
     sd_params->t5xxl_path = t5xxl_filename;
     sd_params->clip_l_path = clipl_filename;
     sd_params->clip_g_path = clipg_filename;
+    sd_params->stacked_id_embeddings_path = photomaker_filename;
     //if t5 is set, and model is a gguf, load it as a diffusion model path
     bool endswithgguf = (sd_params->model_path.rfind(".gguf") == sd_params->model_path.size() - 5);
     if(sd_params->t5xxl_path!="" && endswithgguf)
@@ -307,6 +322,99 @@ static std::string get_image_params(const SDParams& params) {
     return parameter_string;
 }
 
+static inline int rounddown_64(int n) {
+    return n - n % 64;
+}
+
+static inline int roundup_64(int n) {
+    return ((n + 63) / 64) * 64;
+}
+
+//scale dimensions to ensure width and height stay within limits
+//img_hard_limit = sdclamped, hard size limit per side, no side can exceed this
+//square limit = total NxN resolution based limit to also apply
+static void sd_fix_resolution(int &width, int &height, int img_hard_limit, int img_soft_limit) {
+
+    // sanitize the original values
+    width = std::max(std::min(width, 8192), 64);
+    height = std::max(std::min(height, 8192), 64);
+
+    bool is_landscape = (width > height);
+    int long_side = is_landscape ? width : height;
+    int short_side = is_landscape ? height : width;
+    float original_ratio = static_cast<float>(long_side) / short_side;
+
+    // for the initial rounding, don't bother comparing to the original
+    // requested ratio, since the user can choose those values directly
+    long_side = rounddown_64(long_side);
+    short_side = rounddown_64(short_side);
+    img_hard_limit = rounddown_64(img_hard_limit);
+
+    //enforce sdclamp side limit
+    if (long_side > img_hard_limit) {
+        short_side = static_cast<int>(short_side * img_hard_limit / static_cast<float>(long_side));
+        long_side = img_hard_limit;
+        if (short_side <= 64) {
+            short_side = 64;
+        } else {
+            int down = rounddown_64(short_side);
+            int up = roundup_64(short_side);
+            float longf = static_cast<float>(long_side);
+            // Choose better ratio match between rounding up or down
+            short_side = (longf / down - original_ratio < original_ratio - longf / up) ? down : up;
+        }
+    }
+
+    //enforce sd_restrict_square area limit
+    int area_limit = img_soft_limit * img_soft_limit;
+    if (long_side * short_side > area_limit) {
+        float scale = std::sqrt(static_cast<float>(area_limit) / (long_side * short_side));
+        int new_short = static_cast<int>(short_side * scale);
+        int new_long = static_cast<int>(long_side * scale);
+
+        if (new_short <= 64) {
+            short_side = 64;
+            long_side = rounddown_64(area_limit / short_side);
+        } else {
+            int new_long_down = rounddown_64(new_long);
+            int new_short_down = rounddown_64(new_short);
+            int new_short_up = roundup_64(new_short);
+            int new_long_up = roundup_64(new_long);
+            long_side = new_long_down;
+            short_side = new_short_down;
+
+            // we may get a ratio closer to the original if we still stay below the
+            // limit when rounding up one of the dimensions, so check both cases
+            float rdiff = std::fabs(static_cast<float>(new_long_down) / new_short_down - original_ratio);
+
+            if (new_long_down * new_short_up < area_limit) {
+                float newrdiff = std::fabs(static_cast<float>(new_long_down) / new_short_up - original_ratio);
+                if (newrdiff < rdiff) {
+                    long_side = new_long_down;
+                    short_side = new_short_up;
+                    rdiff = newrdiff;
+                }
+            }
+
+            if (new_long_up * new_short_down < area_limit) {
+                float newrdiff = std::fabs(static_cast<float>(new_long_up) / new_short_down - original_ratio);
+                if (newrdiff < rdiff) {
+                    long_side = new_long_up;
+                    short_side = new_short_down;
+                }
+            }
+        }
+    }
+
+    if (is_landscape) {
+        width = long_side;
+        height = short_side;
+    } else {
+        width = short_side;
+        height = long_side;
+    }
+}
+
 sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
 {
     sd_generation_outputs output;
@@ -326,7 +434,13 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
     std::string cleannegprompt = clean_input_prompt(inputs.negative_prompt);
     std::string img2img_data = std::string(inputs.init_images);
     std::string img2img_mask = std::string(inputs.mask);
+    std::string photomaker_image_data = std::string(inputs.photomaker_image);
     std::string sampler = inputs.sample_method;
+
+    if(!photomaker_enabled)
+    {
+        photomaker_image_data = "";
+    }
 
     sd_params->prompt = cleanprompt;
     sd_params->negative_prompt = cleannegprompt;
@@ -339,8 +453,6 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
     sd_params->clip_skip = inputs.clip_skip;
     sd_params->mode = (img2img_data==""?SDMode::TXT2IMG:SDMode::IMG2IMG);
 
-    //ensure unsupported dimensions are fixed
-    int biggestdim = (sd_params->width>sd_params->height?sd_params->width:sd_params->height);
     auto loadedsdver = get_loaded_sd_version(sd_ctx);
     if (loadedsdver == SDVersion::VERSION_FLUX)
     {
@@ -351,22 +463,36 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
             sampler = "euler";  //euler a broken on flux
         }
     }
-    int reslimit = (loadedsdver==SDVersion::VERSION_SD1 || loadedsdver==SDVersion::VERSION_SD2)?832:1024;
-    if(biggestdim > reslimit)
-    {
-        float scaler = (float)biggestdim / (float)reslimit;
-        int newwidth = (int)((float)sd_params->width / scaler);
-        int newheight = (int)((float)sd_params->height / scaler);
-        newwidth = newwidth - (newwidth%64);
-        newheight = newheight - (newheight%64);
-        sd_params->width = newwidth;
-        sd_params->height = newheight;
-        if(!sd_is_quiet && sddebugmode==1)
-        {
-            printf("\nDownscale to %dx%d as %d > %d\n",newwidth,newheight,biggestdim,reslimit);
-        }
+
+    const int default_res_limit = 8192; // arbitrary, just to simplify the code
+    // avoid crashes due to bugs/limitations on certain models
+    // although it can be possible for a single side to exceed 1024, the total resolution of the image
+    // cannot exceed (832x832) for sd1/sd2 or (1024x1024) for sdxl/sd3/flux, to prevent crashing the server
+    const int hard_megapixel_res_limit = (loadedsdver==SDVersion::VERSION_SD1 || loadedsdver==SDVersion::VERSION_SD2)?832:1024;
+
+    int img_hard_limit = default_res_limit;
+    if (cfg_side_limit > 0) {
+        img_hard_limit = std::max(std::min(cfg_side_limit, default_res_limit), 64);
     }
-    bool dotile = (sd_params->width>768 || sd_params->height>768) && !notiling;
+
+    int img_soft_limit = default_res_limit;
+    if (cfg_square_limit > 0) {
+        img_soft_limit = std::max(std::min(cfg_square_limit, default_res_limit), 64);
+    }
+
+    if (cfg_square_limit > 0 && sddebugmode == 1) {
+        img_soft_limit = std::min(hard_megapixel_res_limit * 2, img_soft_limit);  //double the limit for debugmode if cfg_square_limit is set
+    } else {
+        img_soft_limit = std::min(hard_megapixel_res_limit, img_soft_limit);
+    }
+
+    sd_fix_resolution(sd_params->width, sd_params->height, img_hard_limit, img_soft_limit);
+    if (inputs.width != sd_params->width || inputs.height != sd_params->height) {
+        printf("\nKCPP SD: Requested dimensions %dx%d changed to %dx%d\n", inputs.width, inputs.height, sd_params->width, sd_params->height);
+    }
+
+    // trigger tiling by image area, the memory used for the VAE buffer is 6656 bytes per image pixel, default 768x768
+    bool dotile = (sd_params->width*sd_params->height > cfg_tiled_vae_threshold*cfg_tiled_vae_threshold);
     set_sd_vae_tiling(sd_ctx,dotile); //changes vae tiling, prevents memory related crash/oom
 
     if (sd_params->clip_skip <= 0) {
@@ -382,15 +508,17 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
 
     //for img2img
     sd_image_t input_image = {0,0,0,nullptr};
+    sd_image_t photomaker_reference = {0,0,0,nullptr};
     std::vector<uint8_t> image_buffer;
     std::vector<uint8_t> image_mask_buffer;
+    std::vector<uint8_t> photomaker_buffer;
     int nx, ny, nc;
-    int nx2, ny2, nc2;
     int img2imgW = sd_params->width; //for img2img input
     int img2imgH = sd_params->height;
     int img2imgC = 3; // Assuming RGB image
     std::vector<uint8_t> resized_image_buf(img2imgW * img2imgH * img2imgC);
     std::vector<uint8_t> resized_mask_buf(img2imgW * img2imgH * img2imgC);
+    std::vector<uint8_t> resized_photomaker_buf(img2imgW * img2imgH * img2imgC);
 
     std::string ts = get_timestamp_str();
     if(!sd_is_quiet)
@@ -435,6 +563,35 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
         sd_params->sample_method = sample_method_t::EULER_A;
     }
 
+    if(photomaker_image_data!="")
+    {
+        if(input_photomaker_buffer!=nullptr) //just in time free old buffer
+        {
+            stbi_image_free(input_photomaker_buffer);
+            input_photomaker_buffer = nullptr;
+        }
+        int nx2, ny2, nc2;
+        photomaker_buffer = kcpp_base64_decode(photomaker_image_data);
+        input_photomaker_buffer = stbi_load_from_memory(photomaker_buffer.data(), photomaker_buffer.size(), &nx2, &ny2, &nc2, 1);
+        // Resize the image
+        int resok = stbir_resize_uint8(input_photomaker_buffer, nx2, ny2, 0, resized_photomaker_buf.data(), img2imgW, img2imgH, 0, 1);
+        if (!resok) {
+            printf("\nKCPP SD: resize photomaker image failed!\n");
+            output.data = "";
+            output.status = 0;
+            return output;
+        }
+        photomaker_reference.width = img2imgW;
+        photomaker_reference.height = img2imgH;
+        photomaker_reference.channel = img2imgC;
+        photomaker_reference.data = resized_photomaker_buf.data();
+
+        //ensure prompt has img keyword, otherwise append it
+        if (sd_params->prompt.find("img") == std::string::npos) {
+            sd_params->prompt += " img";
+        }
+    }
+
     if (sd_params->mode == TXT2IMG) {
 
         if(!sd_is_quiet && sddebugmode==1)
@@ -477,7 +634,8 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
                           sd_params->skip_layers.size(),
                           sd_params->slg_scale,
                           sd_params->skip_layer_start,
-                          sd_params->skip_layer_end);
+                          sd_params->skip_layer_end,
+                          (photomaker_image_data!=""?(&photomaker_reference):nullptr));
     } else {
 
         if (sd_params->width <= 0 || sd_params->width % 64 != 0 || sd_params->height <= 0 || sd_params->height % 64 != 0) {
@@ -488,18 +646,11 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
         }
 
         image_buffer = kcpp_base64_decode(img2img_data);
-
         if(input_image_buffer!=nullptr) //just in time free old buffer
         {
              stbi_image_free(input_image_buffer);
              input_image_buffer = nullptr;
         }
-         if(input_mask_buffer!=nullptr) //just in time free old buffer
-        {
-             stbi_image_free(input_mask_buffer);
-             input_mask_buffer = nullptr;
-        }
-
         input_image_buffer = stbi_load_from_memory(image_buffer.data(), image_buffer.size(), &nx, &ny, &nc, 3);
 
         if (nx < 64 || ny < 64 || nx > 1024 || ny > 1024 || nc!= 3) {
@@ -526,6 +677,12 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
 
         if(img2img_mask!="")
         {
+            int nx2, ny2, nc2;
+            if(input_mask_buffer!=nullptr) //just in time free old buffer
+            {
+                stbi_image_free(input_mask_buffer);
+                input_mask_buffer = nullptr;
+            }
             image_mask_buffer = kcpp_base64_decode(img2img_mask);
             input_mask_buffer = stbi_load_from_memory(image_mask_buffer.data(), image_mask_buffer.size(), &nx2, &ny2, &nc2, 1);
             // Resize the image
@@ -601,7 +758,8 @@ sd_generation_outputs sdtype_generate(const sd_generation_inputs inputs)
                             sd_params->skip_layers.size(),
                             sd_params->slg_scale,
                             sd_params->skip_layer_start,
-                            sd_params->skip_layer_end);
+                            sd_params->skip_layer_end,
+                            (photomaker_image_data!=""?(&photomaker_reference):nullptr));
     }
 
     if (results == NULL) {
