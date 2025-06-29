@@ -932,6 +932,8 @@ llama-bench: examples/llama-bench/llama-bench.cpp build-info.h ggml_cublas.o ggm
 #window simple clinfo
 simpleclinfo: simpleclinfo.cpp
 	$(CXX) $(CXXFLAGS) $^ lib/OpenCL.lib lib/clblast.lib -o $@ $(LDFLAGS)
+simplecpuinfo: simplecpuinfo.cpp
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 build-info.h:
 	$(DONOTHING)
