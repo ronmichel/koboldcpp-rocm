@@ -63,7 +63,7 @@ For more information, be sure to run the program with the `--help` flag, or [che
 (More in depth guide below)
   - Use the latest release of w64devkit (https://github.com/skeeto/w64devkit). Be sure to use the "vanilla one", not i686 or other different stuff. If you try they will conflict with the precompiled libs!
   - Make sure you are using the w64devkit integrated terminal, (powershell should work for the cmake hipblas part)
-  - *This site may be useful, it has some patches for Windows ROCm to help it with compilation that I used, but I'm not sure if it's necessary with ROCm v5.7.* https://streamhpc.com/blog/2023-08-01/how-to-get-full-cmake-support-for-amd-hip-sdk-on-windows-including-patches/
+  - *This site may be useful, it has some patches for Windows ROCm to help it with compilation that I used, but I'm not sure if it's necessary with ROCm v5.7+ https://streamhpc.com/blog/2023-08-01/how-to-get-full-cmake-support-for-amd-hip-sdk-on-windows-including-patches/
   - (ROCm Required): https://rocm.docs.amd.com/en/latest/deploy/windows/quick_start.html
 
    Build command used:
