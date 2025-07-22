@@ -4426,10 +4426,10 @@ def show_gui():
     antirunopts = [opt.replace("Use ", "") for lib, opt in lib_option_pairs if opt not in runopts]
     quantkv_text = ["F16 (Off)","8-Bit","4-Bit"]
 
-    if "Use CuBLAS" in runopts:
+    if "Use CUDA" in runopts:
         antirunopts.remove("hipBLAS (ROCm)")
     if "Use hipBLAS (ROCm)" in runopts:
-        antirunopts.remove("CuBLAS")
+        antirunopts.remove("CUDA")
     if os.name != 'nt':
         if "NoAVX2 Mode (Old CPU)" in antirunopts:
             antirunopts.remove("NoAVX2 Mode (Old CPU)")
@@ -5250,7 +5250,7 @@ def show_gui():
     quick_layercounter_label = ctk.CTkLabel(quick_tab, text="")
     quick_layercounter_label.grid(row=6, column=1, padx=75, sticky="W")
     quick_layercounter_label.configure(text_color="#ffff00")
-    quick_mmq_box = makecheckbox(quick_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1,tooltiptxt="Enable MMQ mode instead of CuBLAS for prompt processing. Read the wiki. Speed may vary.")
+    quick_mmq_box = makecheckbox(quick_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1,tooltiptxt="Enable MMQ mode instead of CUDA for prompt processing. Read the wiki. Speed may vary.")
 
     # quick boxes
     quick_boxes = {
@@ -5299,7 +5299,7 @@ def show_gui():
     layercounter_label.configure(text_color="#ffff00")
     tensor_split_entry,tensor_split_label = makelabelentry(hardware_tab, "Tensor Split:", tensor_split_str_vars, 8, 80, tooltip='When using multiple GPUs this option controls how large tensors should be split across all GPUs.\nUses a comma-separated list of non-negative values that assigns the proportion of data that each GPU should get in order.\nFor example, "3,2" will assign 60% of the data to GPU 0 and 40% to GPU 1.')
     lowvram_box = makecheckbox(hardware_tab,  "Low VRAM (No KV offload)", lowvram_var, 4,0, tooltiptxt='Avoid offloading KV Cache or scratch buffers to VRAM.\nAllows more layers to fit, but may result in a speed loss.')
-    mmq_box = makecheckbox(hardware_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1, tooltiptxt="Enable MMQ mode to use finetuned kernels instead of default CuBLAS/HipBLAS for prompt processing.\nRead the wiki. Speed may vary.")
+    mmq_box = makecheckbox(hardware_tab,  "Use QuantMatMul (mmq)", mmq_var, 4,1, tooltiptxt="Enable MMQ mode to use finetuned kernels instead of default CUDA/HipBLAS for prompt processing.\nRead the wiki. Speed may vary.")
     splitmode_box = makecheckbox(hardware_tab,  "Row-Split", rowsplit_var, 5,0, tooltiptxt="Split rows across GPUs instead of splitting layers and KV across GPUs.\nUses the main GPU for small tensors and intermediate results. Speed may vary.")
 
     maingpu_entry,maingpu_label = makelabelentry(hardware_tab, "Main GPU:" , maingpu_var, 10, 50,tooltip="Only for multi-gpu, which GPU to set as main?\nIf left blank, uses default value.")
@@ -5598,7 +5598,7 @@ def show_gui():
         #     if runopts_var.get() == "Use CLBlast": #if CLBlast selected
         #         if (gpu_choice_var.get()) in CLdevices:
         #             gpuchoiceidx = CLdevices.index((gpu_choice_var.get()))
-        #     elif runopts_var.get() == "Use CuBLAS" or runopts_var.get() == "Use hipBLAS (ROCm)":
+        #     elif runopts_var.get() == "Use CUDA" or runopts_var.get() == "Use hipBLAS (ROCm)":
         #         if (gpu_choice_var.get()) in CUdevices:
         #             gpuchoiceidx = CUdevices.index((gpu_choice_var.get()))
         # if runopts_var.get() == "Use CLBlast":
@@ -6088,7 +6088,7 @@ def show_old_gui():
         blaschoice = tk.StringVar()
         blaschoice.set("BLAS = 512")
 
-        runopts = ["Use OpenBLAS","Use CLBLast GPU #1","Use CLBLast GPU #2","Use CLBLast GPU #3","Use CuBLAS GPU","Use No BLAS","NoAVX2 Mode (Old CPU)","Failsafe Mode (Old CPU)"]
+        runopts = ["Use OpenBLAS","Use CLBLast GPU #1","Use CLBLast GPU #2","Use CLBLast GPU #3","Use CUDA GPU","Use No BLAS","NoAVX2 Mode (Old CPU)","Failsafe Mode (Old CPU)"]
         runchoice = tk.StringVar()
         runchoice.set("Use OpenBLAS")
 
