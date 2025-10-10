@@ -7,7 +7,7 @@
 - LLM text generation (Supports all GGML and GGUF models, backwards compatibility with ALL past models)
 - Image Generation (Stable Diffusion 1.5, SDXL, SD3, Flux)
 - Speech-To-Text (Voice Recognition) via Whisper
-- Text-To-Speech (Voice Generation) via OuteTTS
+- Text-To-Speech (Voice Generation) via OuteTTS, Kokoro, Parler and Dia
 - Provides many compatible APIs endpoints for many popular webservices (KoboldCppApi OpenAiApi OllamaApi A1111ForgeApi ComfyUiApi WhisperTranscribeApi XttsApi OpenAiSpeechApi)
 - Bundled KoboldAI Lite UI with editing tools, save formats, memory, world info, author's note, characters, scenarios.
 - Includes multiple modes (chat, adventure, instruct, storywriter) and UI Themes (aesthetic roleplay, classic writer, corporate assistant, messsenger)
