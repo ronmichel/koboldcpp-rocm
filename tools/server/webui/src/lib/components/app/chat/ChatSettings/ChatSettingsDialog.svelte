@@ -75,6 +75,16 @@
 					key: 'pdfAsImage',
 					label: 'Parse PDF as image',
 					type: 'checkbox'
+				},
+				{
+					key: 'showModelInfo',
+					label: 'Show model information',
+					type: 'checkbox'
+				},
+				{
+					key: 'renderUserContentAsMarkdown',
+					label: 'Render user content as Markdown',
+					type: 'checkbox'
 				}
 			]
 		},
@@ -142,6 +152,12 @@
 				{
 					key: 'showThoughtInProgress',
 					label: 'Show thought in progress',
+					type: 'checkbox'
+				},
+				{
+					key: 'disableReasoningFormat',
+					label:
+						'Show raw LLM output without backend parsing and frontend Markdown rendering to inspect streaming across different models.',
 					type: 'checkbox'
 				}
 			]
@@ -362,7 +378,8 @@
 
 <Dialog.Root {open} onOpenChange={handleClose}>
 	<Dialog.Content
-		class="z-999999 flex h-[100vh] flex-col gap-0 rounded-none p-0 md:h-[64vh] md:rounded-lg"
+		class="z-999999 flex h-[100dvh] max-h-[100dvh] min-h-[100dvh] flex-col gap-0 rounded-none p-0
+			md:h-[64vh] md:max-h-[64vh] md:min-h-0 md:rounded-lg"
 		style="max-width: 48rem;"
 	>
 		<div class="flex flex-1 flex-col overflow-hidden md:flex-row">
@@ -441,7 +458,7 @@
 				</div>
 			</div>
 
-			<ScrollArea class="max-h-[calc(100vh-13.5rem)] flex-1">
+			<ScrollArea class="max-h-[calc(100dvh-13.5rem)] flex-1 md:max-h-[calc(100vh-13.5rem)]">
 				<div class="space-y-6 p-4 md:p-6">
 					<div>
 						<div class="mb-6 flex hidden items-center gap-2 border-b border-border/30 pb-6 md:flex">
@@ -456,7 +473,6 @@
 								{localConfig}
 								onConfigChange={handleConfigChange}
 								onThemeChange={handleThemeChange}
-								isMobile={false}
 							/>
 						</div>
 					</div>
