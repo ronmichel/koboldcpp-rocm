@@ -54,7 +54,7 @@ jobs:
         
       - name: Install ROCm SDK
         run: |
-          curl -LO https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-Win10-Win11-For-HIP.exe
+          curl -LO https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
           Start-Process 'AMD-Software-PRO-Edition-24.Q3-Win10-Win11-For-HIP.exe' -ArgumentList '-install' -NoNewWindow -Wait
           echo "C:\Program Files\AMD\ROCm\6.1\bin" >> $env:GITHUB_PATH
           echo 'ROCM_PATH=C:\Program Files\AMD\ROCm\6.1' >> $env:GITHUB_ENV
